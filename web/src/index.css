@@ -1,0 +1,219 @@
+@import "tailwindcss";
+
+@theme {
+  --color-void: #050507;
+  --color-obsidian: #0D0E12;
+  --color-carbon: #15171E;
+  --color-elevated: #1C1F28;
+  --color-graphite: #282C38;
+  --color-sports-red: #FF1E2D;
+  --color-sports-red-bright: #FF3B47;
+  --color-sports-red-tint: #26080D;
+  --color-neon-green: #39FF14;
+  --color-neon-green-tint: #0B2407;
+  --color-pure-white: #F8FAFC;
+  --color-ash-gray: #A1A7B3;
+  --color-steel-gray: #687080;
+
+  --font-display: "Chakra Petch", system-ui, sans-serif;
+  --font-sans: "Space Grotesk", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    min-height: 100%;
+    background-color: #050507;
+    color: #f8fafc;
+    font-family: var(--font-sans);
+  }
+}
+
+.cut-corner {
+  clip-path: polygon(
+    0 0,
+    calc(100% - 14px) 0,
+    100% 14px,
+    100% 100%,
+    14px 100%,
+    0 calc(100% - 14px)
+  );
+}
+
+.cut-corner-sm {
+  clip-path: polygon(
+    0 0,
+    calc(100% - 8px) 0,
+    100% 8px,
+    100% 100%,
+    8px 100%,
+    0 calc(100% - 8px)
+  );
+}
+
+/* Custom sleek dark scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #050507;
+}
+::-webkit-scrollbar-thumb {
+  background: #282c38;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #ff1e2d;
+}
+
+/* Leaflet custom pin and pulsing GPS styles */
+.leaflet-container {
+  background: #050507 !important;
+  font-family: var(--font-sans) !important;
+}
+
+.campus-leaflet-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+.campus-pin {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transform: translate(-50%, -100%);
+  transition: transform 0.15s ease;
+}
+
+.campus-pin:hover {
+  transform: translate(-50%, -100%) scale(1.08);
+  z-index: 800 !important;
+}
+
+.campus-pin-label {
+  padding: 3px 8px;
+  border-radius: 3px;
+  background: rgba(5, 5, 7, 0.94);
+  color: #f8fafc;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.25;
+  white-space: nowrap;
+  border: 1.5px solid var(--pin-color, #ff1e2d);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.85);
+  margin-bottom: 3px;
+  letter-spacing: 0.25px;
+}
+
+.campus-pin-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--pin-color, #ff1e2d);
+  border: 2px solid #050507;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+}
+
+.campus-pin.is-selected {
+  z-index: 950 !important;
+  transform: translate(-50%, -100%) scale(1.16);
+}
+
+.campus-pin.is-selected .campus-pin-label {
+  background: #ff1e2d;
+  color: #f8fafc;
+  border-color: #39ff14;
+  box-shadow: 0 4px 16px rgba(255, 30, 45, 0.65);
+}
+
+.campus-pin.is-selected .campus-pin-dot {
+  width: 14px;
+  height: 14px;
+  background: #39ff14;
+  border-color: #050507;
+  border-width: 2.5px;
+}
+
+.zone-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.9);
+}
+
+.zone-badge-old {
+  background: rgba(5, 5, 7, 0.95);
+  color: #ff1e2d;
+  border: 1.5px solid #ff1e2d;
+}
+
+.zone-badge-new {
+  background: rgba(5, 5, 7, 0.95);
+  color: #39ff14;
+  border: 1.5px solid #39ff14;
+}
+
+.zone-badge-road {
+  background: rgba(5, 5, 7, 0.95);
+  color: #f8fafc;
+  border: 1.5px solid #f8fafc;
+  font-size: 8.5px;
+}
+
+.gps-dot-wrapper {
+  position: relative;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.gps-dot-pulse {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(57, 255, 20, 0.42);
+  animation: gpsPulse 1.8s ease-out infinite;
+}
+
+.gps-dot-core {
+  position: relative;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #39ff14;
+  border: 2.5px solid #050507;
+  box-shadow: 0 0 12px rgba(57, 255, 20, 0.9);
+}
+
+@keyframes gpsPulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.95;
+  }
+  70% {
+    transform: scale(2.25);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2.25);
+    opacity: 0;
+  }
+}

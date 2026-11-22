@@ -1,0 +1,56 @@
+========================================================================
+BBSUTSD CAMPUS ANDROID APP - INSTALLATION & EXPORT GUIDE
+========================================================================
+
+WHERE TO GET THE WORKING INSTALLABLE APK:
+
+1. RECOMMENDED (Directly from Google AI Studio):
+   - Open the Settings (gear icon) menu in Google AI Studio.
+   - Click "Generate APK" (or "Generate APK / AAB").
+   - AI Studio will build and download the complete, signed ~23 MB
+     installable APK directly to your device.
+   * Note: AI Studio's general "Export as ZIP" button is meant for source
+     code and often strips or truncates pre-built binary .apk/.zip files
+     to 0 bytes during browser download. Always use "Settings -> Generate
+     APK / AAB" for the APK binary!
+
+2. FROM WORKSPACE ZIP ARCHIVE (If downloaded intact):
+   - Extract `BBSUTSD_Campus_APK.zip` (at project root).
+   - Inside you will find `BBSUTSD_Campus.apk` (~23 MB) and this guide.
+   - If your extracted ZIP/APK shows 0 bytes, that confirms AI Studio's
+     project-source ZIP stripped the binary; use Method 1 ("Settings ->
+     Generate APK") or Method 3 below.
+
+3. BUILD LOCALLY FROM SOURCE CODE:
+   - Open the exported source project in Android Studio, OR run:
+       gradle assembleDebug
+   - Output APK location:
+       app/build/outputs/apk/debug/app-debug.apk
+
+------------------------------------------------------------------------
+HOW TO INSTALL ON YOUR ANDROID PHONE:
+------------------------------------------------------------------------
+
+Step 1: Transfer or download `BBSUTSD_Campus.apk` (or `app-debug.apk`)
+        onto your Android phone.
+
+Step 2: Tap the `.apk` file in your phone's "Files" / "My Files" app.
+
+Step 3: If prompted with "For your security, your phone is not allowed
+        to install unknown apps from this source":
+        - Tap "Settings"
+        - Turn ON "Allow from this source"
+        - Go back and tap "Install"
+
+Step 4: Tap "Open" to launch BBSUTSD Campus!
+
+------------------------------------------------------------------------
+APP SPECIFICATIONS:
+------------------------------------------------------------------------
+- App Name: BBSUTSD Campus
+- University: Benazir Bhutto Shaheed University of Technology and
+              Skill Development, Khairpur Mirs, Sindh, Pakistan
+- Package ID: com.aistudio.bbsutsdcampus.khpm
+- Minimum Android Version: Android 7.0 (API 24+)
+- Target Android Version: Android 15 / 16 (API 36)
+========================================================================

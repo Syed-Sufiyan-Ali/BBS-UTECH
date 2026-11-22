@@ -1,0 +1,6 @@
+{
+  "name": "BBSUTSD Campus",
+  "description": "Campus navigation, indoor floor plans, class schedules, and academic resources for BBSUTSD Khairpur Mirs.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

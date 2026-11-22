@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+  <title>BBSUTSD Campus Map &amp; Complexes</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #050507;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    #google-map, #leaflet-map {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      inset: 0;
+    }
+    #leaflet-map {
+      display: none;
+    }
+
+    /* Pulsing live Neon Green GPS dot */
+    .gps-dot-wrapper {
+      position: relative;
+      width: 26px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+    .gps-dot-pulse {
+      position: absolute;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: rgba(57, 255, 20, 0.38);
+      animation: gpsPulse 1.8s ease-out infinite;
+    }
+    .gps-dot-core {
+      position: relative;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #39FF14;
+      border: 2.5px solid #050507;
+      box-shadow: 0 0 10px rgba(57, 255, 20, 0.85);
+    }
+    @keyframes gpsPulse {
+      0% { transform: scale(0.8); opacity: 0.95; }
+      70% { transform: scale(2.2); opacity: 0; }
+      100% { transform: scale(2.2); opacity: 0; }
+    }
+
+    /* Complex & Dividing Road Badges */
+    .zone-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 3px;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      white-space: nowrap;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.85);
+    }
+    .zone-badge.is-leaflet {
+      transform: none;
+      margin-left: -50%;
+      margin-top: -50%;
+    }
+    .zone-badge-old {
+      background: rgba(5, 5, 7, 0.94);
+      color: #FF1E2D;
+      border: 1.5px solid #FF1E2D;
+    }
+    .zone-badge-new {
+      background: rgba(5, 5, 7, 0.94);
+      color: #39FF14;
+      border: 1.5px solid #39FF14;
+    }
+    .zone-badge-road {
+      background: rgba(5, 5, 7, 0.95);
+      color: #F8FAFC;
+      border: 1.5px solid #F8FAFC;
+      font-size: 8.5px;
+    }
+
+    /* Labeled Landmark Pin (shared for Leaflet divIcon & Google Maps OverlayView) */
+    .campus-pin {
+      position: relative;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      transform: translate(-50%, -100%);
+      transition: transform 0.15s ease;
+    }
+    .campus-pin.is-leaflet {
+      transform: none;
+      margin-left: -50%;
+      margin-top: -100%;
+    }
+    .campus-pin-label {
+      padding: 2px 7px;
+      border-radius: 3px;
+      background: rgba(5, 5, 7, 0.94);
+      color: #F8FAFC;
+      font-size: 9.5px;
+      font-weight: 800;
+      line-height: 1.25;
+      white-space: nowrap;
+      border: 1.5px solid var(--pin-color, #FF1E2D);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.78);
+      margin-bottom: 3px;
+      letter-spacing: 0.25px;
+    }
+    .campus-pin-dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: var(--pin-color, #FF1E2D);
+      border: 2px solid #050507;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.75);
+    }
+    .campus-pin.is-selected {
+      z-index: 900 !important;
+      transform: translate(-50%, -100%) scale(1.15);
+    }
+    .campus-pin.is-leaflet.is-selected {
+      transform: scale(1.15);
+    }
+    .campus-pin.is-selected .campus-pin-label {
+      background: #FF1E2D;
+      color: #F8FAFC;
+      border-color: #39FF14;
+      box-shadow: 0 4px 14px rgba(255, 30, 45, 0.65);
+    }
+    .campus-pin.is-selected .campus-pin-dot {
+      width: 14px;
+      height: 14px;
+      background: #39FF14;
+      border-color: #050507;
+      border-width: 2.5px;
+    }
+    .leaflet-marker-icon.campus-leaflet-icon {
+      background: transparent;
+      border: none;
+    }
+  </style>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+</head>
+<body>
+  <div id="google-map"></div>
+  <div id="leaflet-map"></div>
+
+  <script>
+    // Verified BBSUTSD Khairpur Mirs center (27°30'39"N 68°44'30"E — Hami Road / near Civil Hospital)
+    const BBSUTSD_CENTER = { lat: 27.5108, lng: 68.7416 };
+    const CAMPUS_RADIUS_METERS = 285; // ~60-acre campus footprint
+
+    const RESTRICT_BOUNDS = {
+      south: 27.5060,
+      west: 68.7365,
+      north: 27.5156,
+      east: 68.7467
+    };
+
+    // Old Complex, New Complex, and Dividing Campus Road zones anchored on verified BBSUTSD coordinates
+    const OLD_COMPLEX_ZONE = [
+      { lat: 27.51162, lng: 68.74038 },
+      { lat: 27.51162, lng: 68.74158 },
+      { lat: 27.51090, lng: 68.74158 },
+      { lat: 27.51090, lng: 68.74038 }
+    ];
+    const NEW_COMPLEX_ZONE = [
+      { lat: 27.51074, lng: 68.74170 },
+      { lat: 27.51074, lng: 68.74268 },
+      { lat: 27.51016, lng: 68.74268 },
+      { lat: 27.51016, lng: 68.74170 }
+    ];
+    const DIVIDING_ROAD_PATH = [
+      { lat: 27.50965, lng: 68.74050 },
+      { lat: 27.51035, lng: 68.74115 },
+      { lat: 27.51082, lng: 68.74164 },
+      { lat: 27.51145, lng: 68.74222 },
+      { lat: 27.51185, lng: 68.74275 }
+    ];
+
+    const CATEGORY_COLORS = {
+      ADMIN: '#FF1E2D',
+      STUDENT_SERVICE: '#39FF14',
+      LAB: '#F8FAFC',
+      LIBRARY: '#FF4D5A',
+      AMENITY: '#A3E635',
+      TRANSPORT_GATE: '#39FF14',
+      ACADEMIC: '#A1A7B3'
+    };
+
+    let mapEngine = 'pending'; // 'google' | 'leaflet'
+    let googleMap = null;
+    let leafletMap = null;
+    let leafletSatLayer = null;
+    let leafletStreetLayer = null;
+    let isSatelliteMode = true;
+
+    // Geometry layers
+    let verifiedOsmBoundary = null;
+    let osmRoadSegments = [];
+    let osmBuildingPolygons = []; // Array of { coords: [{lat,lng}], centerLat, centerLng }
+    let geometryLayers = [];      // All polygons, polylines, badges cleared on re-render
+    let routeLineOverlay = null;
+
+    // Landmark Pins state
+    let allLandmarkPins = [];
+    let activeCategoryFilter = 'ALL';
+    let activeSearchQuery = '';
+    let selectedPinId = null;
+    let renderedMarkers = [];
+
+    // User GPS state
+    let userLat = null;
+    let userLng = null;
+    let userAccuracy = 15;
+    let googleUserMarker = null;
+    let googleUserAccuracyCircle = null;
+    let leafletUserMarker = null;
+    let leafletUserAccuracyCircle = null;
+
+    function haversineMeters(lat1, lon1, lat2, lon2) {
+      const R = 6371000;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    function isPointInPolygon(lat, lng, poly) {
+      let inside = false;
+      for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+        const xi = poly[i].lat, yi = poly[i].lng;
+        const xj = poly[j].lat, yj = poly[j].lng;
+        const intersect = ((yi > lng) !== (yj > lng)) &&
+                          (lat < (xj - xi) * (lng - yi) / ((yj - yi) || 1e-12) + xi);
+        if (intersect) inside = !inside;
+      }
+      return inside;
+    }
+
+    function evaluateCampusContainment(lat, lng) {
+      const centerDist = haversineMeters(lat, lng, BBSUTSD_CENTER.lat, BBSUTSD_CENTER.lng);
+      if (verifiedOsmBoundary && verifiedOsmBoundary.length >= 3) {
+        const inside = isPointInPolygon(lat, lng, verifiedOsmBoundary);
+        let minEdgeDist = centerDist;
+        verifiedOsmBoundary.forEach(pt => {
+          const d = haversineMeters(lat, lng, pt.lat, pt.lng);
+          if (d < minEdgeDist) minEdgeDist = d;
+        });
+        return {
+          isInside: inside,
+          distanceMeters: inside ? 0 : Math.round(minEdgeDist)
+        };
+      }
+      const inside = centerDist <= CAMPUS_RADIUS_METERS;
+      return {
+        isInside: inside,
+        distanceMeters: inside ? 0 : Math.round(centerDist - CAMPUS_RADIUS_METERS)
+      };
+    }
+
+    function notifyBoundaryStatus() {
+      if (userLat === null || userLng === null) return;
+      const status = evaluateCampusContainment(userLat, userLng);
+      if (window.AndroidBridge && window.AndroidBridge.onBoundaryStatusChanged) {
+        window.AndroidBridge.onBoundaryStatusChanged(status.isInside, status.distanceMeters);
+      }
+    }
+
+    function clearCampusGeometryOverlays() {
+      geometryLayers.forEach(layer => {
+        if (typeof layer.removeFn === 'function') {
+          layer.removeFn();
+        } else if (mapEngine === 'google') {
+          layer.setMap(null);
+        } else if (mapEngine === 'leaflet' && leafletMap) {
+          leafletMap.removeLayer(layer);
+        }
+      });
+      geometryLayers = [];
+    }
+
+    function addZoneBadge(lat, lng, text, cssClass) {
+      if (mapEngine === 'google' && googleMap) {
+        class ZoneBadgeOverlay extends google.maps.OverlayView {
+          constructor() {
+            super();
+            this.div = null;
+            this.pos = new google.maps.LatLng(lat, lng);
+          }
+          onAdd() {
+            const el = document.createElement('div');
+            el.className = 'zone-badge ' + cssClass;
+            el.style.position = 'absolute';
+            el.textContent = text;
+            this.div = el;
+            this.getPanes().overlayLayer.appendChild(el);
+          }
+          draw() {
+            if (!this.div) return;
+            const proj = this.getProjection();
+            if (!proj) return;
+            const pt = proj.fromLatLngToDivPixel(this.pos);
+            if (pt) {
+              this.div.style.left = pt.x + 'px';
+              this.div.style.top = pt.y + 'px';
+            }
+          }
+          onRemove() {
+            if (this.div && this.div.parentNode) {
+              this.div.parentNode.removeChild(this.div);
+              this.div = null;
+            }
+          }
+        }
+        const overlay = new ZoneBadgeOverlay();
+        overlay.setMap(googleMap);
+        geometryLayers.push({ removeFn: () => overlay.setMap(null) });
+      } else if (mapEngine === 'leaflet' && leafletMap) {
+        const icon = L.divIcon({
+          className: 'campus-leaflet-icon',
+          html: `<div class="zone-badge is-leaflet ${cssClass}">${escapeHtml(text)}</div>`,
+          iconSize: [0, 0],
+          iconAnchor: [0, 0]
+        });
+        const m = L.marker([lat, lng], { icon: icon, interactive: false, zIndexOffset: 50 }).addTo(leafletMap);
+        geometryLayers.push(m);
+      }
+    }
+
+    function addPolygonLayer(coords, strokeColor, fillColor, fillOpacity, strokeWeight, dashArray) {
+      if (mapEngine === 'google' && googleMap) {
+        const poly = new google.maps.Polygon({
+          paths: coords,
+          strokeColor: strokeColor,
+          strokeOpacity: 0.92,
+          strokeWeight: strokeWeight,
+          fillColor: fillColor,
+          fillOpacity: fillOpacity,
+          clickable: false,
+          map: googleMap
+        });
+        geometryLayers.push(poly);
+      } else if (mapEngine === 'leaflet' && leafletMap) {
+        const poly = L.polygon(
+          coords.map(p => [p.lat, p.lng]),
+          {
+            color: strokeColor,
+            weight: strokeWeight,
+            opacity: 0.92,
+            fillColor: fillColor,
+            fillOpacity: fillOpacity,
+            dashArray: dashArray || null,
+            interactive: false
+          }
+        ).addTo(leafletMap);
+        geometryLayers.push(poly);
+      }
+    }
+
+    function addPolylineLayer(coords, color, weight, opacity, dashArray) {
+      if (mapEngine === 'google' && googleMap) {
+        const line = new google.maps.Polyline({
+          path: coords,
+          strokeColor: color,
+          strokeOpacity: opacity,
+          strokeWeight: weight,
+          clickable: false,
+          map: googleMap
+        });
+        geometryLayers.push(line);
+      } else if (mapEngine === 'leaflet' && leafletMap) {
+        const line = L.polyline(
+          coords.map(p => [p.lat, p.lng]),
+          {
+            color: color,
+            weight: weight,
+            opacity: opacity,
+            dashArray: dashArray || null,
+            interactive: false
+          }
+        ).addTo(leafletMap);
+        geometryLayers.push(line);
+      }
+    }
+
+    function renderCampusGeometry() {
+      if (mapEngine === 'pending') return;
+      clearCampusGeometryOverlays();
+
+      // 1. Campus Outer Boundary
+      if (verifiedOsmBoundary && verifiedOsmBoundary.length >= 3) {
+        addPolygonLayer(verifiedOsmBoundary, '#39FF14', '#39FF14', 0.05, 2.5, '8, 6');
+      } else {
+        if (mapEngine === 'google' && googleMap) {
+          geometryLayers.push(new google.maps.Circle({
+            center: BBSUTSD_CENTER,
+            radius: CAMPUS_RADIUS_METERS,
+            strokeColor: '#39FF14',
+            strokeOpacity: 0.85,
+            strokeWeight: 2.5,
+            fillColor: '#39FF14',
+            fillOpacity: 0.05,
+            clickable: false,
+            map: googleMap
+          }));
+        } else if (mapEngine === 'leaflet' && leafletMap) {
+          geometryLayers.push(L.circle([BBSUTSD_CENTER.lat, BBSUTSD_CENTER.lng], {
+            radius: CAMPUS_RADIUS_METERS,
+            color: '#39FF14',
+            weight: 2.5,
+            opacity: 0.85,
+            dashArray: '8, 6',
+            fillColor: '#39FF14',
+            fillOpacity: 0.05,
+            interactive: false
+          }).addTo(leafletMap));
+        }
+      }
+
+      // 2. Complex Zone Highlights (Old Complex = Sports Red vs New Complex = Neon Green)
+      addPolygonLayer(OLD_COMPLEX_ZONE, '#FF1E2D', '#FF1E2D', 0.16, 2, '6, 5');
+      addPolygonLayer(NEW_COMPLEX_ZONE, '#39FF14', '#39FF14', 0.14, 2, '6, 5');
+
+      // 3. Up-to-date OSM Building Footprints inside Campus (Old = Sports Red, New = Neon Green)
+      osmBuildingPolygons.forEach(bld => {
+        const isOldComplexSide = (bld.centerLat >= 27.51085 || bld.centerLng < 68.74162);
+        const color = isOldComplexSide ? '#FF1E2D' : '#39FF14';
+        addPolygonLayer(bld.coords, color, color, 0.28, 2, null);
+      });
+
+      // 4. Dividing Campus Road Highlight + Verified OSM Internal/Adjacent Roads
+      addPolylineLayer(DIVIDING_ROAD_PATH, '#050507', 8, 0.78, null);
+      addPolylineLayer(DIVIDING_ROAD_PATH, '#F8FAFC', 4, 0.94, '10, 6');
+
+      osmRoadSegments.forEach(segment => {
+        addPolylineLayer(segment, '#F8FAFC', 3, 0.8, null);
+      });
+
+      // 5. Clear Zone Badges for Old Complex, Dividing Road, and New Complex
+      addZoneBadge(27.51162, 68.74098, 'Old Building Complex', 'zone-badge-old');
+      addZoneBadge(27.51083, 68.74163, 'Campus Dividing Road', 'zone-badge-road');
+      addZoneBadge(27.51018, 68.74220, 'New Building Complex', 'zone-badge-new');
+    }
+
+    function fetchVerifiedOsmCampusGeometry() {
+      const query = `[out:json][timeout:12];
+        (
+          way["amenity"="university"](around:600,${BBSUTSD_CENTER.lat},${BBSUTSD_CENTER.lng});
+          relation["amenity"="university"](around:600,${BBSUTSD_CENTER.lat},${BBSUTSD_CENTER.lng});
+          way["landuse"="education"](around:600,${BBSUTSD_CENTER.lat},${BBSUTSD_CENTER.lng});
+          way["building"](around:480,${BBSUTSD_CENTER.lat},${BBSUTSD_CENTER.lng});
+          way["highway"](around:480,${BBSUTSD_CENTER.lat},${BBSUTSD_CENTER.lng});
+        );
+        out geom;`;
+
+      const url = 'https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(query);
+      fetch(url)
+        .then(res => res.ok ? res.json() : Promise.reject('OSM HTTP ' + res.status))
+        .then(data => {
+          if (!data || !Array.isArray(data.elements)) return;
+
+          let bestPolygon = null;
+          const roads = [];
+          const buildings = [];
+
+          data.elements.forEach(el => {
+            if (el.type === 'way' && Array.isArray(el.geometry) && el.geometry.length >= 2) {
+              const tags = el.tags || {};
+              if (tags.amenity === 'university' || tags.landuse === 'education') {
+                if (el.geometry.length >= 3) {
+                  bestPolygon = el.geometry.map(g => ({ lat: g.lat, lng: g.lon }));
+                }
+              } else if (tags.building) {
+                if (el.geometry.length >= 3) {
+                  const coords = el.geometry.map(g => ({ lat: g.lat, lng: g.lon }));
+                  const avgLat = coords.reduce((s, p) => s + p.lat, 0) / coords.length;
+                  const avgLng = coords.reduce((s, p) => s + p.lng, 0) / coords.length;
+                  if (haversineMeters(avgLat, avgLng, BBSUTSD_CENTER.lat, BBSUTSD_CENTER.lng) <= 340) {
+                    buildings.push({ coords: coords, centerLat: avgLat, centerLng: avgLng });
+                  }
+                }
+              } else if (tags.highway) {
+                roads.push(el.geometry.map(g => ({ lat: g.lat, lng: g.lon })));
+              }
+            }
+          });
+
+          verifiedOsmBoundary = bestPolygon;
+          osmRoadSegments = roads;
+          osmBuildingPolygons = buildings;
+          renderCampusGeometry();
+          notifyBoundaryStatus();
+
+          if (window.AndroidBridge && window.AndroidBridge.onOsmDataLoaded) {
+            window.AndroidBridge.onOsmDataLoaded(bestPolygon !== null, roads.length, buildings.length);
+          }
+        })
+        .catch(() => {
+          if (window.AndroidBridge && window.AndroidBridge.onOsmDataLoaded) {
+            window.AndroidBridge.onOsmDataLoaded(false, 0, 0);
+          }
+        });
+    }
+
+    // --- Labeled Landmark Markers ---
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function matchesActiveFilters(pin) {
+      if (activeCategoryFilter && activeCategoryFilter !== 'ALL') {
+        if (activeCategoryFilter === 'OFFICES') {
+          if (pin.category !== 'ADMIN' && pin.category !== 'STUDENT_SERVICE') return false;
+        } else if (activeCategoryFilter === 'LABS_WORKSHOPS') {
+          if (pin.category !== 'LAB') return false;
+        } else if (activeCategoryFilter === 'TRANSPORT') {
+          if (pin.category !== 'TRANSPORT_GATE') return false;
+        } else if (activeCategoryFilter === 'AMENITIES') {
+          if (pin.category !== 'AMENITY' && pin.category !== 'LIBRARY') return false;
+        } else if (pin.category !== activeCategoryFilter) {
+          return false;
+        }
+      }
+      if (activeSearchQuery) {
+        const q = activeSearchQuery.toLowerCase();
+        const hay = `${pin.label} ${pin.name} ${pin.subTitle || ''} ${pin.tags || ''}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    }
+
+    function clearLandmarkMarkers() {
+      renderedMarkers.forEach(m => m.removeFn());
+      renderedMarkers = [];
+    }
+
+    function updateGuideLine() {
+      if (routeLineOverlay) {
+        if (mapEngine === 'google') routeLineOverlay.setMap(null);
+        if (mapEngine === 'leaflet' && leafletMap) leafletMap.removeLayer(routeLineOverlay);
+        routeLineOverlay = null;
+      }
+      if (!selectedPinId || userLat === null || userLng === null) return;
+      const pin = allLandmarkPins.find(p => p.id === selectedPinId);
+      if (!pin) return;
+
+      const dist = haversineMeters(userLat, userLng, pin.lat, pin.lng);
+      if (dist > 3000) return;
+
+      if (mapEngine === 'google' && googleMap) {
+        routeLineOverlay = new google.maps.Polyline({
+          path: [{ lat: userLat, lng: userLng }, { lat: pin.lat, lng: pin.lng }],
+          strokeColor: '#39FF14',
+          strokeOpacity: 0,
+          icons: [{
+            icon: { path: 'M 0,-1 0,1', strokeOpacity: 0.95, scale: 3 },
+            offset: '0',
+            repeat: '14px'
+          }],
+          clickable: false,
+          map: googleMap
+        });
+      } else if (mapEngine === 'leaflet' && leafletMap) {
+        routeLineOverlay = L.polyline([[userLat, userLng], [pin.lat, pin.lng]], {
+          color: '#39FF14',
+          weight: 3.5,
+          opacity: 0.95,
+          dashArray: '6, 8',
+          interactive: false
+        }).addTo(leafletMap);
+      }
+    }
+
+    function handlePinTap(pin) {
+      selectedPinId = pin.id;
+      renderedMarkers.forEach(m => m.setSelectedFn(m.id === selectedPinId));
+      updateGuideLine();
+      if (window.AndroidBridge && window.AndroidBridge.onPinSelected) {
+        window.AndroidBridge.onPinSelected(pin.id);
+      }
+    }
+
+    function createGooglePinOverlay(pin, color) {
+      class CampusPinOverlay extends google.maps.OverlayView {
+        constructor() {
+          super();
+          this.div = null;
+          this.pos = new google.maps.LatLng(pin.lat, pin.lng);
+        }
+        onAdd() {
+          const el = document.createElement('div');
+          el.className = 'campus-pin' + (pin.id === selectedPinId ? ' is-selected' : '');
+          el.style.setProperty('--pin-color', color);
+          el.style.position = 'absolute';
+          el.innerHTML = `<div class="campus-pin-label">${escapeHtml(pin.label)}</div><div class="campus-pin-dot"></div>`;
+          el.addEventListener('click', (e) => {
+            e.stopPropagation();
+            handlePinTap(pin);
+          });
+          this.div = el;
+          this.getPanes().overlayMouseTarget.appendChild(el);
+        }
+        draw() {
+          if (!this.div) return;
+          const proj = this.getProjection();
+          if (!proj) return;
+          const pt = proj.fromLatLngToDivPixel(this.pos);
+          if (pt) {
+            this.div.style.left = pt.x + 'px';
+            this.div.style.top = pt.y + 'px';
+          }
+        }
+        onRemove() {
+          if (this.div && this.div.parentNode) {
+            this.div.parentNode.removeChild(this.div);
+            this.div = null;
+          }
+        }
+        setSelected(selected) {
+          if (this.div) {
+            this.div.classList.toggle('is-selected', selected);
+          }
+        }
+      }
+
+      const overlay = new CampusPinOverlay();
+      overlay.setMap(googleMap);
+      return {
+        id: pin.id,
+        removeFn: () => overlay.setMap(null),
+        setSelectedFn: (sel) => overlay.setSelected(sel)
+      };
+    }
+
+    function createLeafletPinMarker(pin, color) {
+      const html = `<div class="campus-pin is-leaflet${pin.id === selectedPinId ? ' is-selected' : ''}" style="--pin-color:${color}">
+        <div class="campus-pin-label">${escapeHtml(pin.label)}</div>
+        <div class="campus-pin-dot"></div>
+      </div>`;
+
+      const icon = L.divIcon({
+        className: 'campus-leaflet-icon',
+        html: html,
+        iconSize: [0, 0],
+        iconAnchor: [0, 0]
+      });
+
+      const marker = L.marker([pin.lat, pin.lng], {
+        icon: icon,
+        zIndexOffset: pin.id === selectedPinId ? 850 : 200
+      }).addTo(leafletMap);
+
+      marker.on('click', () => handlePinTap(pin));
+
+      return {
+        id: pin.id,
+        removeFn: () => { if (leafletMap) leafletMap.removeLayer(marker); },
+        setSelectedFn: (sel) => {
+          const el = marker.getElement();
+          if (el) {
+            const inner = el.querySelector('.campus-pin');
+            if (inner) inner.classList.toggle('is-selected', sel);
+          }
+          marker.setZIndexOffset(sel ? 850 : 200);
+        }
+      };
+    }
+
+    function renderLandmarkMarkers() {
+      if (mapEngine === 'pending') return;
+      clearLandmarkMarkers();
+
+      const visiblePins = allLandmarkPins.filter(matchesActiveFilters);
+      visiblePins.forEach(pin => {
+        const color = CATEGORY_COLORS[pin.category] || '#FF1E2D';
+        if (mapEngine === 'google' && googleMap) {
+          renderedMarkers.push(createGooglePinOverlay(pin, color));
+        } else if (mapEngine === 'leaflet' && leafletMap) {
+          renderedMarkers.push(createLeafletPinMarker(pin, color));
+        }
+      });
+    }
+
+    // --- Map Engine Init ---
+    function initGoogleMaps() {
+      try {
+        mapEngine = 'google';
+        const cleanStyles = [
+          { featureType: 'poi', stylers: [{ visibility: 'off' }] },
+          { featureType: 'transit', stylers: [{ visibility: 'off' }] }
+        ];
+
+        googleMap = new google.maps.Map(document.getElementById('google-map'), {
+          center: BBSUTSD_CENTER,
+          zoom: 17,
+          minZoom: 16,
+          maxZoom: 20,
+          mapTypeId: isSatelliteMode ? google.maps.MapTypeId.SATELLITE : google.maps.MapTypeId.ROADMAP,
+          styles: cleanStyles,
+          disableDefaultUI: true,
+          gestureHandling: 'greedy',
+          restriction: {
+            latLngBounds: RESTRICT_BOUNDS,
+            strictBounds: false
+          }
+        });
+
+        googleMap.addListener('click', () => {
+          if (selectedPinId) {
+            window.clearSelectedPin();
+            if (window.AndroidBridge && window.AndroidBridge.onPinSelected) {
+              window.AndroidBridge.onPinSelected('');
+            }
+          }
+        });
+
+        renderCampusGeometry();
+        renderLandmarkMarkers();
+        if (userLat !== null && userLng !== null) {
+          drawOrUpdateUserMarker();
+        }
+        if (window.AndroidBridge && window.AndroidBridge.onMapEngineReady) {
+          window.AndroidBridge.onMapEngineReady('google');
+        }
+      } catch (e) {
+        initLeafletMap();
+      }
+    }
+
+    function initLeafletMap() {
+      if (mapEngine === 'leaflet') return;
+      mapEngine = 'leaflet';
+      document.getElementById('google-map').style.display = 'none';
+      document.getElementById('leaflet-map').style.display = 'block';
+
+      const bounds = L.latLngBounds(
+        [RESTRICT_BOUNDS.south, RESTRICT_BOUNDS.west],
+        [RESTRICT_BOUNDS.north, RESTRICT_BOUNDS.east]
+      );
+
+      leafletMap = L.map('leaflet-map', {
+        center: [BBSUTSD_CENTER.lat, BBSUTSD_CENTER.lng],
+        zoom: 17,
+        minZoom: 16,
+        maxZoom: 19,
+        maxBounds: bounds,
+        maxBoundsViscosity: 0.9,
+        zoomControl: false,
+        attributionControl: false
+      });
+
+      leafletSatLayer = L.tileLayer(
+        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        { maxZoom: 19 }
+      );
+      leafletStreetLayer = L.tileLayer(
+        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        { maxZoom: 19 }
+      );
+
+      if (isSatelliteMode) {
+        leafletSatLayer.addTo(leafletMap);
+      } else {
+        leafletStreetLayer.addTo(leafletMap);
+      }
+
+      leafletMap.on('click', () => {
+        if (selectedPinId) {
+          window.clearSelectedPin();
+          if (window.AndroidBridge && window.AndroidBridge.onPinSelected) {
+            window.AndroidBridge.onPinSelected('');
+          }
+        }
+      });
+
+      renderCampusGeometry();
+      renderLandmarkMarkers();
+      if (userLat !== null && userLng !== null) {
+        drawOrUpdateUserMarker();
+      }
+      if (window.AndroidBridge && window.AndroidBridge.onMapEngineReady) {
+        window.AndroidBridge.onMapEngineReady('leaflet');
+      }
+    }
+
+    function drawOrUpdateUserMarker() {
+      if (userLat === null || userLng === null) return;
+      const clampedAcc = Math.min(Math.max(userAccuracy || 15, 5), 120);
+
+      if (mapEngine === 'google' && googleMap) {
+        const pos = { lat: userLat, lng: userLng };
+        if (!googleUserAccuracyCircle) {
+          googleUserAccuracyCircle = new google.maps.Circle({
+            center: pos,
+            radius: clampedAcc,
+            strokeColor: '#39FF14',
+            strokeOpacity: 0.55,
+            strokeWeight: 1,
+            fillColor: '#39FF14',
+            fillOpacity: 0.16,
+            clickable: false,
+            map: googleMap
+          });
+        } else {
+          googleUserAccuracyCircle.setCenter(pos);
+          googleUserAccuracyCircle.setRadius(clampedAcc);
+        }
+
+        if (!googleUserMarker) {
+          googleUserMarker = new google.maps.Marker({
+            position: pos,
+            map: googleMap,
+            title: 'Your Live GPS Location',
+            icon: {
+              path: google.maps.SymbolPath.CIRCLE,
+              scale: 8.5,
+              fillColor: '#39FF14',
+              fillOpacity: 1,
+              strokeColor: '#050507',
+              strokeWeight: 3
+            },
+            zIndex: 999
+          });
+        } else {
+          googleUserMarker.setPosition(pos);
+        }
+      } else if (mapEngine === 'leaflet' && leafletMap) {
+        const latLng = [userLat, userLng];
+        if (!leafletUserAccuracyCircle) {
+          leafletUserAccuracyCircle = L.circle(latLng, {
+            radius: clampedAcc,
+            color: '#39FF14',
+            weight: 1,
+            opacity: 0.55,
+            fillColor: '#39FF14',
+            fillOpacity: 0.16,
+            interactive: false
+          }).addTo(leafletMap);
+        } else {
+          leafletUserAccuracyCircle.setLatLng(latLng);
+          leafletUserAccuracyCircle.setRadius(clampedAcc);
+        }
+
+        if (!leafletUserMarker) {
+          const gpsIcon = L.divIcon({
+            className: '',
+            html: '<div class="gps-dot-wrapper"><div class="gps-dot-pulse"></div><div class="gps-dot-core"></div></div>',
+            iconSize: [24, 24],
+            iconAnchor: [12, 12]
+          });
+          leafletUserMarker = L.marker(latLng, { icon: gpsIcon, interactive: false, zIndexOffset: 999 }).addTo(leafletMap);
+        } else {
+          leafletUserMarker.setLatLng(latLng);
+        }
+      }
+      updateGuideLine();
+    }
+
+    // --- Public JS Bridge API ---
+    window.setLandmarkPins = function(pins) {
+      if (typeof pins === 'string') {
+        try { pins = JSON.parse(pins); } catch (_) { pins = []; }
+      }
+      allLandmarkPins = Array.isArray(pins) ? pins : [];
+      renderLandmarkMarkers();
+    };
+
+    window.filterLandmarkPins = function(categoryFilter, searchQuery) {
+      activeCategoryFilter = categoryFilter || 'ALL';
+      activeSearchQuery = (searchQuery || '').trim();
+      renderLandmarkMarkers();
+    };
+
+    window.focusLandmarkPin = function(pinId) {
+      selectedPinId = pinId;
+      const pin = allLandmarkPins.find(p => p.id === pinId);
+      if (pin) {
+        if (mapEngine === 'google' && googleMap) {
+          googleMap.panTo({ lat: pin.lat, lng: pin.lng });
+          googleMap.setZoom(18);
+        } else if (mapEngine === 'leaflet' && leafletMap) {
+          leafletMap.setView([pin.lat, pin.lng], 18, { animate: true });
+        }
+      }
+      renderedMarkers.forEach(m => m.setSelectedFn(m.id === selectedPinId));
+      updateGuideLine();
+    };
+
+    window.clearSelectedPin = function() {
+      selectedPinId = null;
+      renderedMarkers.forEach(m => m.setSelectedFn(false));
+      updateGuideLine();
+    };
+
+    window.updateUserLocation = function(lat, lng, accuracy) {
+      userLat = lat;
+      userLng = lng;
+      userAccuracy = accuracy || 15;
+      drawOrUpdateUserMarker();
+      notifyBoundaryStatus();
+    };
+
+    window.recenterOnUser = function() {
+      if (userLat === null || userLng === null) return;
+      const status = evaluateCampusContainment(userLat, userLng);
+
+      if (status.isInside) {
+        if (mapEngine === 'google' && googleMap) {
+          googleMap.panTo({ lat: userLat, lng: userLng });
+          googleMap.setZoom(18);
+        } else if (mapEngine === 'leaflet' && leafletMap) {
+          leafletMap.setView([userLat, userLng], 18, { animate: true });
+        }
+      } else {
+        window.recenterCampus();
+        if (window.AndroidBridge && window.AndroidBridge.onOutsideCampusAlert) {
+          window.AndroidBridge.onOutsideCampusAlert(status.distanceMeters);
+        }
+      }
+    };
+
+    window.recenterCampus = function() {
+      if (mapEngine === 'google' && googleMap) {
+        googleMap.panTo(BBSUTSD_CENTER);
+        googleMap.setZoom(17);
+      } else if (mapEngine === 'leaflet' && leafletMap) {
+        leafletMap.setView([BBSUTSD_CENTER.lat, BBSUTSD_CENTER.lng], 17, { animate: true });
+      }
+    };
+
+    window.setMapTypeMode = function(mode) {
+      isSatelliteMode = (mode === 'satellite');
+      if (mapEngine === 'google' && googleMap) {
+        googleMap.setMapTypeId(isSatelliteMode ? google.maps.MapTypeId.SATELLITE : google.maps.MapTypeId.ROADMAP);
+      } else if (mapEngine === 'leaflet' && leafletMap) {
+        if (isSatelliteMode) {
+          if (leafletMap.hasLayer(leafletStreetLayer)) leafletMap.removeLayer(leafletStreetLayer);
+          leafletSatLayer.addTo(leafletMap);
+        } else {
+          if (leafletMap.hasLayer(leafletSatLayer)) leafletMap.removeLayer(leafletSatLayer);
+          leafletStreetLayer.addTo(leafletMap);
+        }
+      }
+    };
+
+    window.zoomInMap = function() {
+      if (mapEngine === 'google' && googleMap) {
+        googleMap.setZoom(Math.min(20, (googleMap.getZoom() || 17) + 1));
+      } else if (mapEngine === 'leaflet' && leafletMap) {
+        leafletMap.zoomIn();
+      }
+    };
+
+    window.zoomOutMap = function() {
+      if (mapEngine === 'google' && googleMap) {
+        googleMap.setZoom(Math.max(16, (googleMap.getZoom() || 17) - 1));
+      } else if (mapEngine === 'leaflet' && leafletMap) {
+        leafletMap.zoomOut();
+      }
+    };
+
+    (function bootstrap() {
+      fetchVerifiedOsmCampusGeometry();
+
+      const params = new URLSearchParams(window.location.search);
+      const apiKey = params.get('apiKey') || '';
+
+      if (apiKey) {
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&callback=initGoogleMaps`;
+        script.async = true;
+        script.defer = true;
+        script.onerror = function() { initLeafletMap(); };
+        document.head.appendChild(script);
+
+        setTimeout(() => {
+          if (mapEngine === 'pending') initLeafletMap();
+        }, 3500);
+      } else {
+        initLeafletMap();
+      }
+    })();
+  </script>
+</body>
+</html>
