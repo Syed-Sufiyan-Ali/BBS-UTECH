@@ -218,12 +218,14 @@
     let leafletStreetLayer = null;
     let isSatelliteMode = true;
 
-    // Geometry layers
+    // Geometry & routing layers
     let verifiedOsmBoundary = null;
     let osmRoadSegments = [];
     let osmBuildingPolygons = []; // Array of { coords: [{lat,lng}], centerLat, centerLng }
     let geometryLayers = [];      // All polygons, polylines, badges cleared on re-render
-    let routeLineOverlay = null;
+    let routeLayers = [];         // Active multi-segment path, active segment & turn corner markers
+    let activeRouteData = null;
+    let activeStepIndex = 0;
 
     // Landmark Pins state
     let allLandmarkPins = [];
@@ -232,10 +234,11 @@
     let selectedPinId = null;
     let renderedMarkers = [];
 
-    // User GPS state
+    // User GPS / Custom Origin state
     let userLat = null;
     let userLng = null;
     let userAccuracy = 15;
+    let customOrigin = null; // { lat, lng, label } | null
     let googleUserMarker = null;
     let googleUserAccuracyCircle = null;
     let leafletUserMarker = null;
@@ -564,40 +567,425 @@
       renderedMarkers = [];
     }
 
-    function updateGuideLine() {
-      if (routeLineOverlay) {
-        if (mapEngine === 'google') routeLineOverlay.setMap(null);
-        if (mapEngine === 'leaflet' && leafletMap) leafletMap.removeLayer(routeLineOverlay);
-        routeLineOverlay = null;
+    const GRAPH_NODES = {
+      gate_entry: { id: 'gate_entry', lat: 27.50965, lng: 68.74050 },
+      gate_plaza: { id: 'gate_plaza', lat: 27.50998, lng: 68.74082 },
+      mosque_jct: { id: 'mosque_jct', lat: 27.51035, lng: 68.74115 },
+      quad_jct: { id: 'quad_jct', lat: 27.51062, lng: 68.74142 },
+      dividing_center: { id: 'dividing_center', lat: 27.51082, lng: 68.74164 },
+      new_mid_road: { id: 'new_mid_road', lat: 27.51112, lng: 68.74194 },
+      ws_split: { id: 'ws_split', lat: 27.51145, lng: 68.74222 },
+      hostel_jct: { id: 'hostel_jct', lat: 27.51172, lng: 68.74256 },
+      transport_plaza: { id: 'transport_plaza', lat: 27.51185, lng: 68.74275 },
+      mosque_walk: { id: 'mosque_walk', lat: 27.51055, lng: 68.74060 },
+      old_porch: { id: 'old_porch', lat: 27.51092, lng: 68.74088 },
+      old_west: { id: 'old_west', lat: 27.51125, lng: 68.74072 },
+      old_center: { id: 'old_center', lat: 27.51118, lng: 68.74105 },
+      old_east: { id: 'old_east', lat: 27.51120, lng: 68.74135 },
+      old_north: { id: 'old_north', lat: 27.51144, lng: 68.74102 },
+      canteen_quad: { id: 'canteen_quad', lat: 27.51022, lng: 68.74132 },
+      new_porch: { id: 'new_porch', lat: 27.51056, lng: 68.74202 },
+      new_west: { id: 'new_west', lat: 27.51036, lng: 68.74192 },
+      new_center: { id: 'new_center', lat: 27.51046, lng: 68.74218 },
+      new_east: { id: 'new_east', lat: 27.51045, lng: 68.74245 },
+      sports_track: { id: 'sports_track', lat: 27.51088, lng: 68.74292 },
+      girls_hostel_walk: { id: 'girls_hostel_walk', lat: 27.51140, lng: 68.74335 },
+      ws_civil_bay: { id: 'ws_civil_bay', lat: 27.51162, lng: 68.74122 },
+      ws_mech_bay: { id: 'ws_mech_bay', lat: 27.51172, lng: 68.74170 },
+      ws_elec_bay: { id: 'ws_elec_bay', lat: 27.51162, lng: 68.74208 },
+      boys_hostel_gate: { id: 'boys_hostel_gate', lat: 27.51195, lng: 68.74265 },
+      transport_office_door: { id: 'transport_office_door', lat: 27.51182, lng: 68.74288 },
+      point_parking_bay: { id: 'point_parking_bay', lat: 27.51162, lng: 68.74295 }
+    };
+
+    const EDGE_DEFS = [
+      ['gate_entry', 'gate_plaza', 'Hami Road Entrance Walk'],
+      ['gate_plaza', 'mosque_jct', 'Campus Dividing Road'],
+      ['mosque_jct', 'quad_jct', 'Campus Dividing Road'],
+      ['quad_jct', 'dividing_center', 'Campus Dividing Road'],
+      ['dividing_center', 'new_mid_road', 'Campus Dividing Road'],
+      ['new_mid_road', 'ws_split', 'Campus Dividing Road'],
+      ['ws_split', 'hostel_jct', 'Transport & Hostel Access Road'],
+      ['hostel_jct', 'transport_plaza', 'Transport Terminal Road'],
+      ['gate_plaza', 'mosque_walk', 'Masjid Lawn Walkway'],
+      ['mosque_jct', 'mosque_walk', 'Masjid Connector Path'],
+      ['mosque_walk', 'old_porch', 'Admin Block West Walk'],
+      ['mosque_jct', 'old_porch', 'Old Complex Approach Lane'],
+      ['quad_jct', 'old_east', 'Admin East Path'],
+      ['dividing_center', 'old_east', 'Old Complex Crossing'],
+      ['old_porch', 'old_center', 'Old Complex Main Corridor'],
+      ['old_porch', 'old_west', 'VC Secretariat Walkway'],
+      ['old_west', 'old_center', 'Old Admin West Corridor'],
+      ['old_center', 'old_east', 'Old Admin East Corridor'],
+      ['old_west', 'old_north', 'Old Complex West Stairway'],
+      ['old_center', 'old_north', 'Old Complex North Corridor'],
+      ['old_east', 'old_north', 'Old Complex East Corridor'],
+      ['mosque_jct', 'canteen_quad', 'Student Quad Path'],
+      ['quad_jct', 'canteen_quad', 'University Canteen Walkway'],
+      ['canteen_quad', 'new_west', 'Canteen-New Complex Walkway'],
+      ['dividing_center', 'new_porch', 'New Complex Crossing'],
+      ['new_mid_road', 'new_porch', 'New Complex North Entry'],
+      ['new_porch', 'new_west', 'New Complex West Wing'],
+      ['new_porch', 'new_center', 'New Complex Main Atrium'],
+      ['new_west', 'new_center', 'CS & AI Corridor'],
+      ['new_center', 'new_east', 'New Complex East Corridor'],
+      ['new_east', 'sports_track', 'Sports Ground Path'],
+      ['new_mid_road', 'sports_track', 'Sports Track Connector'],
+      ['sports_track', 'girls_hostel_walk', 'Girls Hostel Walkway'],
+      ['point_parking_bay', 'girls_hostel_walk', 'East Campus Perimeter Path'],
+      ['old_north', 'ws_civil_bay', 'Workshop West Lane'],
+      ['ws_civil_bay', 'ws_mech_bay', 'Workshop Central Spine'],
+      ['ws_mech_bay', 'ws_elec_bay', 'Workshop East Bay'],
+      ['ws_split', 'ws_elec_bay', 'Workshop Complex Turnoff'],
+      ['hostel_jct', 'boys_hostel_gate', 'Boys Hostel Walkway'],
+      ['transport_plaza', 'boys_hostel_gate', 'Hostel Approach Path'],
+      ['transport_plaza', 'transport_office_door', 'Transport Office Walkway'],
+      ['transport_plaza', 'point_parking_bay', 'Point Bus Parking Lane'],
+      ['transport_office_door', 'point_parking_bay', 'Bus Bay Steps'],
+      ['sports_track', 'point_parking_bay', 'East Campus Spine']
+    ];
+
+    const PIN_TO_NODE = {
+      gate_main: 'gate_entry',
+      campus_mosque: 'mosque_walk',
+      campus_cafeteria: 'canteen_quad',
+      old_g_welfare: 'old_porch',
+      old_g_seminar: 'old_porch',
+      old_g_vc: 'old_west',
+      old_g_registrar: 'old_center',
+      old_g_exam: 'old_center',
+      old_g_finance: 'old_east',
+      old_g_admissions: 'old_east',
+      old_1_civil: 'old_north',
+      old_1_electrical: 'old_north',
+      old_1_mechanical: 'old_north',
+      old_1_electronics: 'old_east',
+      old_2_basic_sciences: 'old_west',
+      old_2_physics: 'old_north',
+      old_2_lt1: 'old_west',
+      old_2_lt2: 'old_center',
+      new_g_reception: 'new_porch',
+      new_g_skill_dir: 'new_west',
+      new_g_cs_lab1: 'new_west',
+      new_g_ai_lab: 'new_east',
+      new_g_medical: 'new_east',
+      new_1_library: 'new_center',
+      new_1_smart_class: 'new_east',
+      new_2_auditorium: 'new_center',
+      new_2_automation_lab: 'new_west',
+      campus_workshops: 'ws_mech_bay',
+      ws_civil: 'ws_civil_bay',
+      ws_electrical: 'ws_elec_bay',
+      ws_electronics: 'ws_elec_bay',
+      hostel_boys: 'boys_hostel_gate',
+      campus_transport_office: 'transport_office_door',
+      campus_transport: 'point_parking_bay',
+      hostel_girls: 'girls_hostel_walk',
+      campus_sports: 'sports_track'
+    };
+
+    const ADJACENCY = (() => {
+      const adj = {};
+      Object.keys(GRAPH_NODES).forEach(id => { adj[id] = []; });
+      EDGE_DEFS.forEach(([a, b, streetName]) => {
+        if (adj[a]) adj[a].push({ to: b, streetName });
+        if (adj[b]) adj[b].push({ to: a, streetName });
+      });
+      return adj;
+    })();
+
+    function calculateBearingDeg(lat1, lon1, lat2, lon2) {
+      const phi1 = lat1 * Math.PI / 180;
+      const phi2 = lat2 * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const y = Math.sin(dLon) * Math.cos(phi2);
+      const x = Math.cos(phi1) * Math.sin(phi2) - Math.sin(phi1) * Math.cos(phi2) * Math.cos(dLon);
+      return ((Math.atan2(y, x) * 180 / Math.PI) + 360) % 360;
+    }
+
+    function compassDirLabel(deg) {
+      const dirs = ['North', 'North-East', 'East', 'South-East', 'South', 'South-West', 'West', 'North-West'];
+      return dirs[Math.round(((deg % 360) / 45)) % 8];
+    }
+
+    function classifyTurnDelta(delta) {
+      const d = ((delta + 540) % 360) - 180;
+      if (Math.abs(d) < 22) return { action: 'STRAIGHT', verb: 'Continue straight' };
+      if (d >= 22 && d < 55) return { action: 'KEEP_RIGHT', verb: 'Keep right' };
+      if (d >= 55 && d < 120) return { action: 'RIGHT', verb: 'Turn right' };
+      if (d >= 120) return { action: 'SHARP_RIGHT', verb: 'Make a sharp right' };
+      if (d <= -22 && d > -55) return { action: 'KEEP_LEFT', verb: 'Keep left' };
+      if (d <= -55 && d > -120) return { action: 'LEFT', verb: 'Turn left' };
+      return { action: 'SHARP_LEFT', verb: 'Make a sharp left' };
+    }
+
+    function nearestGraphNode(lat, lng) {
+      let best = 'gate_entry';
+      let bestDist = Infinity;
+      Object.values(GRAPH_NODES).forEach(n => {
+        const d = haversineMeters(lat, lng, n.lat, n.lng);
+        if (d < bestDist) { bestDist = d; best = n.id; }
+      });
+      return best;
+    }
+
+    function solveDijkstra(startId, endId) {
+      const dist = {};
+      const prev = {};
+      const unvisited = new Set(Object.keys(GRAPH_NODES));
+      unvisited.forEach(id => { dist[id] = Infinity; prev[id] = null; });
+      dist[startId] = 0;
+
+      while (unvisited.size > 0) {
+        let curr = null;
+        let smallest = Infinity;
+        unvisited.forEach(id => {
+          if (dist[id] < smallest) { smallest = dist[id]; curr = id; }
+        });
+        if (!curr || curr === endId || smallest === Infinity) break;
+        unvisited.delete(curr);
+
+        const cNode = GRAPH_NODES[curr];
+        (ADJACENCY[curr] || []).forEach(edge => {
+          if (!unvisited.has(edge.to)) return;
+          const tNode = GRAPH_NODES[edge.to];
+          const w = haversineMeters(cNode.lat, cNode.lng, tNode.lat, tNode.lng);
+          const alt = dist[curr] + w;
+          if (alt < dist[edge.to]) {
+            dist[edge.to] = alt;
+            prev[edge.to] = { id: curr, streetName: edge.streetName };
+          }
+        });
       }
-      if (!selectedPinId || userLat === null || userLng === null) return;
+
+      const nodeIds = [];
+      const edgeNames = [];
+      let cur = endId;
+      while (cur) {
+        nodeIds.unshift(cur);
+        const p = prev[cur];
+        if (p) { edgeNames.unshift(p.streetName); cur = p.id; }
+        else cur = null;
+      }
+      return { nodeIds, edgeNames };
+    }
+
+    function computeWalkableCampusRoute(originLat, originLng, originLabel, pin) {
+      const startNodeId = nearestGraphNode(originLat, originLng);
+      const endNodeId = PIN_TO_NODE[pin.id] || nearestGraphNode(pin.lat, pin.lng);
+      const { nodeIds, edgeNames } = solveDijkstra(startNodeId, endNodeId);
+
+      const rawPoints = [];
+      const rawNames = [];
+      const sNode = GRAPH_NODES[startNodeId];
+      if (haversineMeters(originLat, originLng, sNode.lat, sNode.lng) > 6) {
+        rawPoints.push({ lat: originLat, lng: originLng });
+        rawNames.push('Path from ' + (originLabel || 'Origin'));
+      }
+      for (let i = 0; i < nodeIds.length; i++) {
+        const n = GRAPH_NODES[nodeIds[i]];
+        rawPoints.push({ lat: n.lat, lng: n.lng });
+        if (i < edgeNames.length) rawNames.push(edgeNames[i]);
+      }
+      const last = rawPoints[rawPoints.length - 1];
+      if (haversineMeters(last.lat, last.lng, pin.lat, pin.lng) > 4) {
+        rawNames.push((pin.label || pin.name) + ' Entrance');
+        rawPoints.push({ lat: pin.lat, lng: pin.lng });
+      }
+      if (rawPoints.length < 2) {
+        rawPoints.push({ lat: pin.lat, lng: pin.lng });
+        rawNames.push('Immediate Arrival');
+      }
+
+      const segs = [];
+      let totalDist = 0;
+      for (let i = 0; i < rawPoints.length - 1; i++) {
+        const a = rawPoints[i], b = rawPoints[i + 1];
+        const d = haversineMeters(a.lat, a.lng, b.lat, b.lng);
+        if (d < 1.5 && rawPoints.length > 2) continue;
+        totalDist += d;
+        segs.push({
+          from: a, to: b, dist: d,
+          bearing: calculateBearingDeg(a.lat, a.lng, b.lat, b.lng),
+          streetName: rawNames[i] || 'Campus Walkway'
+        });
+      }
+
+      const steps = [];
+      if (segs.length > 0) {
+        let curCoords = [segs[0].from, segs[0].to];
+        let curDist = segs[0].dist;
+        let curStreet = segs[0].streetName;
+        let curBearing = segs[0].bearing;
+        let pendingAction = 'START';
+        let pendingVerb = 'Head ' + compassDirLabel(curBearing);
+
+        const flush = () => {
+          const r = Math.max(1, Math.round(curDist));
+          const text = pendingAction === 'START'
+            ? `${pendingVerb} along ${curStreet} for ${r} m`
+            : `${pendingVerb} onto ${curStreet} • ${r} m`;
+          steps.push({
+            action: pendingAction,
+            instruction: text,
+            streetName: curStreet,
+            distanceMeters: r,
+            coord: curCoords[0],
+            segmentCoords: curCoords.slice()
+          });
+        };
+
+        for (let i = 1; i < segs.length; i++) {
+          const nxt = segs[i];
+          const turn = classifyTurnDelta(nxt.bearing - curBearing);
+          if (turn.action === 'STRAIGHT' && (nxt.streetName === curStreet || nxt.dist < 18)) {
+            curCoords.push(nxt.to);
+            curDist += nxt.dist;
+            curBearing = nxt.bearing;
+          } else {
+            flush();
+            pendingAction = turn.action;
+            pendingVerb = turn.verb;
+            curStreet = nxt.streetName;
+            curCoords = [nxt.from, nxt.to];
+            curDist = nxt.dist;
+            curBearing = nxt.bearing;
+          }
+        }
+        flush();
+      }
+
+      steps.push({
+        action: 'ARRIVE',
+        instruction: `Arrive at ${pin.name}`,
+        streetName: 'Destination',
+        distanceMeters: 0,
+        coord: { lat: pin.lat, lng: pin.lng },
+        segmentCoords: [{ lat: pin.lat, lng: pin.lng }]
+      });
+
+      const roundedTotal = Math.round(totalDist);
+      return {
+        polyline: rawPoints,
+        steps: steps,
+        totalDistanceMeters: roundedTotal,
+        estimatedMinutes: Math.max(1, Math.round(roundedTotal / 75))
+      };
+    }
+
+    function clearRouteLayers() {
+      routeLayers.forEach(layer => {
+        if (typeof layer.removeFn === 'function') layer.removeFn();
+        else if (mapEngine === 'google') layer.setMap(null);
+        else if (mapEngine === 'leaflet' && leafletMap) leafletMap.removeLayer(layer);
+      });
+      routeLayers = [];
+    }
+
+    function updateGuideLine() {
+      clearRouteLayers();
+      const origLat = customOrigin ? customOrigin.lat : userLat;
+      const origLng = customOrigin ? customOrigin.lng : userLng;
+      const origLabel = customOrigin ? customOrigin.label : 'Your GPS';
+
+      if (!selectedPinId || origLat === null || origLng === null) {
+        activeRouteData = null;
+        if (window.AndroidBridge && window.AndroidBridge.onRouteCalculated) {
+          window.AndroidBridge.onRouteCalculated('');
+        }
+        return;
+      }
       const pin = allLandmarkPins.find(p => p.id === selectedPinId);
       if (!pin) return;
 
-      const dist = haversineMeters(userLat, userLng, pin.lat, pin.lng);
+      const dist = haversineMeters(origLat, origLng, pin.lat, pin.lng);
       if (dist > 3000) return;
 
+      const route = computeWalkableCampusRoute(origLat, origLng, origLabel, pin);
+      activeRouteData = route;
+      if (activeStepIndex >= route.steps.length) activeStepIndex = 0;
+
+      if (window.AndroidBridge && window.AndroidBridge.onRouteCalculated) {
+        window.AndroidBridge.onRouteCalculated(JSON.stringify({
+          totalDistanceMeters: route.totalDistanceMeters,
+          estimatedMinutes: route.estimatedMinutes,
+          steps: route.steps.map(s => ({
+            action: s.action,
+            instruction: s.instruction,
+            streetName: s.streetName,
+            distanceMeters: s.distanceMeters
+          }))
+        }));
+      }
+
       if (mapEngine === 'google' && googleMap) {
-        routeLineOverlay = new google.maps.Polyline({
-          path: [{ lat: userLat, lng: userLng }, { lat: pin.lat, lng: pin.lng }],
-          strokeColor: '#39FF14',
-          strokeOpacity: 0,
-          icons: [{
-            icon: { path: 'M 0,-1 0,1', strokeOpacity: 0.95, scale: 3 },
-            offset: '0',
-            repeat: '14px'
-          }],
+        routeLayers.push(new google.maps.Polyline({
+          path: route.polyline,
+          strokeColor: '#050507',
+          strokeOpacity: 0.85,
+          strokeWeight: 8,
           clickable: false,
           map: googleMap
-        });
+        }));
+        routeLayers.push(new google.maps.Polyline({
+          path: route.polyline,
+          strokeColor: '#39FF14',
+          strokeOpacity: 0.96,
+          strokeWeight: 4.5,
+          clickable: false,
+          map: googleMap
+        }));
+        const curStep = route.steps[activeStepIndex];
+        if (curStep && curStep.segmentCoords && curStep.segmentCoords.length >= 2) {
+          routeLayers.push(new google.maps.Polyline({
+            path: curStep.segmentCoords,
+            strokeColor: '#FF1E2D',
+            strokeOpacity: 0.98,
+            strokeWeight: 6.5,
+            clickable: false,
+            map: googleMap
+          }));
+        }
       } else if (mapEngine === 'leaflet' && leafletMap) {
-        routeLineOverlay = L.polyline([[userLat, userLng], [pin.lat, pin.lng]], {
-          color: '#39FF14',
-          weight: 3.5,
-          opacity: 0.95,
-          dashArray: '6, 8',
+        const latLngs = route.polyline.map(p => [p.lat, p.lng]);
+        routeLayers.push(L.polyline(latLngs, {
+          color: '#050507',
+          weight: 8,
+          opacity: 0.85,
           interactive: false
-        }).addTo(leafletMap);
+        }).addTo(leafletMap));
+        routeLayers.push(L.polyline(latLngs, {
+          color: '#39FF14',
+          weight: 4.5,
+          opacity: 0.96,
+          interactive: false
+        }).addTo(leafletMap));
+
+        const curStep = route.steps[activeStepIndex];
+        if (curStep && curStep.segmentCoords && curStep.segmentCoords.length >= 2) {
+          routeLayers.push(L.polyline(curStep.segmentCoords.map(p => [p.lat, p.lng]), {
+            color: '#FF1E2D',
+            weight: 6.5,
+            opacity: 0.98,
+            interactive: false
+          }).addTo(leafletMap));
+        }
+
+        route.steps.forEach((step, idx) => {
+          if (step.action === 'ARRIVE') return;
+          const active = idx === activeStepIndex;
+          const badge = L.divIcon({
+            className: 'campus-leaflet-icon',
+            html: `<div style="min-width:20px;height:20px;padding:0 4px;border-radius:9999px;background:${active ? '#FF1E2D' : '#050507'};color:${active ? '#F8FAFC' : '#39FF14'};border:2px solid ${active ? '#F8FAFC' : '#39FF14'};font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;transform:translate(-50%,-50%);box-shadow:0 2px 6px rgba(0,0,0,0.85);">${idx + 1}</div>`,
+            iconSize: [0, 0],
+            iconAnchor: [0, 0]
+          });
+          routeLayers.push(L.marker([step.coord.lat, step.coord.lng], {
+            icon: badge,
+            interactive: false,
+            zIndexOffset: active ? 970 : 740
+          }).addTo(leafletMap));
+        });
       }
     }
 
@@ -903,6 +1291,7 @@
 
     window.focusLandmarkPin = function(pinId) {
       selectedPinId = pinId;
+      activeStepIndex = 0;
       const pin = allLandmarkPins.find(p => p.id === pinId);
       if (pin) {
         if (mapEngine === 'google' && googleMap) {
@@ -916,8 +1305,33 @@
       updateGuideLine();
     };
 
+    window.setCustomRouteOrigin = function(lat, lng, label) {
+      if (lat === null || lng === null || isNaN(lat) || isNaN(lng)) {
+        customOrigin = null;
+      } else {
+        customOrigin = { lat: Number(lat), lng: Number(lng), label: label || 'Selected Start' };
+      }
+      activeStepIndex = 0;
+      updateGuideLine();
+    };
+
+    window.highlightRouteStep = function(idx) {
+      activeStepIndex = Number(idx) || 0;
+      updateGuideLine();
+      if (activeRouteData && activeRouteData.steps[activeStepIndex]) {
+        const s = activeRouteData.steps[activeStepIndex];
+        if (mapEngine === 'google' && googleMap) {
+          googleMap.panTo(s.coord);
+          googleMap.setZoom(19);
+        } else if (mapEngine === 'leaflet' && leafletMap) {
+          leafletMap.setView([s.coord.lat, s.coord.lng], 19, { animate: true });
+        }
+      }
+    };
+
     window.clearSelectedPin = function() {
       selectedPinId = null;
+      activeStepIndex = 0;
       renderedMarkers.forEach(m => m.setSelectedFn(false));
       updateGuideLine();
     };

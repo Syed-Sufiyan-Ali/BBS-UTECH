@@ -15,6 +15,7 @@ import {
   evaluateCampusContainment,
   searchPins,
 } from '../utils/geo';
+import { classifyTurnDelta, computeCampusRoute } from '../utils/routing';
 
 describe('BBSUTSD Web Data & Geospatial Logic', () => {
   it('contains all essential BBSUTSD landmark pins including VC Office, labs, workshops, transport & canteen', () => {
@@ -78,5 +79,39 @@ describe('BBSUTSD Web Data & Geospatial Logic', () => {
     const pinIds = new Set(CAMPUS_PINS.map((p) => p.id));
     expect(CLASS_SCHEDULES.every((s) => pinIds.has(s.locationPinId))).toBe(true);
     expect(FACULTY_MEMBERS.every((f) => pinIds.has(f.officePinId))).toBe(true);
+  });
+
+  it('classifies turn angles into clear Left, Right, and Straight instructions', () => {
+    expect(classifyTurnDelta(5).action).toBe('STRAIGHT');
+    expect(classifyTurnDelta(35).action).toBe('KEEP_RIGHT');
+    expect(classifyTurnDelta(90).action).toBe('RIGHT');
+    expect(classifyTurnDelta(-90).action).toBe('LEFT');
+    expect(classifyTurnDelta(-35).action).toBe('KEEP_LEFT');
+  });
+
+  it('computes multi-segment walkable campus routes with turn-by-turn steps between arbitrary landmarks', () => {
+    const gate = CAMPUS_PINS.find((p) => p.id === 'gate_main')!;
+    const lib = CAMPUS_PINS.find((p) => p.id === 'new_1_library')!;
+    const route = computeCampusRoute(
+      { lat: gate.latitude, lng: gate.longitude },
+      'Main Gate',
+      lib
+    );
+    expect(route.polyline.length).toBeGreaterThan(2); // Must follow road/walkways, never a 2-point straight line
+    expect(route.steps.length).toBeGreaterThanOrEqual(3);
+    expect(route.steps[0].action).toBe('START');
+    expect(route.steps[route.steps.length - 1].action).toBe('ARRIVE');
+    expect(route.totalDistanceMeters).toBeGreaterThan(100);
+
+    // Arbitrary origin (VC Office -> Transport Office, NOT anchored to Main Gate)
+    const vc = CAMPUS_PINS.find((p) => p.id === 'old_g_vc')!;
+    const transport = CAMPUS_PINS.find((p) => p.id === 'campus_transport_office')!;
+    const vcToTransport = computeCampusRoute(
+      { lat: vc.latitude, lng: vc.longitude },
+      'VC Office',
+      transport
+    );
+    expect(vcToTransport.polyline.length).toBeGreaterThan(2);
+    expect(vcToTransport.steps.some((s) => /turn|keep|head/i.test(s.instruction))).toBe(true);
   });
 });

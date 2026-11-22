@@ -39,6 +39,8 @@ import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CenterFocusStrong
+import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DirectionsBus
 import androidx.compose.material.icons.filled.DirectionsWalk
@@ -49,7 +51,10 @@ import androidx.compose.material.icons.filled.LocationOff
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.TurnLeft
+import androidx.compose.material.icons.filled.TurnRight
 import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material.icons.filled.ZoomIn
 import androidx.compose.material.icons.filled.ZoomOut
@@ -120,12 +125,54 @@ private enum class MapFilterTab(val key: String, val label: String) {
     AMENITIES("AMENITIES", "LIBRARY & FOOD")
 }
 
+private data class AndroidRouteStep(
+    val action: String,
+    val instruction: String,
+    val streetName: String,
+    val distanceMeters: Int
+)
+
+private data class AndroidCalculatedRoute(
+    val totalDistanceMeters: Int,
+    val estimatedMinutes: Int,
+    val steps: List<AndroidRouteStep>
+)
+
+private fun parseRouteJson(jsonStr: String): AndroidCalculatedRoute? {
+    if (jsonStr.isBlank()) return null
+    return try {
+        val obj = JSONObject(jsonStr)
+        val arr = obj.optJSONArray("steps") ?: return null
+        val list = buildList {
+            for (i in 0 until arr.length()) {
+                val item = arr.getJSONObject(i)
+                add(
+                    AndroidRouteStep(
+                        action = item.optString("action", "STRAIGHT"),
+                        instruction = item.optString("instruction", ""),
+                        streetName = item.optString("streetName", ""),
+                        distanceMeters = item.optInt("distanceMeters", 0)
+                    )
+                )
+            }
+        }
+        AndroidCalculatedRoute(
+            totalDistanceMeters = obj.optInt("totalDistanceMeters", 0),
+            estimatedMinutes = obj.optInt("estimatedMinutes", 1),
+            steps = list
+        )
+    } catch (_: Exception) {
+        null
+    }
+}
+
 private class CampusBoundaryBridge(
     private val onBoundaryStatusCallback: (Boolean, Int) -> Unit,
     private val onOsmLoadedCallback: (Boolean, Int, Int) -> Unit,
     private val onOutsideAlertCallback: (Int) -> Unit,
     private val onPinSelectedCallback: (String) -> Unit,
-    private val onMapEngineReadyCallback: (String) -> Unit
+    private val onMapEngineReadyCallback: (String) -> Unit,
+    private val onRouteCalculatedCallback: (String) -> Unit
 ) {
     @JavascriptInterface
     fun onBoundaryStatusChanged(isInside: Boolean, distanceMeters: Int) {
@@ -150,6 +197,11 @@ private class CampusBoundaryBridge(
     @JavascriptInterface
     fun onMapEngineReady(engine: String) {
         onMapEngineReadyCallback(engine)
+    }
+
+    @JavascriptInterface
+    fun onRouteCalculated(routeJson: String) {
+        onRouteCalculatedCallback(routeJson)
     }
 }
 
@@ -179,6 +231,8 @@ fun OutdoorMapScreen(
     var selectedFilter by remember { mutableStateOf(MapFilterTab.ALL) }
     var searchText by remember { mutableStateOf("") }
     var focusedMapPin by remember { mutableStateOf<CampusPin?>(null) }
+    var calculatedRoute by remember { mutableStateOf<AndroidCalculatedRoute?>(null) }
+    var activeRouteStepIdx by remember { mutableIntStateOf(0) }
 
     val pinsJsonPayload = remember(allPins) {
         JSONArray().apply {
@@ -389,10 +443,18 @@ fun OutdoorMapScreen(
                                 post {
                                     focusedMapPin = if (pinId.isBlank()) null
                                     else viewModel.repository.getPinById(pinId)
+                                    activeRouteStepIdx = 0
+                                    if (pinId.isBlank()) calculatedRoute = null
                                 }
                             },
                             onMapEngineReadyCallback = { _ ->
                                 post { isEngineReady = true }
+                            },
+                            onRouteCalculatedCallback = { routeJson ->
+                                post {
+                                    calculatedRoute = parseRouteJson(routeJson)
+                                    activeRouteStepIdx = 0
+                                }
                             }
                         ),
                         "AndroidBridge"
@@ -1020,6 +1082,85 @@ fun OutdoorMapScreen(
                     }
 
                     Spacer(modifier = Modifier.height(10.dp))
+
+                    val route = calculatedRoute
+                    if (route != null && route.steps.isNotEmpty()) {
+                        val safeIdx = activeRouteStepIdx.coerceIn(0, route.steps.lastIndex)
+                        val curStep = route.steps[safeIdx]
+                        Surface(
+                            color = NeonGreenTint,
+                            shape = CutCornerShape(8.dp),
+                            border = BorderStroke(1.dp, NeonGreen.copy(alpha = 0.7f)),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 10.dp)
+                                .testTag("route_tutorial_bar")
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                val stepIcon = when {
+                                    curStep.action.contains("LEFT") -> Icons.Default.TurnLeft
+                                    curStep.action.contains("RIGHT") -> Icons.Default.TurnRight
+                                    else -> Icons.Default.Navigation
+                                }
+                                Icon(
+                                    imageVector = stepIcon,
+                                    contentDescription = null,
+                                    tint = NeonGreen,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = "STEP ${safeIdx + 1}/${route.steps.size} • ${route.totalDistanceMeters}m (${route.estimatedMinutes} MIN)",
+                                        fontFamily = MonoFontFamily,
+                                        color = NeonGreen,
+                                        fontSize = 9.5.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(
+                                        text = curStep.instruction,
+                                        color = PureWhite,
+                                        fontSize = 11.5.sp,
+                                        maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+                                IconButton(
+                                    onClick = {
+                                        val prev = (safeIdx - 1).coerceAtLeast(0)
+                                        activeRouteStepIdx = prev
+                                        webViewInstance?.evaluateJavascript("highlightRouteStep($prev);", null)
+                                    },
+                                    enabled = safeIdx > 0,
+                                    modifier = Modifier.size(32.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.ChevronLeft,
+                                        contentDescription = "Previous step",
+                                        tint = if (safeIdx > 0) PureWhite else SteelGray
+                                    )
+                                }
+                                IconButton(
+                                    onClick = {
+                                        val next = (safeIdx + 1).coerceAtMost(route.steps.lastIndex)
+                                        activeRouteStepIdx = next
+                                        webViewInstance?.evaluateJavascript("highlightRouteStep($next);", null)
+                                    },
+                                    enabled = safeIdx < route.steps.lastIndex,
+                                    modifier = Modifier.size(32.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.ChevronRight,
+                                        contentDescription = "Next step",
+                                        tint = if (safeIdx < route.steps.lastIndex) PureWhite else SteelGray
+                                    )
+                                }
+                            }
+                        }
+                    }
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
