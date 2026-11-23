@@ -57,38 +57,38 @@ export function ScheduleView({
 
   return (
     <div className="space-y-5 pb-24 lg:pb-12">
-      {/* Header + Filters */}
-      <div className="border border-[#282C38] bg-[#0D0E12] p-5 cut-corner">
+      {/* Header + Pixel Filter Chips */}
+      <div className="rounded-[28px] border border-[#E2E8F0] bg-[#FFFFFF] p-6 shadow-xs">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="font-display text-xl font-bold tracking-wider text-[#F8FAFC]">
-              CLASS SCHEDULE
+            <h1 className="font-display text-2xl font-bold text-[#111827]">
+              Class Timetable
             </h1>
-            <p className="font-mono text-[11px] font-bold text-[#39FF14]">
-              BBSUTSD // FALL 2026 TIMETABLE
+            <p className="mt-0.5 text-xs font-semibold text-[#0B57D0]">
+              BBS-UTECH • Fall 2026 Academic Schedule
             </p>
           </div>
 
           <button
             type="button"
             onClick={() => onSavePreference(selectedDept, selectedSem, selectedSec)}
-            className={`flex items-center gap-2 border px-3.5 py-2 font-mono text-xs font-bold transition cursor-pointer cut-corner-sm ${
+            className={`flex items-center gap-2 rounded-full px-4 py-2 font-display text-xs font-semibold transition cursor-pointer ${
               isCurrentSaved
-                ? 'border-[#39FF14] bg-[#39FF14] text-[#050507]'
-                : 'border-[#FF1E2D] bg-[#15171E] text-[#F8FAFC] hover:bg-[#26080D]'
+                ? 'bg-[#E6F4EA] text-[#137333] border border-[#CBE6D3]'
+                : 'bg-[#0B57D0] text-white hover:bg-[#0842A0]'
             }`}
           >
             {isCurrentSaved ? (
               <BookmarkCheck className="h-4 w-4" />
             ) : (
-              <Bookmark className="h-4 w-4 text-[#FF1E2D]" />
+              <Bookmark className="h-4 w-4" />
             )}
-            <span>{isCurrentSaved ? 'MY TIMETABLE' : 'SAVE MINE'}</span>
+            <span>{isCurrentSaved ? 'Saved as My Timetable' : 'Save Timetable'}</span>
           </button>
         </div>
 
-        {/* Department Tabs */}
-        <div className="mt-4 flex flex-wrap gap-2 border-b border-[#282C38] pb-3">
+        {/* Department Chips */}
+        <div className="mt-4 flex flex-wrap gap-2 border-b border-[#E2E8F0] pb-4">
           {SCHEDULE_DEPARTMENTS.map((dept) => {
             const active = selectedDept === dept.name;
             return (
@@ -96,10 +96,10 @@ export function ScheduleView({
                 key={dept.code}
                 type="button"
                 onClick={() => setSelectedDept(dept.name)}
-                className={`border px-3.5 py-1.5 font-display text-xs font-bold tracking-wider transition cursor-pointer cut-corner-sm ${
+                className={`rounded-full px-4 py-1.5 font-display text-xs font-semibold transition cursor-pointer ${
                   active
-                    ? 'border-[#FF1E2D] bg-[#FF1E2D] text-white'
-                    : 'border-[#282C38] bg-[#15171E] text-[#A1A7B3] hover:border-[#39FF14] hover:text-white'
+                    ? 'bg-[#D3E3FD] text-[#041E49]'
+                    : 'bg-[#EFF3F8] text-[#444746] hover:bg-[#E2E8F0]'
                 }`}
               >
                 {dept.code} • {dept.name}
@@ -111,35 +111,35 @@ export function ScheduleView({
         {/* Semester + Section + Day Strip */}
         <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-mono text-[11px] font-bold text-[#687080]">SEM:</span>
+            <span className="text-xs font-semibold text-[#5F6368]">Sem:</span>
             {[1, 2, 3, 4].map((sem) => (
               <button
                 key={sem}
                 type="button"
                 onClick={() => setSelectedSem(sem)}
-                className={`border px-3 py-1 font-mono text-xs font-bold cursor-pointer cut-corner-sm ${
+                className={`rounded-full px-3 py-1.5 font-mono text-xs font-semibold cursor-pointer ${
                   selectedSem === sem
-                    ? 'border-[#FF1E2D] bg-[#FF1E2D] text-white'
-                    : 'border-[#282C38] bg-[#15171E] text-[#A1A7B3] hover:text-white'
+                    ? 'bg-[#0B57D0] text-white'
+                    : 'bg-[#EFF3F8] text-[#444746] hover:bg-[#E2E8F0]'
                 }`}
               >
                 S{sem}
               </button>
             ))}
 
-            <span className="ml-2 font-mono text-[11px] font-bold text-[#687080]">SEC:</span>
+            <span className="ml-2 text-xs font-semibold text-[#5F6368]">Sec:</span>
             {['A', 'B'].map((sec) => (
               <button
                 key={sec}
                 type="button"
                 onClick={() => setSelectedSec(sec)}
-                className={`border px-3 py-1 font-mono text-xs font-bold cursor-pointer cut-corner-sm ${
+                className={`rounded-full px-3 py-1.5 font-mono text-xs font-semibold cursor-pointer ${
                   selectedSec === sec
-                    ? 'border-[#39FF14] bg-[#39FF14] text-[#050507]'
-                    : 'border-[#282C38] bg-[#15171E] text-[#A1A7B3] hover:text-white'
+                    ? 'bg-[#E6F4EA] text-[#137333] border border-[#CBE6D3]'
+                    : 'bg-[#EFF3F8] text-[#444746] hover:bg-[#E2E8F0]'
                 }`}
               >
-                SEC {sec}
+                Sec {sec}
               </button>
             ))}
           </div>
@@ -152,13 +152,13 @@ export function ScheduleView({
                   key={day}
                   type="button"
                   onClick={() => setSelectedDay(day)}
-                  className={`border px-3.5 py-1.5 font-display text-xs font-bold tracking-wider cursor-pointer cut-corner-sm ${
+                  className={`rounded-full px-3.5 py-1.5 font-display text-xs font-semibold cursor-pointer ${
                     active
-                      ? 'border-[#FF1E2D] bg-[#FF1E2D] text-white'
-                      : 'border-[#282C38] bg-[#050507] text-[#A1A7B3] hover:border-[#39FF14] hover:text-white'
+                      ? 'bg-[#0B57D0] text-white'
+                      : 'bg-[#EFF3F8] text-[#444746] hover:bg-[#E2E8F0]'
                   }`}
                 >
-                  {day.slice(0, 3).toUpperCase()}
+                  {day.slice(0, 3)}
                 </button>
               );
             })}
@@ -168,13 +168,15 @@ export function ScheduleView({
 
       {/* Sessions Grid */}
       {filteredClasses.length === 0 ? (
-        <div className="flex flex-col items-center justify-center border border-[#282C38] bg-[#0D0E12] p-12 text-center cut-corner">
-          <CalendarDays className="h-12 w-12 text-[#FF1E2D]/70" />
-          <div className="mt-3 font-display text-base font-bold text-[#F8FAFC]">
-            NO SESSIONS ON {selectedDay.toUpperCase()}
+        <div className="flex flex-col items-center justify-center rounded-[28px] border border-[#E2E8F0] bg-[#FFFFFF] p-12 text-center shadow-xs">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#E8F0FE] text-[#0B57D0]">
+            <CalendarDays className="h-7 w-7" />
           </div>
-          <p className="mt-1 text-xs text-[#A1A7B3]">
-            Use this slot for Central Digital Library study or engineering workshops.
+          <div className="mt-3 font-display text-base font-bold text-[#111827]">
+            No classes scheduled on {selectedDay}
+          </div>
+          <p className="mt-1 text-xs text-[#5F6368]">
+            Use this free slot for Central Digital Library study or engineering labs.
           </p>
         </div>
       ) : (
@@ -187,68 +189,68 @@ export function ScheduleView({
             return (
               <div
                 key={item.id}
-                className={`border p-5 cut-corner ${
+                className={`rounded-[24px] border p-5 shadow-xs ${
                   isOngoing
-                    ? 'border-[#39FF14] bg-[#0B2407]'
-                    : 'border-[#282C38] bg-[#0D0E12]'
+                    ? 'border-[#0F9D58] bg-[#E6F4EA]/50'
+                    : 'border-[#E2E8F0] bg-[#FFFFFF]'
                 }`}
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <span
-                      className={`border px-2.5 py-0.5 font-mono text-[11px] font-bold ${
+                      className={`rounded-full px-3 py-1 font-mono text-[11px] font-bold ${
                         item.isLab
-                          ? 'border-[#39FF14]/60 bg-[#0B2407] text-[#39FF14]'
-                          : 'border-[#FF1E2D]/60 bg-[#26080D] text-[#FF1E2D]'
+                          ? 'bg-[#E6F4EA] text-[#137333]'
+                          : 'bg-[#E8F0FE] text-[#0B57D0]'
                       }`}
                     >
                       {item.subjectCode}
                     </span>
                     {item.isLab && (
-                      <span className="border border-[#FF1E2D]/60 bg-[#26080D] px-2 py-0.5 font-mono text-[10px] font-bold text-[#FF1E2D]">
+                      <span className="rounded-full bg-[#FCE8E6] px-2.5 py-0.5 font-mono text-[10px] font-bold text-[#B3261E]">
                         LAB
                       </span>
                     )}
                   </div>
 
                   {isOngoing ? (
-                    <span className="bg-[#39FF14] px-2 py-0.5 font-mono text-[10px] font-bold text-[#050507]">
+                    <span className="rounded-full bg-[#0F9D58] px-3 py-0.5 font-mono text-[10px] font-bold text-white">
                       LIVE NOW
                     </span>
                   ) : isUpcoming ? (
-                    <span className="font-mono text-[10px] font-bold text-[#A1A7B3]">
-                      UPCOMING
+                    <span className="font-mono text-[11px] font-semibold text-[#5F6368]">
+                      Upcoming
                     </span>
                   ) : null}
                 </div>
 
-                <h3 className="mt-3 font-display text-lg font-bold text-[#F8FAFC]">
+                <h3 className="mt-3 font-display text-lg font-bold text-[#111827]">
                   {item.subjectTitle}
                 </h3>
 
-                <div className="mt-2 flex flex-wrap items-center gap-4 text-xs text-[#A1A7B3]">
-                  <span className="flex items-center gap-1.5 font-mono font-bold text-[#F8FAFC]">
-                    <Clock className="h-3.5 w-3.5 text-[#39FF14]" />
+                <div className="mt-2 flex flex-wrap items-center gap-4 text-xs text-[#5F6368]">
+                  <span className="flex items-center gap-1.5 font-mono font-semibold text-[#111827]">
+                    <Clock className="h-3.5 w-3.5 text-[#0B57D0]" />
                     {item.timeSlot}
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <User className="h-3.5 w-3.5 text-[#A1A7B3]" />
+                    <User className="h-3.5 w-3.5 text-[#5F6368]" />
                     {item.instructor}
                   </span>
                 </div>
 
-                <div className="mt-4 flex items-center justify-between gap-3 border border-[#282C38] bg-[#15171E] px-3.5 py-2.5 cut-corner-sm">
-                  <span className="flex items-center gap-2 text-xs font-semibold text-[#F8FAFC]">
-                    <MapPin className="h-4 w-4 shrink-0 text-[#FF1E2D]" />
+                <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-[#EFF3F8] px-4 py-2.5">
+                  <span className="flex items-center gap-2 text-xs font-semibold text-[#111827]">
+                    <MapPin className="h-4 w-4 shrink-0 text-[#0B57D0]" />
                     {item.roomLabel}
                   </span>
                   <button
                     type="button"
                     onClick={() => onLocatePinById(item.locationPinId)}
-                    className="flex shrink-0 items-center gap-1.5 bg-[#FF1E2D] px-3 py-1.5 font-mono text-[11px] font-bold text-white transition hover:bg-[#FF3B47] cursor-pointer cut-corner-sm"
+                    className="flex shrink-0 items-center gap-1.5 rounded-full bg-[#0B57D0] px-3.5 py-1.5 font-display text-xs font-semibold text-white transition hover:bg-[#0842A0] cursor-pointer"
                   >
                     <Layers className="h-3.5 w-3.5" />
-                    <span>LOCATE</span>
+                    <span>Locate</span>
                   </button>
                 </div>
               </div>

@@ -103,8 +103,11 @@ const EDGE_DEFS: [string, string, string][] = [
   ['mosque_jct', 'mosque_walk', 'Masjid Connector Path'],
   ['mosque_walk', 'old_porch', 'Admin Block West Walk'],
   ['mosque_jct', 'old_porch', 'Old Complex Approach Lane'],
+  ['old_porch', 'quad_jct', 'Old Complex Plaza Walk'],
+  ['old_porch', 'old_east', 'Admin Front Walkway'],
   ['quad_jct', 'old_east', 'Admin East Path'],
   ['dividing_center', 'old_east', 'Old Complex Crossing'],
+  ['old_east', 'new_mid_road', 'Science Block Crossing'],
   ['old_porch', 'old_center', 'Old Complex Main Corridor'],
   ['old_porch', 'old_west', 'VC Secretariat Walkway'],
   ['old_west', 'old_center', 'Old Admin West Corridor'],
@@ -117,6 +120,7 @@ const EDGE_DEFS: [string, string, string][] = [
   ['mosque_jct', 'canteen_quad', 'Student Quad Path'],
   ['quad_jct', 'canteen_quad', 'University Canteen Walkway'],
   ['canteen_quad', 'new_west', 'Canteen–New Complex Walkway'],
+  ['canteen_quad', 'new_porch', 'New Complex Lawn Walk'],
   ['dividing_center', 'new_porch', 'New Complex Crossing'],
   ['new_mid_road', 'new_porch', 'New Complex North Entry'],
   ['new_porch', 'new_west', 'New Complex West Wing'],
@@ -142,18 +146,6 @@ const EDGE_DEFS: [string, string, string][] = [
   ['transport_office_door', 'point_parking_bay', 'Bus Bay Steps'],
   ['sports_track', 'point_parking_bay', 'East Campus Spine'],
 ];
-
-const ADJACENCY: Record<string, GraphEdge[]> = (() => {
-  const adj: Record<string, GraphEdge[]> = {};
-  for (const id of Object.keys(GRAPH_NODES)) {
-    adj[id] = [];
-  }
-  for (const [a, b, streetName] of EDGE_DEFS) {
-    adj[a]?.push({ to: b, streetName });
-    adj[b]?.push({ to: a, streetName });
-  }
-  return adj;
-})();
 
 const PIN_TO_NODE: Record<string, string> = {
   gate_main: 'gate_entry',
@@ -194,24 +186,183 @@ const PIN_TO_NODE: Record<string, string> = {
   campus_sports: 'sports_track',
 };
 
-function findNearestGraphNode(coord: LatLng): string {
-  let bestId = 'gate_entry';
-  let bestDist = Infinity;
-  for (const node of Object.values(GRAPH_NODES)) {
-    const d = calculateDistanceMeters(coord.lat, coord.lng, node.lat, node.lng);
-    if (d < bestDist) {
-      bestDist = d;
-      bestId = node.id;
-    }
+function projectPointOntoSegment(
+  p: LatLng,
+  a: LatLng,
+  b: LatLng
+): { point: LatLng; t: number; distMeters: number } {
+  const cosLat = Math.cos((27.5108 * Math.PI) / 180);
+  const px = p.lng * 111320 * cosLat;
+  const py = p.lat * 110810;
+  const ax = a.lng * 111320 * cosLat;
+  const ay = a.lat * 110810;
+  const bx = b.lng * 111320 * cosLat;
+  const by = b.lat * 110810;
+
+  const dx = bx - ax;
+  const dy = by - ay;
+  const lenSq = dx * dx + dy * dy;
+  let t = 0;
+  if (lenSq > 1e-9) {
+    t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / lenSq));
   }
-  return bestId;
+  const proj: LatLng = {
+    lat: a.lat + t * (b.lat - a.lat),
+    lng: a.lng + t * (b.lng - a.lng),
+  };
+  return {
+    point: proj,
+    t,
+    distMeters: calculateDistanceMeters(p.lat, p.lng, proj.lat, proj.lng),
+  };
 }
 
-function dijkstra(startId: string, endId: string): { nodeIds: string[]; edgeNames: string[] } {
+function attachPointToDynamicGraph(
+  virtualId: string,
+  coord: LatLng,
+  approachName: string,
+  nodes: Record<string, GraphNode>,
+  adj: Record<string, GraphEdge[]>,
+  preferredNodeId?: string
+): void {
+  nodes[virtualId] = {
+    id: virtualId,
+    lat: coord.lat,
+    lng: coord.lng,
+    label: approachName,
+  };
+  adj[virtualId] = [];
+
+  // 1. Connect to nearest edge projections (eliminates backtracking along walkways)
+  const edgeCandidates: {
+    u: string;
+    v: string;
+    streetName: string;
+    proj: LatLng;
+    t: number;
+    distMeters: number;
+  }[] = [];
+
+  for (const [u, v, streetName] of EDGE_DEFS) {
+    const nu = GRAPH_NODES[u];
+    const nv = GRAPH_NODES[v];
+    if (!nu || !nv) continue;
+    const res = projectPointOntoSegment(coord, nu, nv);
+    edgeCandidates.push({
+      u,
+      v,
+      streetName,
+      proj: res.point,
+      t: res.t,
+      distMeters: res.distMeters,
+    });
+  }
+
+  edgeCandidates.sort((a, b) => a.distMeters - b.distMeters);
+  const topEdges = edgeCandidates.filter((c, i) => i < 4 && (i === 0 || c.distMeters <= 75));
+
+  topEdges.forEach((cand, idx) => {
+    if (cand.t <= 0.04) {
+      adj[virtualId].push({ to: cand.u, streetName: approachName });
+      adj[cand.u]?.push({ to: virtualId, streetName: approachName });
+    } else if (cand.t >= 0.96) {
+      adj[virtualId].push({ to: cand.v, streetName: approachName });
+      adj[cand.v]?.push({ to: virtualId, streetName: approachName });
+    } else {
+      const splitId = `${virtualId}_proj_${idx}`;
+      nodes[splitId] = {
+        id: splitId,
+        lat: cand.proj.lat,
+        lng: cand.proj.lng,
+        label: cand.streetName,
+      };
+      adj[splitId] = [
+        { to: cand.u, streetName: cand.streetName },
+        { to: cand.v, streetName: cand.streetName },
+        { to: virtualId, streetName: approachName },
+      ];
+      adj[cand.u]?.push({ to: splitId, streetName: cand.streetName });
+      adj[cand.v]?.push({ to: splitId, streetName: cand.streetName });
+      adj[virtualId].push({ to: splitId, streetName: approachName });
+    }
+  });
+
+  // 2. Also ensure direct connection to nearest graph vertices & preferred entrance node
+  const nodeDists = Object.values(GRAPH_NODES)
+    .map((n) => ({
+      id: n.id,
+      d: calculateDistanceMeters(coord.lat, coord.lng, n.lat, n.lng),
+    }))
+    .sort((a, b) => a.d - b.d);
+
+  const nearbyIds = new Set<string>();
+  if (nodeDists[0]) nearbyIds.add(nodeDists[0].id);
+  if (nodeDists[1] && nodeDists[1].d <= 65) nearbyIds.add(nodeDists[1].id);
+  if (preferredNodeId && GRAPH_NODES[preferredNodeId]) {
+    nearbyIds.add(preferredNodeId);
+  }
+
+  for (const targetId of nearbyIds) {
+    if (!adj[virtualId].some((e) => e.to === targetId)) {
+      adj[virtualId].push({ to: targetId, streetName: approachName });
+      adj[targetId]?.push({ to: virtualId, streetName: approachName });
+    }
+  }
+}
+
+function solveShortestGraphPath(
+  origin: LatLng,
+  originLabel: string,
+  destinationPin: CampusPin
+): { points: LatLng[]; segNames: string[]; totalDist: number } {
+  const nodes: Record<string, GraphNode> = {};
+  for (const [k, v] of Object.entries(GRAPH_NODES)) {
+    nodes[k] = { ...v };
+  }
+  const adj: Record<string, GraphEdge[]> = {};
+  for (const id of Object.keys(nodes)) {
+    adj[id] = [];
+  }
+  for (const [a, b, streetName] of EDGE_DEFS) {
+    adj[a]?.push({ to: b, streetName });
+    adj[b]?.push({ to: a, streetName });
+  }
+
+  const startId = '__start__';
+  const endId = '__end__';
+  attachPointToDynamicGraph(startId, origin, `Walkway from ${originLabel}`, nodes, adj);
+  attachPointToDynamicGraph(
+    endId,
+    { lat: destinationPin.latitude, lng: destinationPin.longitude },
+    `${destinationPin.mapLabel || destinationPin.name} Entrance`,
+    nodes,
+    adj,
+    PIN_TO_NODE[destinationPin.id]
+  );
+
+  // If the same edge has projections for both start and end, connect them directly
+  // so intra-edge walks are strictly straight along that walkway!
+  for (const [sId, sNode] of Object.entries(nodes)) {
+    if (!sId.startsWith('__start___proj_')) continue;
+    for (const [eId, eNode] of Object.entries(nodes)) {
+      if (!eId.startsWith('__end___proj_')) continue;
+      const sNeighbors = (adj[sId] || []).map((x) => x.to).filter((x) => x !== startId);
+      const eNeighbors = (adj[eId] || []).map((x) => x.to).filter((x) => x !== endId);
+      if (
+        sNeighbors.length === 2 &&
+        eNeighbors.length === 2 &&
+        ((sNeighbors[0] === eNeighbors[0] && sNeighbors[1] === eNeighbors[1]) ||
+          (sNeighbors[0] === eNeighbors[1] && sNeighbors[1] === eNeighbors[0]))
+      ) {
+        adj[sId].push({ to: eId, streetName: sNode.label });
+        adj[eId].push({ to: sId, streetName: eNode.label });
+      }
+    }
+  }
+
   const dist: Record<string, number> = {};
   const prev: Record<string, { id: string; streetName: string } | null> = {};
-  const unvisited = new Set<string>(Object.keys(GRAPH_NODES));
-
+  const unvisited = new Set<string>(Object.keys(nodes));
   for (const id of unvisited) {
     dist[id] = Infinity;
     prev[id] = null;
@@ -230,10 +381,10 @@ function dijkstra(startId: string, endId: string): { nodeIds: string[]; edgeName
     if (!curr || curr === endId || smallest === Infinity) break;
     unvisited.delete(curr);
 
-    const currNode = GRAPH_NODES[curr];
-    for (const edge of ADJACENCY[curr] || []) {
+    const currNode = nodes[curr];
+    for (const edge of adj[curr] || []) {
       if (!unvisited.has(edge.to)) continue;
-      const toNode = GRAPH_NODES[edge.to];
+      const toNode = nodes[edge.to];
       const w = calculateDistanceMeters(currNode.lat, currNode.lng, toNode.lat, toNode.lng);
       const alt = dist[curr] + w;
       if (alt < dist[edge.to]) {
@@ -257,7 +408,12 @@ function dijkstra(startId: string, endId: string): { nodeIds: string[]; edgeName
     }
   }
 
-  return { nodeIds, edgeNames };
+  const points: LatLng[] = nodeIds.map((id) => ({ lat: nodes[id].lat, lng: nodes[id].lng }));
+  return {
+    points,
+    segNames: edgeNames,
+    totalDist: dist[endId] ?? Infinity,
+  };
 }
 
 export function classifyTurnDelta(deltaDeg: number): {
@@ -285,53 +441,41 @@ export function computeCampusRoute(
   originLabel: string,
   destinationPin: CampusPin
 ): ComputedRoute {
-  const startNodeId = findNearestGraphNode(origin);
-  const endNodeId =
-    PIN_TO_NODE[destinationPin.id] ??
-    findNearestGraphNode({ lat: destinationPin.latitude, lng: destinationPin.longitude });
+  const destCoord: LatLng = { lat: destinationPin.latitude, lng: destinationPin.longitude };
+  const directDist = calculateDistanceMeters(origin.lat, origin.lng, destCoord.lat, destCoord.lng);
 
-  const { nodeIds, edgeNames } = dijkstra(startNodeId, endNodeId);
+  let rawPoints: LatLng[] = [];
+  let rawSegNames: string[] = [];
 
-  // Build ordered full coordinate path + street names per segment
-  const rawPoints: LatLng[] = [];
-  const rawSegNames: string[] = [];
-
-  const startNode = GRAPH_NODES[startNodeId];
-  const distToStartNode = calculateDistanceMeters(
-    origin.lat,
-    origin.lng,
-    startNode.lat,
-    startNode.lng
-  );
-  if (distToStartNode > 6) {
-    rawPoints.push({ lat: origin.lat, lng: origin.lng });
-    rawSegNames.push(`Walkway from ${originLabel}`);
+  if (directDist <= 28) {
+    rawPoints = [origin, destCoord];
+    rawSegNames = [`Walk directly to ${destinationPin.mapLabel || destinationPin.name}`];
+  } else {
+    const solved = solveShortestGraphPath(origin, originLabel, destinationPin);
+    rawPoints = solved.points;
+    rawSegNames = solved.segNames;
   }
 
-  for (let i = 0; i < nodeIds.length; i++) {
-    const n = GRAPH_NODES[nodeIds[i]];
-    rawPoints.push({ lat: n.lat, lng: n.lng });
-    if (i < edgeNames.length) {
-      rawSegNames.push(edgeNames[i]);
+  // Deduplicate ultra-close vertices (< 2.5m) while preserving start & destination
+  const cleanedPoints: LatLng[] = [];
+  const cleanedNames: string[] = [];
+  for (let i = 0; i < rawPoints.length; i++) {
+    const pt = rawPoints[i];
+    if (cleanedPoints.length === 0) {
+      cleanedPoints.push(pt);
+    } else {
+      const prevPt = cleanedPoints[cleanedPoints.length - 1];
+      const d = calculateDistanceMeters(prevPt.lat, prevPt.lng, pt.lat, pt.lng);
+      if (d >= 2.5 || i === rawPoints.length - 1) {
+        cleanedPoints.push(pt);
+        cleanedNames.push(rawSegNames[i - 1] ?? 'Campus Walkway');
+      }
     }
   }
 
-  const lastPt = rawPoints[rawPoints.length - 1];
-  const distFromEndNode = calculateDistanceMeters(
-    lastPt.lat,
-    lastPt.lng,
-    destinationPin.latitude,
-    destinationPin.longitude
-  );
-  if (distFromEndNode > 4) {
-    rawSegNames.push(`${destinationPin.mapLabel || destinationPin.name} Entrance`);
-    rawPoints.push({ lat: destinationPin.latitude, lng: destinationPin.longitude });
-  }
-
-  // Edge case: origin & destination are right next to each other (<6m)
-  if (rawPoints.length < 2) {
-    rawPoints.push({ lat: destinationPin.latitude, lng: destinationPin.longitude });
-    rawSegNames.push('Immediate Arrival');
+  if (cleanedPoints.length < 2) {
+    cleanedPoints.push(destCoord);
+    cleanedNames.push('Immediate Arrival');
   }
 
   // Convert segments into clean merged turn-by-turn steps
@@ -347,32 +491,25 @@ export function computeCampusRoute(
   }
 
   const segs: RawSeg[] = [];
-  for (let i = 0; i < rawPoints.length - 1; i++) {
-    const from = rawPoints[i];
-    const to = rawPoints[i + 1];
+  for (let i = 0; i < cleanedPoints.length - 1; i++) {
+    const from = cleanedPoints[i];
+    const to = cleanedPoints[i + 1];
     const d = calculateDistanceMeters(from.lat, from.lng, to.lat, to.lng);
-    if (d < 1.5 && rawPoints.length > 2) continue;
+    if (d < 1.5 && cleanedPoints.length > 2) continue;
     totalDist += d;
     segs.push({
       from,
       to,
       dist: d,
       bearing: calculateBearing(from.lat, from.lng, to.lat, to.lng),
-      streetName: rawSegNames[i] ?? 'Campus Walkway',
+      streetName: cleanedNames[i] ?? 'Campus Walkway',
     });
   }
 
   if (segs.length === 0) {
-    const d = Math.round(
-      calculateDistanceMeters(
-        origin.lat,
-        origin.lng,
-        destinationPin.latitude,
-        destinationPin.longitude
-      )
-    );
+    const d = Math.round(directDist);
     return {
-      polyline: [origin, { lat: destinationPin.latitude, lng: destinationPin.longitude }],
+      polyline: [origin, destCoord],
       steps: [
         {
           id: 'step-arrive',
@@ -380,8 +517,8 @@ export function computeCampusRoute(
           instruction: `You are already at ${destinationPin.name} (${destinationPin.roomNumber})`,
           streetName: BUILDINGS[destinationPin.building].shortName,
           distanceMeters: d,
-          coord: { lat: destinationPin.latitude, lng: destinationPin.longitude },
-          segmentCoords: [origin, { lat: destinationPin.latitude, lng: destinationPin.longitude }],
+          coord: destCoord,
+          segmentCoords: [origin, destCoord],
         },
       ],
       totalDistanceMeters: d,
@@ -422,7 +559,7 @@ export function computeCampusRoute(
       currentCoords.push(next.to);
       currentDist += next.dist;
       currentBearing = next.bearing;
-    } else if (turn.action === 'STRAIGHT' && next.dist < 18) {
+    } else if (turn.action === 'STRAIGHT' && next.dist < 14) {
       currentCoords.push(next.to);
       currentDist += next.dist;
       currentBearing = next.bearing;
@@ -449,15 +586,13 @@ export function computeCampusRoute(
       : `Arrive at ${destinationPin.name} (${destinationPin.roomNumber})`,
     streetName: BUILDINGS[destinationPin.building].shortName,
     distanceMeters: 0,
-    coord: { lat: destinationPin.latitude, lng: destinationPin.longitude },
-    segmentCoords: [
-      { lat: destinationPin.latitude, lng: destinationPin.longitude },
-    ],
+    coord: destCoord,
+    segmentCoords: [destCoord],
   });
 
   const roundedTotal = Math.round(totalDist);
   return {
-    polyline: rawPoints,
+    polyline: cleanedPoints,
     steps,
     totalDistanceMeters: roundedTotal,
     estimatedMinutes: estimateWalkMinutes(roundedTotal),

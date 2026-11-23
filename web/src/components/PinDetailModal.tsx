@@ -57,26 +57,29 @@ export function PinDetailModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm p-0 sm:p-4"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-[#0F172A]/40 backdrop-blur-xs p-0 sm:p-4"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-label={pin.name}
     >
       <div
-        className="w-full max-w-xl max-h-[90vh] overflow-y-auto bg-[#0D0E12] border border-[#282C38] border-t-2 border-t-[#FF1E2D] sm:cut-corner p-5 sm:p-6 shadow-2xl"
+        className="w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-t-[28px] sm:rounded-[28px] border border-[#E2E8F0] bg-[#FFFFFF] p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Pixel drag handle on mobile */}
+        <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-[#CBD5E1] sm:hidden" />
+
         {/* Badges + Close */}
         <div className="flex items-center justify-between gap-2">
-          <div className="flex flex-wrap items-center gap-2 font-mono text-[11px] font-bold">
-            <span className="border border-[#FF1E2D] bg-[#26080D] px-2 py-0.5 text-[#FF1E2D]">
-              {BUILDINGS[pin.building].shortName.toUpperCase()}
+          <div className="flex flex-wrap items-center gap-2 font-mono text-[11px] font-semibold">
+            <span className="rounded-full bg-[#E8F0FE] px-3 py-1 text-[#0B57D0]">
+              {BUILDINGS[pin.building].shortName}
             </span>
-            <span className="border border-[#39FF14]/70 bg-[#0B2407] px-2 py-0.5 text-[#39FF14]">
-              {pin.floor === 'OUTDOOR' ? 'GROUNDS' : FLOORS[pin.floor].code}
+            <span className="rounded-full bg-[#E6F4EA] px-3 py-1 text-[#137333]">
+              {pin.floor === 'OUTDOOR' ? 'Grounds' : FLOORS[pin.floor].code}
             </span>
-            <span className="border border-[#282C38] bg-[#15171E] px-2 py-0.5 text-[#F8FAFC]">
+            <span className="rounded-full bg-[#EFF3F8] px-3 py-1 text-[#444746]">
               {pin.roomNumber}
             </span>
           </div>
@@ -85,80 +88,90 @@ export function PinDetailModal({
             type="button"
             onClick={onClose}
             aria-label="Close landmark details"
-            className="flex h-9 w-9 items-center justify-center border border-[#282C38] bg-[#15171E] text-[#A1A7B3] hover:border-[#FF1E2D] hover:text-white cursor-pointer"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-[#EFF3F8] text-[#444746] transition hover:bg-[#E2E8F0] hover:text-[#111827] cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        <h2 className="mt-4 font-display text-2xl font-bold text-[#F8FAFC]">
+        <h2 className="mt-4 font-display text-2xl font-bold text-[#111827]">
           {pin.name}
         </h2>
-        <p className="mt-1 text-sm text-[#A1A7B3]">{pin.subTitle}</p>
+        <p className="mt-1 text-sm text-[#5F6368]">{pin.subTitle}</p>
 
         {/* Distance Strip */}
         {distMeters !== null && (
-          <div className="mt-4 flex items-center gap-3 border border-[#39FF14]/60 bg-[#0B2407] px-4 py-3 cut-corner-sm">
-            <Navigation className="h-5 w-5 shrink-0 text-[#39FF14]" />
+          <div className="mt-4 flex items-center gap-3 rounded-2xl border border-[#CBE6D3] bg-[#E6F4EA] px-4 py-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#0F9D58] text-white">
+              <Navigation className="h-4 w-4" />
+            </div>
             <div>
-              <div className="font-mono text-xs font-bold text-[#39FF14]">
+              <div className="text-xs font-bold text-[#137333]">
                 {formatDistance(distMeters)} away • {estimateWalkMinutes(distMeters)} min walk
               </div>
-              <div className="text-xs text-[#F8FAFC]/80">
-                From your {userLocation?.isSimulated ? 'selected preset' : 'live GPS'} ({userLocation?.label})
+              <div className="text-xs text-[#1E4620]">
+                From {userLocation?.isSimulated ? 'selected preset' : 'live GPS'} ({userLocation?.label})
               </div>
             </div>
           </div>
         )}
 
-        <div className="my-5 border-t border-[#282C38]" />
+        <div className="my-5 border-t border-[#E2E8F0]" />
 
         {/* Officer / Hours / Contact */}
-        <div className="space-y-3 text-sm">
+        <div className="space-y-3.5 text-sm">
           <div className="flex items-start gap-3">
-            <User className="mt-0.5 h-4 w-4 shrink-0 text-[#FF1E2D]" />
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#E8F0FE] text-[#0B57D0]">
+              <User className="h-4 w-4" />
+            </div>
             <div>
-              <div className="font-mono text-[10px] font-bold text-[#A1A7B3]">
-                IN-CHARGE // OFFICER
+              <div className="text-[11px] font-semibold uppercase tracking-wide text-[#5F6368]">
+                In-Charge / Officer
               </div>
-              <div className="font-semibold text-[#F8FAFC]">{pin.inCharge}</div>
+              <div className="font-semibold text-[#111827]">{pin.inCharge}</div>
             </div>
           </div>
 
           <div className="flex items-start gap-3">
-            <Clock className="mt-0.5 h-4 w-4 shrink-0 text-[#FF1E2D]" />
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#E8F0FE] text-[#0B57D0]">
+              <Clock className="h-4 w-4" />
+            </div>
             <div>
-              <div className="font-mono text-[10px] font-bold text-[#A1A7B3]">
-                OFFICE HOURS
+              <div className="text-[11px] font-semibold uppercase tracking-wide text-[#5F6368]">
+                Office Hours
               </div>
-              <div className="font-semibold text-[#F8FAFC]">{pin.timings}</div>
+              <div className="font-semibold text-[#111827]">{pin.timings}</div>
             </div>
           </div>
 
           <div className="flex items-start gap-3">
-            <Phone className="mt-0.5 h-4 w-4 shrink-0 text-[#FF1E2D]" />
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#E8F0FE] text-[#0B57D0]">
+              <Phone className="h-4 w-4" />
+            </div>
             <div>
-              <div className="font-mono text-[10px] font-bold text-[#A1A7B3]">
-                CONTACT &amp; EXT
+              <div className="text-[11px] font-semibold uppercase tracking-wide text-[#5F6368]">
+                Contact &amp; Extension
               </div>
-              <div className="font-semibold text-[#F8FAFC]">{pin.contact}</div>
+              <div className="font-semibold text-[#111827]">{pin.contact}</div>
             </div>
           </div>
         </div>
 
         {/* Details */}
         <div className="mt-5">
-          <div className="font-mono text-[11px] font-bold text-[#FF1E2D]">DETAILS</div>
-          <p className="mt-1.5 text-sm leading-relaxed text-[#A1A7B3]">{pin.description}</p>
+          <div className="text-xs font-bold uppercase tracking-wider text-[#0B57D0]">
+            About This Location
+          </div>
+          <p className="mt-1.5 text-sm leading-relaxed text-[#444746]">{pin.description}</p>
         </div>
 
         {/* Indoor Route Guide */}
-        <div className="mt-4 border border-[#282C38] bg-[#15171E] p-4 cut-corner-sm">
-          <div className="flex items-center gap-2 font-mono text-[11px] font-bold text-[#39FF14]">
+        <div className="mt-4 rounded-2xl bg-[#EFF3F8] p-4">
+          <div className="flex items-center gap-2 text-xs font-bold text-[#0B57D0]">
             <Footprints className="h-4 w-4" />
-            <span>INDOOR ROUTE GUIDE</span>
+            <span>Indoor Walk Guide</span>
           </div>
-          <p className="mt-1.5 text-sm text-[#F8FAFC]/90">{pin.indoorGuide}</p>
+          <p className="mt-1.5 text-sm text-[#111827]">{pin.indoorGuide}</p>
         </div>
 
         {/* Actions */}
@@ -170,10 +183,10 @@ export function PinDetailModal({
                 onClose();
                 onOpenBusTimings();
               }}
-              className="flex w-full items-center justify-center gap-2 bg-[#39FF14] px-4 py-3 font-display text-sm font-bold text-[#050507] transition hover:brightness-110 cursor-pointer cut-corner-sm"
+              className="flex w-full items-center justify-center gap-2 rounded-full bg-[#0F9D58] px-5 py-3 font-display text-sm font-semibold text-white transition hover:bg-[#0B8043] cursor-pointer shadow-xs"
             >
               <Bus className="h-4 w-4" />
-              <span>VIEW POINT 1–5 BUS TIMINGS</span>
+              <span>View Point 1–5 Bus Timings</span>
             </button>
           )}
 
@@ -185,10 +198,10 @@ export function PinDetailModal({
                   onClose();
                   onNavigateIndoor(pin);
                 }}
-                className="flex items-center justify-center gap-2 bg-[#FF1E2D] px-4 py-3 font-display text-sm font-bold text-white transition hover:bg-[#FF3B47] cursor-pointer cut-corner-sm"
+                className="flex items-center justify-center gap-2 rounded-full bg-[#0B57D0] px-5 py-3 font-display text-sm font-semibold text-white transition hover:bg-[#0842A0] cursor-pointer shadow-xs"
               >
                 <Layers className="h-4 w-4" />
-                <span>OPEN INDOOR PLAN</span>
+                <span>Open Floor Plan</span>
               </button>
             )}
 
@@ -198,12 +211,12 @@ export function PinDetailModal({
                 onClose();
                 onNavigateOutdoor(pin);
               }}
-              className={`flex items-center justify-center gap-2 border border-[#F8FAFC] bg-[#050507] px-4 py-3 font-display text-sm font-bold text-[#F8FAFC] transition hover:border-[#39FF14] hover:text-[#39FF14] cursor-pointer cut-corner-sm ${
+              className={`flex items-center justify-center gap-2 rounded-full bg-[#D3E3FD] px-5 py-3 font-display text-sm font-semibold text-[#041E49] transition hover:bg-[#C2D7FC] cursor-pointer ${
                 !isIndoorCapable ? 'sm:col-span-2' : ''
               }`}
             >
-              <MapPin className="h-4 w-4 text-[#39FF14]" />
-              <span>LOCATE ON CAMPUS GPS</span>
+              <MapPin className="h-4 w-4" />
+              <span>Directions on Map</span>
             </button>
           </div>
         </div>

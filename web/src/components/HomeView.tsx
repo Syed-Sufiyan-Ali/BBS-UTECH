@@ -13,6 +13,7 @@ import {
   Megaphone,
   Navigation,
   Search,
+  Sparkles,
   X,
 } from 'lucide-react';
 import {
@@ -68,54 +69,64 @@ export function HomeView({
     return searchPins(CAMPUS_PINS, searchQuery);
   }, [searchQuery]);
 
+  const todayDateLabel = useMemo(() => {
+    return new Intl.DateTimeFormat('en-US', {
+      weekday: 'long',
+      month: 'short',
+      day: 'numeric',
+    }).format(new Date());
+  }, []);
+
   return (
-    <div className="space-y-8 pb-24 lg:pb-12">
-      {/* Hero Command Header */}
-      <section className="relative overflow-hidden border border-[#282C38] bg-gradient-to-br from-[#050507] via-[#140609] to-[#0D0E12] p-6 sm:p-8 cut-corner">
-        <div className="absolute top-0 left-0 h-1 w-2/5 bg-[#FF1E2D]" />
+    <div className="space-y-7 pb-24 lg:pb-12">
+      {/* Pixel "At a Glance" University Card */}
+      <section className="relative overflow-hidden rounded-[28px] border border-[#E2E8F0] bg-gradient-to-br from-[#FFFFFF] via-[#F8FAFF] to-[#EEF4FF] p-6 sm:p-8 shadow-[0_2px_16px_rgba(15,23,42,0.04)]">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-          <div className="space-y-3 max-w-2xl">
-            <span className="inline-block border border-[#FF1E2D] bg-[#26080D] px-2.5 py-1 font-mono text-[11px] font-bold tracking-widest text-[#FF1E2D]">
-              BBSUTSD // KHAIRPUR MIRS
-            </span>
-            <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-wide text-[#F8FAFC]">
-              WELCOME, ENGINEER
+          <div className="space-y-2.5 max-w-2xl">
+            <div className="inline-flex items-center gap-2 rounded-full bg-[#E8F0FE] px-3 py-1 text-xs font-semibold text-[#0B57D0]">
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>{todayDateLabel} • BBS-UTECH Khairpur Mirs</span>
+            </div>
+            <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-[#111827]">
+              Good to see you, Engineer
             </h1>
-            <p className="text-sm sm:text-base text-[#A1A7B3]">
-              Live campus GPS radar, Old &amp; New Complex blueprints, department labs,
-              class timetables, and 5-Point bus schedules — unified in one tactical hub.
+            <p className="text-sm sm:text-base leading-relaxed text-[#444746]">
+              Walkable campus turn-by-turn directions, Old &amp; New Complex floor blueprints,
+              department labs, timetables, and 5-Point city buses in one clean workspace.
             </p>
           </div>
 
-          <div className="flex items-center gap-3 self-start lg:self-center">
-            <div className="flex h-16 w-16 items-center justify-center border-2 border-[#39FF14] bg-[#15171E] cut-corner-sm shadow-[0_0_25px_rgba(57,255,20,0.18)]">
-              <GraduationCap className="h-8 w-8 text-[#39FF14]" />
+          <div className="flex items-center gap-3.5 self-start lg:self-center rounded-2xl border border-[#DCE2EC] bg-[#FFFFFF]/90 px-4 py-3 shadow-xs">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#D3E3FD] text-[#0B57D0]">
+              <GraduationCap className="h-6 w-6" />
             </div>
-            <div className="font-mono text-xs">
-              <div className="text-[#39FF14] font-bold">{CAMPUS_PINS.length} VERIFIED PINS</div>
-              <div className="text-[#A1A7B3]">5 BUS POINTS ACTIVE</div>
-              <div className="text-[#FF1E2D] font-bold">27.5108° N, 68.7416° E</div>
+            <div className="text-xs leading-5">
+              <div className="font-display font-bold text-[#111827]">
+                {CAMPUS_PINS.length} Campus Pins
+              </div>
+              <div className="text-[#137333] font-semibold">5 Bus Points Active</div>
+              <div className="font-mono text-[11px] text-[#5F6368]">27.5108° N, 68.7416° E</div>
             </div>
           </div>
         </div>
 
-        {/* Instant Search + GPS Telemetry */}
+        {/* Pixel Pill Search + Live GPS Pill */}
         <div className="mt-6 grid gap-3 lg:grid-cols-[1.5fr_1fr]">
           <div className="relative">
-            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#FF1E2D]" />
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#0B57D0]" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search VC Office, Labs, Workshops, Canteen, Transport, Bus Point..."
-              className="w-full border border-[#282C38] bg-[#15171E] py-3 pl-10 pr-10 text-sm text-[#F8FAFC] placeholder-[#687080] outline-none transition focus:border-[#FF1E2D] cut-corner-sm"
+              className="w-full rounded-full border border-[#DCE2EC] bg-[#FFFFFF] py-3.5 pl-11 pr-11 text-sm text-[#111827] placeholder-[#747775] shadow-xs outline-none transition focus:border-[#0B57D0] focus:ring-2 focus:ring-[#D3E3FD]"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
                 aria-label="Clear search"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A1A7B3] hover:text-white cursor-pointer"
+                className="absolute right-3.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-[#EFF3F8] text-[#444746] hover:bg-[#E2E8F0] hover:text-[#111827] cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -125,16 +136,16 @@ export function HomeView({
           <button
             type="button"
             onClick={() => onNavigateTab('OUTDOOR_MAP')}
-            className="flex items-center justify-between border border-[#39FF14]/55 bg-[#0B2407] px-4 py-3 text-left transition hover:border-[#39FF14] cursor-pointer cut-corner-sm"
+            className="flex items-center justify-between rounded-full border border-[#CBE6D3] bg-[#E6F4EA] px-5 py-3.5 text-left transition hover:bg-[#D7EFE0] cursor-pointer"
           >
             <div className="flex items-center gap-2.5 min-w-0">
-              <Compass className="h-4 w-4 shrink-0 text-[#39FF14]" />
-              <span className="truncate font-mono text-xs text-[#F8FAFC]">
-                GPS // {userLocation?.label ?? 'SCANNING SATELLITES...'}
+              <Compass className="h-4 w-4 shrink-0 text-[#137333]" />
+              <span className="truncate text-xs font-semibold text-[#111827]">
+                {userLocation?.label ?? 'Locating campus anchor...'}
               </span>
             </div>
-            <span className="ml-2 shrink-0 font-mono text-xs font-bold text-[#39FF14]">
-              OPEN MAP →
+            <span className="ml-3 shrink-0 font-display text-xs font-bold text-[#137333]">
+              Open Map →
             </span>
           </button>
         </div>
@@ -143,11 +154,11 @@ export function HomeView({
       {/* Live Search Results */}
       {searchQuery.trim() && (
         <section className="space-y-3">
-          <div className="font-mono text-xs font-bold text-[#39FF14]">
-            MATCHING LANDMARKS ({searchResults.length})
+          <div className="font-display text-xs font-bold uppercase tracking-wider text-[#0B57D0]">
+            Matching Landmarks ({searchResults.length})
           </div>
           {searchResults.length === 0 ? (
-            <div className="border border-[#282C38] bg-[#0D0E12] p-6 text-sm text-[#A1A7B3] cut-corner-sm">
+            <div className="rounded-3xl border border-[#E2E8F0] bg-[#FFFFFF] p-6 text-sm text-[#5F6368]">
               No campus pin matches &ldquo;{searchQuery}&rdquo;. Try searching VC Office,
               Civil Lab, CS Lab, Library, Canteen, or Transport Office.
             </div>
@@ -157,17 +168,17 @@ export function HomeView({
                 <div
                   key={pin.id}
                   onClick={() => onSelectPin(pin)}
-                  className="flex items-center justify-between gap-3 border border-[#282C38] bg-[#0D0E12] p-4 transition hover:border-[#FF1E2D] cursor-pointer cut-corner-sm"
+                  className="flex items-center justify-between gap-3 rounded-2xl border border-[#E2E8F0] bg-[#FFFFFF] p-4 shadow-xs transition hover:border-[#0B57D0] cursor-pointer"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <span className="shrink-0 border border-[#FF1E2D]/60 bg-[#26080D] px-2 py-1 font-mono text-[10px] font-bold text-[#FF1E2D]">
+                    <span className="shrink-0 rounded-full bg-[#E8F0FE] px-2.5 py-1 font-mono text-[11px] font-bold text-[#0B57D0]">
                       {pin.roomNumber}
                     </span>
                     <div className="min-w-0">
-                      <div className="truncate font-display text-sm font-bold text-[#F8FAFC]">
+                      <div className="truncate font-display text-sm font-bold text-[#111827]">
                         {pin.name}
                       </div>
-                      <div className="truncate text-xs text-[#A1A7B3]">
+                      <div className="truncate text-xs text-[#5F6368]">
                         {BUILDINGS[pin.building].shortName} • {FLOORS[pin.floor].displayName}
                       </div>
                     </div>
@@ -179,7 +190,7 @@ export function HomeView({
                       onLocatePinIndoor(pin);
                     }}
                     title="Locate Pin"
-                    className="shrink-0 border border-[#282C38] bg-[#15171E] p-2 text-[#39FF14] hover:border-[#39FF14] cursor-pointer"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#EFF3F8] text-[#0B57D0] transition hover:bg-[#D3E3FD] cursor-pointer"
                   >
                     <Layers className="h-4 w-4" />
                   </button>
@@ -195,65 +206,62 @@ export function HomeView({
         {/* Next Class Card */}
         <section className="space-y-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="h-4 w-1 bg-[#FF1E2D]" />
-              <h2 className="font-display text-sm font-bold tracking-widest text-[#F8FAFC]">
-                NEXT SESSION
-              </h2>
-            </div>
-            <span className="border border-[#282C38] bg-[#15171E] px-2.5 py-1 font-mono text-[10px] font-bold text-[#39FF14]">
+            <h2 className="font-display text-sm font-bold tracking-tight text-[#111827]">
+              Next Session
+            </h2>
+            <span className="rounded-full bg-[#EFF3F8] px-3 py-1 font-mono text-[11px] font-semibold text-[#444746]">
               {savedDept} • S{savedSem}-{savedSec}
             </span>
           </div>
 
           {nextClass ? (
-            <div className="relative border border-[#282C38] border-l-4 border-l-[#FF1E2D] bg-[#0D0E12] p-5 cut-corner">
+            <div className="rounded-[24px] border border-[#E2E8F0] bg-[#FFFFFF] p-5 shadow-xs">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span
-                  className={`border px-2.5 py-0.5 font-mono text-[11px] font-bold ${
+                  className={`rounded-full px-3 py-1 font-mono text-[11px] font-bold ${
                     nextClass.isLab
-                      ? 'border-[#39FF14]/60 bg-[#0B2407] text-[#39FF14]'
-                      : 'border-[#FF1E2D]/60 bg-[#26080D] text-[#FF1E2D]'
+                      ? 'bg-[#E6F4EA] text-[#137333]'
+                      : 'bg-[#E8F0FE] text-[#0B57D0]'
                   }`}
                 >
                   {nextClass.subjectCode}
-                  {nextClass.isLab ? ' // LAB' : ''}
+                  {nextClass.isLab ? ' • Lab' : ''}
                 </span>
-                <span className="flex items-center gap-1.5 font-mono text-xs font-bold text-[#F8FAFC]">
-                  <Clock className="h-3.5 w-3.5 text-[#39FF14]" />
+                <span className="flex items-center gap-1.5 font-mono text-xs font-semibold text-[#444746]">
+                  <Clock className="h-3.5 w-3.5 text-[#0B57D0]" />
                   {nextClass.timeSlot}
                 </span>
               </div>
 
-              <h3 className="mt-3 font-display text-xl font-bold text-[#F8FAFC]">
+              <h3 className="mt-3 font-display text-xl font-bold text-[#111827]">
                 {nextClass.subjectTitle}
               </h3>
-              <p className="mt-1 text-xs text-[#A1A7B3]">
-                Instructor // {nextClass.instructor}
+              <p className="mt-1 text-xs text-[#5F6368]">
+                Instructor: {nextClass.instructor}
               </p>
 
-              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border border-[#282C38] bg-[#15171E] px-3.5 py-2.5 cut-corner-sm">
-                <div className="flex items-center gap-2 text-xs font-semibold text-[#F8FAFC]">
-                  <MapPin className="h-4 w-4 text-[#39FF14]" />
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#EFF3F8] px-4 py-3">
+                <div className="flex items-center gap-2 text-xs font-semibold text-[#111827]">
+                  <MapPin className="h-4 w-4 text-[#0B57D0]" />
                   <span>{nextClass.roomLabel}</span>
                 </div>
                 <button
                   type="button"
                   onClick={() => onLocatePinById(nextClass.locationPinId)}
-                  className="flex items-center gap-1.5 bg-[#FF1E2D] px-3 py-1.5 font-display text-xs font-bold text-white transition hover:bg-[#FF3B47] cursor-pointer cut-corner-sm"
+                  className="flex items-center gap-1.5 rounded-full bg-[#0B57D0] px-4 py-1.5 font-display text-xs font-semibold text-white transition hover:bg-[#0842A0] cursor-pointer"
                 >
                   <Layers className="h-3.5 w-3.5" />
-                  <span>ROUTE</span>
+                  <span>Locate</span>
                 </button>
               </div>
             </div>
           ) : (
-            <div className="border border-[#39FF14]/45 bg-[#0D0E12] p-6 cut-corner">
-              <div className="font-display text-base font-bold text-[#F8FAFC]">
-                ALL SESSIONS CLEARED
+            <div className="rounded-[24px] border border-[#CBE6D3] bg-[#E6F4EA]/70 p-6">
+              <div className="font-display text-base font-bold text-[#137333]">
+                All sessions completed for today
               </div>
-              <p className="mt-1 text-xs text-[#A1A7B3]">
-                Head to the Central Digital Library or inspect engineering workshops.
+              <p className="mt-1 text-xs text-[#1E4620]">
+                Visit the Central Digital Library or explore campus labs on the map.
               </p>
             </div>
           )}
@@ -261,58 +269,55 @@ export function HomeView({
 
         {/* Quick Launch 2x2 */}
         <section className="space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="h-4 w-1 bg-[#39FF14]" />
-            <h2 className="font-display text-sm font-bold tracking-widest text-[#F8FAFC]">
-              QUICK LAUNCH
-            </h2>
-          </div>
+          <h2 className="font-display text-sm font-bold tracking-tight text-[#111827]">
+            Quick Access
+          </h2>
 
           <div className="grid grid-cols-2 gap-3">
             <QuickLaunchCard
-              code="01"
-              title="OLD BUILDING"
+              badge="Old Complex"
+              title="Old Building"
               subtitle="VC, Exam, Registrar & Finance"
-              accent="red"
-              icon={<Building2 className="h-5 w-5 text-[#FF1E2D]" />}
+              tone="crimson"
+              icon={<Building2 className="h-5 w-5" />}
               onClick={() => onOpenIndoorBuilding('OLD_BUILDING')}
             />
             <QuickLaunchCard
-              code="02"
-              title="NEW COMPLEX"
+              badge="New Complex"
+              title="New Building"
               subtitle="CS/AI Labs, Library & Auditorium"
-              accent="green"
-              icon={<Layers className="h-5 w-5 text-[#39FF14]" />}
+              tone="blue"
+              icon={<Layers className="h-5 w-5" />}
               onClick={() => onOpenIndoorBuilding('NEW_BUILDING')}
             />
             <QuickLaunchCard
-              code="03"
-              title="CAMPUS GPS"
-              subtitle="Complexes, pins & live radar"
-              accent="green"
-              icon={<Navigation className="h-5 w-5 text-[#39FF14]" />}
+              badge="Directions"
+              title="Campus GPS"
+              subtitle="Walkable turn-by-turn routes"
+              tone="emerald"
+              icon={<Navigation className="h-5 w-5" />}
               onClick={() => onNavigateTab('OUTDOOR_MAP')}
             />
             <QuickLaunchCard
-              code="04"
-              title="BUS POINTS"
-              subtitle="Point 1–5 cities & timings"
-              accent="red"
-              icon={<Bus className="h-5 w-5 text-[#FF1E2D]" />}
+              badge="Transit"
+              title="Bus Points 1–5"
+              subtitle="City stops & morning timings"
+              tone="blue"
+              icon={<Bus className="h-5 w-5" />}
               onClick={onOpenBusTimings}
             />
           </div>
         </section>
       </div>
 
-      {/* Freshmen 101 + Bulletins */}
+      {/* Freshmen 101 + Notices */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Freshmen 101 */}
         <section className="space-y-3">
           <div className="flex items-center gap-2">
-            <HelpCircle className="h-4 w-4 text-[#39FF14]" />
-            <h2 className="font-display text-sm font-bold tracking-widest text-[#F8FAFC]">
-              FRESHMEN 101 // ONBOARDING
+            <HelpCircle className="h-4 w-4 text-[#0B57D0]" />
+            <h2 className="font-display text-sm font-bold tracking-tight text-[#111827]">
+              Freshmen Onboarding Guide
             </h2>
           </div>
 
@@ -322,8 +327,8 @@ export function HomeView({
               return (
                 <div
                   key={item.title}
-                  className={`border bg-[#0D0E12] transition cut-corner-sm ${
-                    isOpen ? 'border-[#39FF14]/70' : 'border-[#282C38]'
+                  className={`rounded-2xl border bg-[#FFFFFF] transition ${
+                    isOpen ? 'border-[#0B57D0]/50 shadow-xs' : 'border-[#E2E8F0]'
                   }`}
                 >
                   <button
@@ -333,22 +338,24 @@ export function HomeView({
                   >
                     <div>
                       <div
-                        className={`font-mono text-xs font-bold ${
-                          isOpen ? 'text-[#39FF14]' : 'text-[#F8FAFC]'
+                        className={`font-display text-sm font-bold ${
+                          isOpen ? 'text-[#0B57D0]' : 'text-[#111827]'
                         }`}
                       >
                         {item.title}
                       </div>
-                      <div className="mt-0.5 text-xs text-[#A1A7B3]">{item.location}</div>
+                      <div className="mt-0.5 text-xs text-[#5F6368]">{item.location}</div>
                     </div>
-                    {isOpen ? (
-                      <ChevronUp className="h-4 w-4 shrink-0 text-[#39FF14]" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4 shrink-0 text-[#A1A7B3]" />
-                    )}
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#EFF3F8] text-[#444746]">
+                      {isOpen ? (
+                        <ChevronUp className="h-4 w-4 text-[#0B57D0]" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" />
+                      )}
+                    </div>
                   </button>
                   {isOpen && (
-                    <div className="border-t border-[#282C38] px-4 py-3 text-xs leading-relaxed text-[#F8FAFC]/85">
+                    <div className="border-t border-[#E2E8F0] px-4 py-3 text-xs leading-relaxed text-[#444746]">
                       {item.details}
                     </div>
                   )}
@@ -358,21 +365,21 @@ export function HomeView({
           </div>
         </section>
 
-        {/* Live Bulletins */}
+        {/* Campus Notices */}
         <section className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Megaphone className="h-4 w-4 text-[#FF1E2D]" />
-              <h2 className="font-display text-sm font-bold tracking-widest text-[#F8FAFC]">
-                LIVE BULLETINS
+              <Megaphone className="h-4 w-4 text-[#B3261E]" />
+              <h2 className="font-display text-sm font-bold tracking-tight text-[#111827]">
+                Campus Notices
               </h2>
             </div>
             <button
               type="button"
               onClick={onOpenNotices}
-              className="font-mono text-xs font-bold text-[#39FF14] hover:underline cursor-pointer"
+              className="rounded-full bg-[#E8F0FE] px-3 py-1 font-display text-xs font-semibold text-[#0B57D0] hover:bg-[#D3E3FD] cursor-pointer"
             >
-              VIEW ALL →
+              View all →
             </button>
           </div>
 
@@ -382,28 +389,30 @@ export function HomeView({
                 key={notice.id}
                 type="button"
                 onClick={onOpenNotices}
-                className={`w-full border p-4 text-left transition hover:brightness-110 cursor-pointer cut-corner-sm ${
+                className={`w-full rounded-2xl border p-4 text-left transition hover:shadow-sm cursor-pointer ${
                   notice.isHighPriority
-                    ? 'border-[#FF1E2D]/70 bg-[#26080D]'
-                    : 'border-[#282C38] bg-[#0D0E12]'
+                    ? 'border-[#F2B8B5] bg-[#FCE8E6]/60'
+                    : 'border-[#E2E8F0] bg-[#FFFFFF]'
                 }`}
               >
-                <div className="flex items-center justify-between gap-2 font-mono text-[10px]">
+                <div className="flex items-center justify-between gap-2 text-[11px]">
                   <span
-                    className={`font-bold ${
-                      notice.isHighPriority ? 'text-[#FF1E2D]' : 'text-[#39FF14]'
+                    className={`rounded-full px-2.5 py-0.5 font-semibold ${
+                      notice.isHighPriority
+                        ? 'bg-[#B3261E] text-white'
+                        : 'bg-[#E6F4EA] text-[#137333]'
                     }`}
                   >
                     {notice.isHighPriority
-                      ? `URGENT // ${notice.category.toUpperCase()}`
-                      : notice.category.toUpperCase()}
+                      ? `Priority • ${notice.category}`
+                      : notice.category}
                   </span>
-                  <span className="text-[#A1A7B3]">{notice.date}</span>
+                  <span className="font-mono text-[#5F6368]">{notice.date}</span>
                 </div>
-                <h3 className="mt-1.5 font-display text-sm font-bold text-[#F8FAFC]">
+                <h3 className="mt-2 font-display text-sm font-bold text-[#111827]">
                   {notice.title}
                 </h3>
-                <p className="mt-1 text-xs text-[#A1A7B3] line-clamp-2">
+                <p className="mt-1 text-xs text-[#444746] line-clamp-2">
                   {notice.summary}
                 </p>
               </button>
@@ -416,46 +425,52 @@ export function HomeView({
 }
 
 function QuickLaunchCard({
-  code,
+  badge,
   title,
   subtitle,
-  accent,
+  tone,
   icon,
   onClick,
 }: {
-  code: string;
+  badge: string;
   title: string;
   subtitle: string;
-  accent: 'red' | 'green';
+  tone: 'blue' | 'emerald' | 'crimson';
   icon: React.ReactNode;
   onClick: () => void;
 }) {
+  const iconTone =
+    tone === 'crimson'
+      ? 'bg-[#FCE8E6] text-[#B3261E]'
+      : tone === 'emerald'
+      ? 'bg-[#E6F4EA] text-[#137333]'
+      : 'bg-[#E8F0FE] text-[#0B57D0]';
+
+  const badgeTone =
+    tone === 'crimson'
+      ? 'text-[#B3261E]'
+      : tone === 'emerald'
+      ? 'text-[#137333]'
+      : 'text-[#0B57D0]';
+
   return (
     <button
       type="button"
       onClick={onClick}
-      className="group border border-[#282C38] bg-[#0D0E12] p-4 text-left transition hover:border-[#FF1E2D] cursor-pointer cut-corner"
+      className="group rounded-[24px] border border-[#E2E8F0] bg-[#FFFFFF] p-4 text-left shadow-xs transition hover:border-[#0B57D0] hover:shadow-md cursor-pointer"
     >
-      <div className="flex items-center justify-between">
-        <div
-          className={`flex h-9 w-9 items-center justify-center border bg-[#15171E] cut-corner-sm ${
-            accent === 'red' ? 'border-[#FF1E2D]/60' : 'border-[#39FF14]/60'
-          }`}
-        >
+      <div className="flex items-center justify-between gap-2">
+        <div className={`flex h-10 w-10 items-center justify-center rounded-2xl ${iconTone}`}>
           {icon}
         </div>
-        <span
-          className={`font-mono text-xs font-bold ${
-            accent === 'red' ? 'text-[#FF1E2D]' : 'text-[#39FF14]'
-          }`}
-        >
-          {code}
+        <span className={`font-mono text-[10.5px] font-semibold ${badgeTone}`}>
+          {badge}
         </span>
       </div>
-      <div className="mt-4 font-display text-sm font-bold tracking-wide text-[#F8FAFC] group-hover:text-white">
+      <div className="mt-4 font-display text-sm font-bold text-[#111827] group-hover:text-[#0B57D0]">
         {title}
       </div>
-      <div className="mt-0.5 text-xs text-[#A1A7B3]">{subtitle}</div>
+      <div className="mt-0.5 text-xs text-[#5F6368]">{subtitle}</div>
     </button>
   );
 }

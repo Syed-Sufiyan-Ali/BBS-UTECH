@@ -5,7 +5,6 @@ import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -24,7 +23,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.CutCornerShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
@@ -64,6 +63,7 @@ import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -72,8 +72,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -86,19 +84,29 @@ import com.example.data.model.BusPointRoute
 import com.example.data.model.CampusNotice
 import com.example.data.model.FacultyMember
 import com.example.ui.MainViewModel
-import com.example.ui.theme.AshGray
-import com.example.ui.theme.CarbonSurface
+import com.example.ui.theme.BodyFontFamily
+import com.example.ui.theme.CampusCrimson
+import com.example.ui.theme.CampusCrimsonBorder
+import com.example.ui.theme.CampusCrimsonTint
+import com.example.ui.theme.CampusEmerald
+import com.example.ui.theme.CampusEmeraldBorder
+import com.example.ui.theme.CampusEmeraldDark
+import com.example.ui.theme.CampusEmeraldTint
 import com.example.ui.theme.DisplayFontFamily
-import com.example.ui.theme.GraphiteBorder
+import com.example.ui.theme.InkBlack
+import com.example.ui.theme.MistOutline
 import com.example.ui.theme.MonoFontFamily
-import com.example.ui.theme.NeonGreen
-import com.example.ui.theme.NeonGreenTint
-import com.example.ui.theme.ObsidianSurface
+import com.example.ui.theme.MutedGray
+import com.example.ui.theme.OnPixelBlueContainer
+import com.example.ui.theme.PixelBlue
+import com.example.ui.theme.PixelBlueContainer
+import com.example.ui.theme.PixelBlueTint
+import com.example.ui.theme.PorcelainCanvas
+import com.example.ui.theme.PureSurface
 import com.example.ui.theme.PureWhite
-import com.example.ui.theme.SportsRed
-import com.example.ui.theme.SportsRedTint
-import com.example.ui.theme.SteelGray
-import com.example.ui.theme.VoidBlack
+import com.example.ui.theme.SlateGray
+import com.example.ui.theme.SoftOutline
+import com.example.ui.theme.TonalMist
 
 @Composable
 fun ResourcesScreen(
@@ -123,54 +131,44 @@ fun ResourcesScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(VoidBlack)
+            .background(PorcelainCanvas)
     ) {
-        // Minimalist Punk Header
+        // Minimalist Pixel Header
         Surface(
-            color = VoidBlack,
+            color = PureSurface,
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(
-                modifier = Modifier
-                    .drawBehind {
-                        drawLine(
-                            color = SportsRed,
-                            start = Offset(0f, 0f),
-                            end = Offset(size.width * 0.4f, 0f),
-                            strokeWidth = 5f
-                        )
-                    }
-                    .padding(horizontal = 16.dp, vertical = 14.dp)
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)
             ) {
                 Text(
-                    text = "BBSUTSD // CAMPUS HUB",
+                    text = "BBS-UTECH Campus Hub",
                     fontFamily = DisplayFontFamily,
-                    fontSize = 18.sp,
-                    letterSpacing = 0.8.sp,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = PureWhite
+                    color = InkBlack
                 )
                 Text(
-                    text = "5-POINT BUSES • PORTALS • FACULTY • BULLETINS",
-                    fontFamily = MonoFontFamily,
-                    fontSize = 10.sp,
-                    color = NeonGreen
+                    text = "5-Point buses, portals, faculty directory & notices",
+                    fontFamily = BodyFontFamily,
+                    fontSize = 12.sp,
+                    color = SlateGray
                 )
             }
         }
 
         // Sub-tabs
-        val tabTitles = listOf("ACADEMIC HUB", "POINT BUSES (1–5)", "FACULTY", "NOTICES")
+        val tabTitles = listOf("Academic Hub", "Point Buses (1–5)", "Faculty", "Notices")
         ScrollableTabRow(
             selectedTabIndex = selectedTabIndex,
-            containerColor = ObsidianSurface,
-            contentColor = PureWhite,
+            containerColor = PureSurface,
+            contentColor = PixelBlue,
             edgePadding = 12.dp,
-            divider = { HorizontalDivider(color = GraphiteBorder) },
+            divider = { HorizontalDivider(color = MistOutline) },
             indicator = { tabPositions ->
                 TabRowDefaults.SecondaryIndicator(
                     Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
-                    color = SportsRed,
+                    color = PixelBlue,
                     height = 3.dp
                 )
             },
@@ -186,9 +184,8 @@ fun ResourcesScreen(
                             text = title,
                             fontFamily = DisplayFontFamily,
                             fontWeight = FontWeight.Bold,
-                            color = if (isSelected) SportsRed else AshGray,
-                            fontSize = 12.sp,
-                            letterSpacing = 0.5.sp
+                            color = if (isSelected) PixelBlue else SlateGray,
+                            fontSize = 13.sp
                         )
                     },
                     modifier = Modifier.testTag("res_subtab_$index")
@@ -238,17 +235,17 @@ fun ResourcesScreen(
         val res = selectedResource!!
         AlertDialog(
             onDismissRequest = { selectedResource = null },
-            containerColor = ObsidianSurface,
-            titleContentColor = PureWhite,
-            textContentColor = AshGray,
-            shape = CutCornerShape(topEnd = 16.dp, bottomStart = 16.dp),
+            containerColor = PureSurface,
+            titleContentColor = InkBlack,
+            textContentColor = SlateGray,
+            shape = RoundedCornerShape(28.dp),
             title = {
                 Text(
                     text = res.title,
                     fontFamily = DisplayFontFamily,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 17.sp,
-                    color = PureWhite
+                    fontSize = 18.sp,
+                    color = InkBlack
                 )
             },
             text = {
@@ -258,25 +255,25 @@ fun ResourcesScreen(
                         .verticalScroll(rememberScrollState())
                 ) {
                     Surface(
-                        color = SportsRedTint,
-                        shape = CutCornerShape(4.dp),
-                        border = BorderStroke(1.dp, SportsRed)
+                        color = PixelBlueTint,
+                        shape = RoundedCornerShape(50)
                     ) {
                         Text(
-                            text = res.category.uppercase(),
-                            fontFamily = MonoFontFamily,
-                            color = SportsRed,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                            text = res.category,
+                            fontFamily = BodyFontFamily,
+                            color = PixelBlue,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                         )
                     }
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(
                         text = res.details,
-                        fontSize = 13.sp,
+                        fontFamily = BodyFontFamily,
+                        fontSize = 13.5.sp,
                         lineHeight = 20.sp,
-                        color = PureWhite.copy(alpha = 0.9f)
+                        color = InkBlack
                     )
                 }
             },
@@ -290,25 +287,25 @@ fun ResourcesScreen(
                             } catch (_: Exception) {}
                         },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = SportsRed,
+                            containerColor = PixelBlue,
                             contentColor = PureWhite
                         ),
-                        shape = CutCornerShape(topEnd = 8.dp, bottomStart = 8.dp)
+                        shape = RoundedCornerShape(50)
                     ) {
                         Icon(Icons.Default.OpenInBrowser, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text(res.actionText.uppercase(), fontFamily = DisplayFontFamily, fontWeight = FontWeight.Bold)
+                        Text(res.actionText, fontFamily = BodyFontFamily, fontWeight = FontWeight.SemiBold)
                     }
                 } else {
                     TextButton(onClick = { selectedResource = null }) {
-                        Text("CLOSE", fontFamily = MonoFontFamily, color = NeonGreen, fontWeight = FontWeight.Bold)
+                        Text("Close", fontFamily = BodyFontFamily, color = PixelBlue, fontWeight = FontWeight.SemiBold)
                     }
                 }
             },
             dismissButton = {
                 if (res.externalUrl != null) {
                     TextButton(onClick = { selectedResource = null }) {
-                        Text("CANCEL", fontFamily = MonoFontFamily, color = AshGray)
+                        Text("Cancel", fontFamily = BodyFontFamily, color = SlateGray)
                     }
                 }
             }
@@ -320,17 +317,17 @@ fun ResourcesScreen(
         val notice = selectedNotice!!
         AlertDialog(
             onDismissRequest = { selectedNotice = null },
-            containerColor = ObsidianSurface,
-            titleContentColor = PureWhite,
-            textContentColor = AshGray,
-            shape = CutCornerShape(topEnd = 16.dp, bottomStart = 16.dp),
+            containerColor = PureSurface,
+            titleContentColor = InkBlack,
+            textContentColor = SlateGray,
+            shape = RoundedCornerShape(28.dp),
             title = {
                 Text(
                     text = notice.title,
                     fontFamily = DisplayFontFamily,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 17.sp,
-                    color = PureWhite
+                    fontSize = 18.sp,
+                    color = InkBlack
                 )
             },
             text = {
@@ -341,32 +338,32 @@ fun ResourcesScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Surface(
-                            color = if (notice.isHighPriority) SportsRedTint else NeonGreenTint,
-                            shape = CutCornerShape(4.dp),
-                            border = BorderStroke(1.dp, if (notice.isHighPriority) SportsRed else NeonGreen)
+                            color = if (notice.isHighPriority) CampusCrimsonTint else PixelBlueTint,
+                            shape = RoundedCornerShape(50)
                         ) {
                             Text(
-                                text = notice.category.uppercase(),
-                                fontFamily = MonoFontFamily,
-                                color = if (notice.isHighPriority) SportsRed else NeonGreen,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                text = notice.category,
+                                fontFamily = BodyFontFamily,
+                                color = if (notice.isHighPriority) CampusCrimson else PixelBlue,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                             )
                         }
                         Text(
                             text = notice.date,
                             fontFamily = MonoFontFamily,
-                            fontSize = 10.5.sp,
-                            color = AshGray
+                            fontSize = 11.sp,
+                            color = MutedGray
                         )
                     }
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         text = notice.summary,
-                        fontSize = 13.sp,
+                        fontFamily = BodyFontFamily,
+                        fontSize = 13.5.sp,
                         lineHeight = 20.sp,
-                        color = PureWhite.copy(alpha = 0.9f)
+                        color = InkBlack
                     )
                 }
             },
@@ -374,12 +371,12 @@ fun ResourcesScreen(
                 Button(
                     onClick = { selectedNotice = null },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = SportsRed,
+                        containerColor = PixelBlue,
                         contentColor = PureWhite
                     ),
-                    shape = CutCornerShape(topEnd = 8.dp, bottomStart = 8.dp)
+                    shape = RoundedCornerShape(50)
                 ) {
-                    Text("UNDERSTOOD", fontFamily = DisplayFontFamily, fontWeight = FontWeight.Bold)
+                    Text("Got it", fontFamily = BodyFontFamily, fontWeight = FontWeight.SemiBold)
                 }
             }
         )
@@ -423,53 +420,42 @@ private fun PointBusesView(
         item {
             Spacer(modifier = Modifier.height(12.dp))
             Card(
-                colors = CardDefaults.cardColors(containerColor = ObsidianSurface),
-                shape = CutCornerShape(topEnd = 16.dp, bottomStart = 16.dp),
-                border = BorderStroke(1.dp, SportsRed.copy(alpha = 0.75f)),
+                colors = CardDefaults.cardColors(containerColor = PureSurface),
+                shape = RoundedCornerShape(24.dp),
+                border = BorderStroke(1.dp, MistOutline),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column(
-                    modifier = Modifier
-                        .drawBehind {
-                            drawLine(
-                                color = SportsRed,
-                                start = Offset(0f, 0f),
-                                end = Offset(0f, size.height),
-                                strokeWidth = 8f
-                            )
-                        }
-                        .padding(14.dp)
-                ) {
+                Column(modifier = Modifier.padding(16.dp)) {
                     Surface(
-                        color = SportsRedTint,
-                        shape = CutCornerShape(4.dp),
-                        border = BorderStroke(1.dp, SportsRed)
+                        color = PixelBlueTint,
+                        shape = RoundedCornerShape(50)
                     ) {
                         Text(
-                            text = "TRANSPORT OFFICE // NEXT TO BOYS HOSTEL",
-                            fontFamily = MonoFontFamily,
-                            color = SportsRed,
-                            fontSize = 9.5.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                            text = "Transport Office • Next to Boys Hostel",
+                            fontFamily = BodyFontFamily,
+                            color = PixelBlue,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                         )
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     Text(
-                        text = "BBSUTSD 5-POINT BUS FLEET",
+                        text = "BBS-UTECH 5-Point Bus Fleet",
                         fontFamily = DisplayFontFamily,
-                        color = PureWhite,
-                        fontSize = 17.sp,
+                        color = InkBlack,
+                        fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
                         text = "In-Charge: Engr. Sameeullah Khan / Imran Gilal (0304-3482840)",
-                        color = AshGray,
-                        fontSize = 11.5.sp,
-                        modifier = Modifier.padding(top = 2.dp)
+                        fontFamily = BodyFontFamily,
+                        color = SlateGray,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(top = 3.dp)
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -477,28 +463,28 @@ private fun PointBusesView(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Surface(
-                            color = NeonGreenTint,
-                            shape = CutCornerShape(6.dp),
-                            border = BorderStroke(1.dp, NeonGreen.copy(alpha = 0.55f)),
+                            color = CampusEmeraldTint,
+                            shape = RoundedCornerShape(50),
+                            border = BorderStroke(1.dp, CampusEmeraldBorder),
                             modifier = Modifier.weight(1f)
                         ) {
                             Row(
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 10.dp),
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Schedule,
                                     contentDescription = null,
-                                    tint = NeonGreen,
-                                    modifier = Modifier.size(15.dp)
+                                    tint = CampusEmeraldDark,
+                                    modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = "IN 08:25 AM • OUT 03:30 PM",
+                                    text = "In 08:25 AM • Out 03:30 PM",
                                     fontFamily = MonoFontFamily,
-                                    color = NeonGreen,
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
+                                    color = CampusEmeraldDark,
+                                    fontSize = 10.5.sp,
+                                    fontWeight = FontWeight.SemiBold,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
@@ -507,9 +493,9 @@ private fun PointBusesView(
 
                         OutlinedButton(
                             onClick = onLocateTransportOffice,
-                            border = BorderStroke(1.5.dp, NeonGreen),
-                            shape = CutCornerShape(topEnd = 8.dp, bottomStart = 8.dp),
-                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
+                            border = BorderStroke(1.dp, SoftOutline),
+                            shape = RoundedCornerShape(50),
+                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 0.dp),
                             modifier = Modifier
                                 .height(48.dp)
                                 .testTag("bus_tab_locate_office_button")
@@ -517,16 +503,16 @@ private fun PointBusesView(
                             Icon(
                                 imageVector = Icons.Default.LocationOn,
                                 contentDescription = "Locate Transport Office",
-                                tint = NeonGreen,
+                                tint = PixelBlue,
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "MAP PIN",
-                                fontFamily = MonoFontFamily,
-                                color = NeonGreen,
-                                fontSize = 10.5.sp,
-                                fontWeight = FontWeight.Bold
+                                text = "Map Pin",
+                                fontFamily = BodyFontFamily,
+                                color = InkBlack,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.SemiBold
                             )
                         }
                     }
@@ -534,7 +520,7 @@ private fun PointBusesView(
             }
         }
 
-        // City / Stop Search Box
+        // City / Stop Search Pill
         item {
             OutlinedTextField(
                 value = query,
@@ -542,29 +528,33 @@ private fun PointBusesView(
                 placeholder = {
                     Text(
                         "Search city or stop (Sukkur, Gambat, Hingorja, Pir Jo Goth...)",
-                        fontSize = 12.sp,
-                        color = SteelGray,
+                        fontFamily = BodyFontFamily,
+                        fontSize = 12.5.sp,
+                        color = MutedGray,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                 },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = SportsRed) },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = PixelBlue) },
                 trailingIcon = {
                     if (query.isNotEmpty()) {
-                        IconButton(onClick = { onQueryChange("") }) {
-                            Icon(Icons.Default.Close, contentDescription = "Clear bus search", tint = PureWhite)
+                        IconButton(
+                            onClick = { onQueryChange("") },
+                            modifier = Modifier.minimumInteractiveComponentSize()
+                        ) {
+                            Icon(Icons.Default.Close, contentDescription = "Clear bus search", tint = SlateGray)
                         }
                     }
                 },
-                shape = CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp),
+                shape = RoundedCornerShape(50),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = CarbonSurface,
-                    unfocusedContainerColor = ObsidianSurface,
-                    focusedTextColor = PureWhite,
-                    unfocusedTextColor = PureWhite,
-                    focusedBorderColor = SportsRed,
-                    unfocusedBorderColor = GraphiteBorder,
-                    cursorColor = NeonGreen
+                    focusedContainerColor = PureSurface,
+                    unfocusedContainerColor = PureSurface,
+                    focusedTextColor = InkBlack,
+                    unfocusedTextColor = InkBlack,
+                    focusedBorderColor = PixelBlue,
+                    unfocusedBorderColor = MistOutline,
+                    cursorColor = PixelBlue
                 ),
                 singleLine = true,
                 modifier = Modifier
@@ -573,7 +563,7 @@ private fun PointBusesView(
             )
         }
 
-        // Point 1..5 Filter Chips
+        // Point 1..5 Filter Pills
         item {
             Row(
                 modifier = Modifier
@@ -586,24 +576,24 @@ private fun PointBusesView(
                     onClick = { onSelectPoint(null) },
                     label = {
                         Text(
-                            "ALL 5 POINTS",
-                            fontFamily = MonoFontFamily,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold
+                            "All 5 Points",
+                            fontFamily = BodyFontFamily,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold
                         )
                     },
-                    shape = CutCornerShape(6.dp),
+                    shape = RoundedCornerShape(50),
                     colors = FilterChipDefaults.filterChipColors(
-                        containerColor = ObsidianSurface,
-                        labelColor = AshGray,
-                        selectedContainerColor = SportsRed,
+                        containerColor = PureSurface,
+                        labelColor = SlateGray,
+                        selectedContainerColor = PixelBlue,
                         selectedLabelColor = PureWhite
                     ),
                     border = FilterChipDefaults.filterChipBorder(
                         enabled = true,
                         selected = selectedPoint == null,
-                        borderColor = GraphiteBorder,
-                        selectedBorderColor = SportsRed
+                        borderColor = MistOutline,
+                        selectedBorderColor = PixelBlue
                     ),
                     modifier = Modifier.testTag("bus_filter_all")
                 )
@@ -614,24 +604,24 @@ private fun PointBusesView(
                         onClick = { onSelectPoint(if (isSelected) null else pt) },
                         label = {
                             Text(
-                                "POINT $pt",
-                                fontFamily = MonoFontFamily,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold
+                                "Point $pt",
+                                fontFamily = BodyFontFamily,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.SemiBold
                             )
                         },
-                        shape = CutCornerShape(6.dp),
+                        shape = RoundedCornerShape(50),
                         colors = FilterChipDefaults.filterChipColors(
-                            containerColor = ObsidianSurface,
-                            labelColor = AshGray,
-                            selectedContainerColor = NeonGreen,
-                            selectedLabelColor = VoidBlack
+                            containerColor = PureSurface,
+                            labelColor = SlateGray,
+                            selectedContainerColor = PixelBlueContainer,
+                            selectedLabelColor = OnPixelBlueContainer
                         ),
                         border = FilterChipDefaults.filterChipBorder(
                             enabled = true,
                             selected = isSelected,
-                            borderColor = GraphiteBorder,
-                            selectedBorderColor = NeonGreen
+                            borderColor = MistOutline,
+                            selectedBorderColor = PixelBlueContainer
                         ),
                         modifier = Modifier.testTag("bus_filter_point_$pt")
                     )
@@ -642,9 +632,9 @@ private fun PointBusesView(
         if (filteredRoutes.isEmpty()) {
             item {
                 Card(
-                    colors = CardDefaults.cardColors(containerColor = ObsidianSurface),
-                    shape = CutCornerShape(topEnd = 14.dp, bottomStart = 14.dp),
-                    border = BorderStroke(1.dp, GraphiteBorder),
+                    colors = CardDefaults.cardColors(containerColor = PureSurface),
+                    shape = RoundedCornerShape(24.dp),
+                    border = BorderStroke(1.dp, MistOutline),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 12.dp)
@@ -658,21 +648,22 @@ private fun PointBusesView(
                         Icon(
                             imageVector = Icons.Default.DirectionsBus,
                             contentDescription = null,
-                            tint = SportsRed.copy(alpha = 0.7f),
+                            tint = PixelBlue.copy(alpha = 0.6f),
                             modifier = Modifier.size(38.dp)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "NO POINT ROUTE MATCHES \"$query\"",
+                            text = "No point route matches \"$query\"",
                             fontFamily = DisplayFontFamily,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp,
-                            color = PureWhite
+                            fontSize = 15.sp,
+                            color = InkBlack
                         )
                         Text(
                             text = "Try Sukkur, Gambat, Hingorja, Ranipur, Pir Jo Goth, Rohri, or Thari Mirwah.",
-                            fontSize = 12.sp,
-                            color = AshGray,
+                            fontFamily = BodyFontFamily,
+                            fontSize = 12.5.sp,
+                            color = SlateGray,
                             modifier = Modifier.padding(top = 4.dp)
                         )
                     }
@@ -701,14 +692,14 @@ private fun BusPointRouteCard(
     var expanded by remember(route.pointNumber, defaultExpanded) { mutableStateOf(defaultExpanded) }
 
     Card(
-        colors = CardDefaults.cardColors(containerColor = ObsidianSurface),
-        shape = CutCornerShape(topEnd = 16.dp, bottomStart = 16.dp),
-        border = BorderStroke(1.dp, if (expanded) SportsRed.copy(alpha = 0.6f) else GraphiteBorder),
+        colors = CardDefaults.cardColors(containerColor = PureSurface),
+        shape = RoundedCornerShape(24.dp),
+        border = BorderStroke(1.dp, if (expanded) PixelBlue.copy(alpha = 0.45f) else MistOutline),
         modifier = Modifier
             .fillMaxWidth()
             .testTag("bus_point_card_${route.pointNumber}")
     ) {
-        Column(modifier = Modifier.padding(14.dp)) {
+        Column(modifier = Modifier.padding(16.dp)) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -721,43 +712,45 @@ private fun BusPointRouteCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Surface(
-                        color = SportsRed,
-                        shape = CutCornerShape(4.dp)
+                        color = PixelBlue,
+                        shape = RoundedCornerShape(50)
                     ) {
                         Text(
-                            text = "POINT 0${route.pointNumber}",
+                            text = "Point 0${route.pointNumber}",
                             fontFamily = MonoFontFamily,
                             color = PureWhite,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(horizontal = 9.dp, vertical = 4.dp)
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                         )
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Surface(
-                        color = NeonGreenTint,
-                        shape = CutCornerShape(4.dp),
-                        border = BorderStroke(1.dp, NeonGreen.copy(alpha = 0.6f))
+                        color = CampusEmeraldTint,
+                        shape = RoundedCornerShape(50),
+                        border = BorderStroke(1.dp, CampusEmeraldBorder)
                     ) {
                         Text(
                             text = route.busNumber,
                             fontFamily = MonoFontFamily,
-                            color = NeonGreen,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            color = CampusEmeraldDark,
+                            fontSize = 10.5.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.padding(horizontal = 9.dp, vertical = 4.dp)
                         )
                     }
                 }
 
                 IconButton(
                     onClick = { expanded = !expanded },
-                    modifier = Modifier.testTag("expand_bus_point_${route.pointNumber}")
+                    modifier = Modifier
+                        .minimumInteractiveComponentSize()
+                        .testTag("expand_bus_point_${route.pointNumber}")
                 ) {
                     Icon(
                         imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                         contentDescription = if (expanded) "Collapse route stops" else "Expand route stops",
-                        tint = NeonGreen
+                        tint = PixelBlue
                     )
                 }
             }
@@ -765,33 +758,33 @@ private fun BusPointRouteCard(
             Text(
                 text = route.busTitle,
                 fontFamily = DisplayFontFamily,
-                fontSize = 15.5.sp,
+                fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
-                color = PureWhite
+                color = InkBlack
             )
             Text(
                 text = route.corridorSummary,
-                fontSize = 12.sp,
-                color = AshGray,
+                fontFamily = BodyFontFamily,
+                fontSize = 12.5.sp,
+                color = SlateGray,
                 modifier = Modifier.padding(top = 2.dp)
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(CarbonSurface, CutCornerShape(topEnd = 8.dp, bottomStart = 8.dp))
-                    .border(1.dp, GraphiteBorder, CutCornerShape(topEnd = 8.dp, bottomStart = 8.dp))
-                    .padding(horizontal = 10.dp, vertical = 8.dp),
+                    .background(TonalMist, RoundedCornerShape(16.dp))
+                    .padding(horizontal = 12.dp, vertical = 10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                TimingBadgeColumn(label = "STARTS", time = route.morningStartTime, accent = PureWhite)
-                TimingBadgeColumn(label = "ARRIVAL", time = route.campusArrivalTime, accent = NeonGreen)
-                TimingBadgeColumn(label = "RETURN", time = route.afternoonDepartureTime, accent = SportsRed)
+                TimingBadgeColumn(label = "Starts", time = route.morningStartTime, accent = InkBlack)
+                TimingBadgeColumn(label = "Arrival", time = route.campusArrivalTime, accent = CampusEmeraldDark)
+                TimingBadgeColumn(label = "Return", time = route.afternoonDepartureTime, accent = PixelBlue)
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             Row(
                 modifier = Modifier
@@ -802,20 +795,20 @@ private fun BusPointRouteCard(
                 route.citiesCovered.forEach { city ->
                     val isMatchedCity = highlightQuery.isNotEmpty() && city.lowercase().contains(highlightQuery)
                     Surface(
-                        color = if (isMatchedCity) NeonGreenTint else CarbonSurface,
-                        shape = CutCornerShape(4.dp),
+                        color = if (isMatchedCity) CampusEmeraldTint else TonalMist,
+                        shape = RoundedCornerShape(50),
                         border = BorderStroke(
                             1.dp,
-                            if (isMatchedCity) NeonGreen else GraphiteBorder
+                            if (isMatchedCity) CampusEmerald else Color.Transparent
                         )
                     ) {
                         Text(
-                            text = city.uppercase(),
-                            fontFamily = MonoFontFamily,
-                            fontSize = 9.5.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (isMatchedCity) NeonGreen else AshGray,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                            text = city,
+                            fontFamily = BodyFontFamily,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = if (isMatchedCity) CampusEmeraldDark else SlateGray,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                         )
                     }
                 }
@@ -823,7 +816,7 @@ private fun BusPointRouteCard(
 
             AnimatedVisibility(visible = expanded) {
                 Column(modifier = Modifier.padding(top = 12.dp)) {
-                    HorizontalDivider(color = GraphiteBorder)
+                    HorizontalDivider(color = MistOutline)
                     Spacer(modifier = Modifier.height(10.dp))
 
                     Row(
@@ -832,18 +825,18 @@ private fun BusPointRouteCard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "STOPS TIMELINE (${route.stops.size})",
-                            fontFamily = MonoFontFamily,
-                            fontSize = 10.5.sp,
+                            text = "Stops Timeline (${route.stops.size})",
+                            fontFamily = DisplayFontFamily,
+                            fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
-                            color = SportsRed
+                            color = PixelBlue
                         )
                         Text(
                             text = route.contactPhone,
                             fontFamily = MonoFontFamily,
-                            fontSize = 10.5.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = NeonGreen
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = CampusEmeraldDark
                         )
                     }
 
@@ -860,31 +853,22 @@ private fun BusPointRouteCard(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(
-                                    if (isMatch) NeonGreenTint else Color.Transparent,
-                                    CutCornerShape(4.dp)
+                                    if (isMatch) CampusEmeraldTint else Color.Transparent,
+                                    RoundedCornerShape(12.dp)
                                 )
                                 .padding(horizontal = 4.dp, vertical = 6.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(22.dp)
+                                    .size(24.dp)
                                     .background(
                                         color = when {
-                                            index == 0 -> SportsRed
-                                            isLast -> NeonGreen
-                                            else -> CarbonSurface
+                                            index == 0 -> PixelBlue
+                                            isLast -> CampusEmerald
+                                            else -> TonalMist
                                         },
-                                        shape = CutCornerShape(4.dp)
-                                    )
-                                    .border(
-                                        1.dp,
-                                        when {
-                                            index == 0 -> SportsRed
-                                            isLast -> NeonGreen
-                                            else -> GraphiteBorder
-                                        },
-                                        CutCornerShape(4.dp)
+                                        shape = CircleShape
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
@@ -893,11 +877,7 @@ private fun BusPointRouteCard(
                                     fontFamily = MonoFontFamily,
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = when {
-                                        index == 0 -> PureWhite
-                                        isLast -> VoidBlack
-                                        else -> AshGray
-                                    }
+                                    color = if (index == 0 || isLast) PureWhite else SlateGray
                                 )
                             }
 
@@ -906,42 +886,44 @@ private fun BusPointRouteCard(
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = stop.stopName,
-                                    fontSize = 12.5.sp,
+                                    fontFamily = BodyFontFamily,
+                                    fontSize = 13.sp,
                                     fontWeight = if (index == 0 || isLast || isMatch) FontWeight.Bold else FontWeight.Medium,
-                                    color = PureWhite
+                                    color = InkBlack
                                 )
                                 Text(
                                     text = if (stop.note.isNotEmpty()) "${stop.cityArea} • ${stop.note}" else stop.cityArea,
-                                    fontSize = 10.5.sp,
-                                    color = AshGray
+                                    fontFamily = BodyFontFamily,
+                                    fontSize = 11.sp,
+                                    color = SlateGray
                                 )
                             }
 
                             Surface(
-                                color = if (isLast) NeonGreenTint else CarbonSurface,
-                                shape = CutCornerShape(4.dp),
+                                color = if (isLast) CampusEmeraldTint else TonalMist,
+                                shape = RoundedCornerShape(50),
                                 border = BorderStroke(
                                     1.dp,
-                                    if (isLast) NeonGreen.copy(alpha = 0.7f) else GraphiteBorder
+                                    if (isLast) CampusEmeraldBorder else MistOutline
                                 )
                             ) {
                                 Row(
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                    modifier = Modifier.padding(horizontal = 9.dp, vertical = 4.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.AccessTime,
                                         contentDescription = null,
-                                        tint = if (isLast) NeonGreen else SportsRed,
+                                        tint = if (isLast) CampusEmeraldDark else PixelBlue,
                                         modifier = Modifier.size(11.dp)
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(
                                         text = stop.morningPickup,
                                         fontFamily = MonoFontFamily,
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = if (isLast) NeonGreen else PureWhite
+                                        fontSize = 10.5.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = if (isLast) CampusEmeraldDark else InkBlack
                                     )
                                 }
                             }
@@ -962,15 +944,15 @@ private fun TimingBadgeColumn(
     Column {
         Text(
             text = label,
-            fontFamily = MonoFontFamily,
-            fontSize = 9.sp,
-            color = SteelGray,
-            fontWeight = FontWeight.Bold
+            fontFamily = BodyFontFamily,
+            fontSize = 10.5.sp,
+            color = MutedGray,
+            fontWeight = FontWeight.Medium
         )
         Text(
             text = time,
             fontFamily = MonoFontFamily,
-            fontSize = 11.5.sp,
+            fontSize = 12.sp,
             color = accent,
             fontWeight = FontWeight.Bold
         )
@@ -989,25 +971,26 @@ private fun AcademicHubView(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         items(resources) { item ->
-            val accent = if (item.category == "Transport") NeonGreen else SportsRed
+            val isTransport = item.category == "Transport"
+            val accent = if (isTransport) CampusEmeraldDark else PixelBlue
+            val tintBg = if (isTransport) CampusEmeraldTint else PixelBlueTint
             Card(
-                colors = CardDefaults.cardColors(containerColor = ObsidianSurface),
-                shape = CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp),
-                border = BorderStroke(1.dp, GraphiteBorder),
+                colors = CardDefaults.cardColors(containerColor = PureSurface),
+                shape = RoundedCornerShape(22.dp),
+                border = BorderStroke(1.dp, MistOutline),
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { onSelectResource(item) }
                     .testTag("resource_item_${item.id}")
             ) {
                 Row(
-                    modifier = Modifier.padding(14.dp),
+                    modifier = Modifier.padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Surface(
-                        color = accent.copy(alpha = 0.14f),
-                        shape = CutCornerShape(6.dp),
-                        border = BorderStroke(1.dp, accent.copy(alpha = 0.6f)),
-                        modifier = Modifier.size(42.dp)
+                        color = tintBg,
+                        shape = RoundedCornerShape(14.dp),
+                        modifier = Modifier.size(44.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             val icon = when (item.category) {
@@ -1020,7 +1003,7 @@ private fun AcademicHubView(
                                 imageVector = icon,
                                 contentDescription = null,
                                 tint = accent,
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier.size(21.dp)
                             )
                         }
                     }
@@ -1029,31 +1012,31 @@ private fun AcademicHubView(
 
                     Column(modifier = Modifier.weight(1f)) {
                         Surface(
-                            color = CarbonSurface,
-                            shape = CutCornerShape(4.dp),
-                            border = BorderStroke(1.dp, GraphiteBorder)
+                            color = TonalMist,
+                            shape = RoundedCornerShape(50)
                         ) {
                             Text(
-                                text = item.category.uppercase(),
-                                fontFamily = MonoFontFamily,
+                                text = item.category,
+                                fontFamily = BodyFontFamily,
                                 color = accent,
-                                fontSize = 9.5.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                fontSize = 10.5.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                             )
                         }
-                        Spacer(modifier = Modifier.height(5.dp))
+                        Spacer(modifier = Modifier.height(6.dp))
                         Text(
                             text = item.title,
                             fontFamily = DisplayFontFamily,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp,
-                            color = PureWhite
+                            fontSize = 14.5.sp,
+                            color = InkBlack
                         )
                         Text(
                             text = item.description,
-                            fontSize = 11.5.sp,
-                            color = AshGray,
+                            fontFamily = BodyFontFamily,
+                            fontSize = 12.sp,
+                            color = SlateGray,
                             maxLines = 2,
                             modifier = Modifier.padding(top = 2.dp)
                         )
@@ -1062,7 +1045,7 @@ private fun AcademicHubView(
                     Icon(
                         imageVector = Icons.Default.ChevronRight,
                         contentDescription = null,
-                        tint = AshGray,
+                        tint = MutedGray,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -1093,24 +1076,27 @@ private fun FacultyDirectoryView(
         OutlinedTextField(
             value = query,
             onValueChange = onQueryChange,
-            placeholder = { Text("Search professor, chairman or dept...", fontSize = 13.sp, color = SteelGray) },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = SportsRed) },
+            placeholder = { Text("Search professor, chairman or dept...", fontFamily = BodyFontFamily, fontSize = 13.sp, color = MutedGray) },
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = PixelBlue) },
             trailingIcon = {
                 if (query.isNotEmpty()) {
-                    IconButton(onClick = { onQueryChange("") }) {
-                        Icon(Icons.Default.Close, contentDescription = "Clear", tint = PureWhite)
+                    IconButton(
+                        onClick = { onQueryChange("") },
+                        modifier = Modifier.minimumInteractiveComponentSize()
+                    ) {
+                        Icon(Icons.Default.Close, contentDescription = "Clear", tint = SlateGray)
                     }
                 }
             },
-            shape = CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp),
+            shape = RoundedCornerShape(50),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = CarbonSurface,
-                unfocusedContainerColor = ObsidianSurface,
-                focusedTextColor = PureWhite,
-                unfocusedTextColor = PureWhite,
-                focusedBorderColor = SportsRed,
-                unfocusedBorderColor = GraphiteBorder,
-                cursorColor = NeonGreen
+                focusedContainerColor = PureSurface,
+                unfocusedContainerColor = PureSurface,
+                focusedTextColor = InkBlack,
+                unfocusedTextColor = InkBlack,
+                focusedBorderColor = PixelBlue,
+                unfocusedBorderColor = MistOutline,
+                cursorColor = PixelBlue
             ),
             singleLine = true,
             modifier = Modifier
@@ -1121,11 +1107,11 @@ private fun FacultyDirectoryView(
         Spacer(modifier = Modifier.height(10.dp))
 
         Text(
-            text = "FACULTY DIRECTORY (${filtered.size})",
-            fontFamily = MonoFontFamily,
-            fontSize = 10.5.sp,
+            text = "Faculty Directory (${filtered.size})",
+            fontFamily = DisplayFontFamily,
+            fontSize = 12.5.sp,
             fontWeight = FontWeight.Bold,
-            color = NeonGreen
+            color = PixelBlue
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -1136,123 +1122,124 @@ private fun FacultyDirectoryView(
         ) {
             items(filtered) { member ->
                 Card(
-                    colors = CardDefaults.cardColors(containerColor = ObsidianSurface),
-                    shape = CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp),
-                    border = BorderStroke(1.dp, GraphiteBorder),
+                    colors = CardDefaults.cardColors(containerColor = PureSurface),
+                    shape = RoundedCornerShape(22.dp),
+                    border = BorderStroke(1.dp, MistOutline),
                     modifier = Modifier
                         .fillMaxWidth()
                         .testTag("faculty_card_${member.id}")
                 ) {
-                    Column(modifier = Modifier.padding(14.dp)) {
+                    Column(modifier = Modifier.padding(16.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Surface(
-                                color = SportsRedTint,
-                                shape = CutCornerShape(6.dp),
-                                border = BorderStroke(1.dp, SportsRed.copy(alpha = 0.6f)),
-                                modifier = Modifier.size(38.dp)
+                                color = PixelBlueContainer,
+                                shape = RoundedCornerShape(14.dp),
+                                modifier = Modifier.size(40.dp)
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
                                     Icon(
                                         imageVector = Icons.Default.School,
                                         contentDescription = null,
-                                        tint = SportsRed,
+                                        tint = OnPixelBlueContainer,
                                         modifier = Modifier.size(20.dp)
                                     )
                                 }
                             }
-                            Spacer(modifier = Modifier.width(10.dp))
+                            Spacer(modifier = Modifier.width(12.dp))
                             Column {
                                 Text(
                                     text = member.name,
                                     fontFamily = DisplayFontFamily,
-                                    fontSize = 14.5.sp,
+                                    fontSize = 15.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = PureWhite
+                                    color = InkBlack
                                 )
                                 Text(
                                     text = "${member.designation} • ${member.department}",
-                                    fontSize = 11.sp,
-                                    color = AshGray
+                                    fontFamily = BodyFontFamily,
+                                    fontSize = 12.sp,
+                                    color = SlateGray
                                 )
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
 
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = Icons.Default.Email,
                                 contentDescription = null,
-                                tint = NeonGreen,
-                                modifier = Modifier.size(13.dp)
+                                tint = PixelBlue,
+                                modifier = Modifier.size(14.dp)
                             )
                             Spacer(modifier = Modifier.width(5.dp))
                             Text(
                                 text = member.email,
-                                fontSize = 11.sp,
-                                color = PureWhite.copy(alpha = 0.9f)
+                                fontFamily = BodyFontFamily,
+                                fontSize = 11.5.sp,
+                                color = InkBlack
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Icon(
                                 imageVector = Icons.Default.Phone,
                                 contentDescription = null,
-                                tint = SportsRed,
-                                modifier = Modifier.size(13.dp)
+                                tint = CampusEmeraldDark,
+                                modifier = Modifier.size(14.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = member.phoneExt,
                                 fontFamily = MonoFontFamily,
-                                fontSize = 10.5.sp,
-                                color = PureWhite.copy(alpha = 0.9f)
+                                fontSize = 11.sp,
+                                color = SlateGray
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
 
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(CarbonSurface, CutCornerShape(6.dp))
-                                .border(1.dp, GraphiteBorder, CutCornerShape(6.dp))
-                                .padding(horizontal = 10.dp, vertical = 6.dp),
+                                .background(TonalMist, RoundedCornerShape(14.dp))
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
                                 text = member.roomName,
-                                fontSize = 11.5.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = PureWhite,
+                                fontFamily = BodyFontFamily,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = InkBlack,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier.weight(1f)
                             )
 
                             Surface(
-                                color = SportsRed,
-                                shape = CutCornerShape(4.dp),
+                                color = PixelBlueTint,
+                                shape = RoundedCornerShape(50),
                                 modifier = Modifier
                                     .clickable { onLocateOffice(member.officePinId) }
                                     .testTag("locate_faculty_${member.id}")
                             ) {
                                 Row(
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Layers,
                                         contentDescription = null,
-                                        tint = PureWhite,
-                                        modifier = Modifier.size(11.dp)
+                                        tint = PixelBlue,
+                                        modifier = Modifier.size(12.dp)
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(
-                                        text = "LOCATE",
-                                        fontFamily = MonoFontFamily,
-                                        color = PureWhite,
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold
+                                        text = "Locate",
+                                        fontFamily = BodyFontFamily,
+                                        color = PixelBlue,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.SemiBold
                                     )
                                 }
                             }
@@ -1278,47 +1265,43 @@ private fun NoticeBoardView(
         items(notices) { notice ->
             Card(
                 colors = CardDefaults.cardColors(
-                    containerColor = if (notice.isHighPriority) SportsRedTint else ObsidianSurface
+                    containerColor = if (notice.isHighPriority) CampusCrimsonTint else PureSurface
                 ),
-                shape = CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp),
+                shape = RoundedCornerShape(22.dp),
                 border = BorderStroke(
                     1.dp,
-                    if (notice.isHighPriority) SportsRed else GraphiteBorder
+                    if (notice.isHighPriority) CampusCrimsonBorder else MistOutline
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { onSelectNotice(notice) }
                     .testTag("notice_item_${notice.id}")
             ) {
-                Column(modifier = Modifier.padding(14.dp)) {
+                Column(modifier = Modifier.padding(16.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Surface(
-                            color = if (notice.isHighPriority) SportsRed else NeonGreenTint,
-                            shape = CutCornerShape(4.dp),
-                            border = BorderStroke(
-                                1.dp,
-                                if (notice.isHighPriority) SportsRed else NeonGreen
-                            )
+                            color = if (notice.isHighPriority) CampusCrimson else PixelBlueTint,
+                            shape = RoundedCornerShape(50)
                         ) {
                             Text(
-                                text = if (notice.isHighPriority) "URGENT NOTICE" else notice.category.uppercase(),
-                                fontFamily = MonoFontFamily,
-                                color = if (notice.isHighPriority) PureWhite else NeonGreen,
-                                fontSize = 9.5.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.dp)
+                                text = if (notice.isHighPriority) "Priority Notice" else notice.category,
+                                fontFamily = BodyFontFamily,
+                                color = if (notice.isHighPriority) PureWhite else PixelBlue,
+                                fontSize = 10.5.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier.padding(horizontal = 9.dp, vertical = 3.dp)
                             )
                         }
 
                         Text(
                             text = notice.date,
                             fontFamily = MonoFontFamily,
-                            fontSize = 10.5.sp,
-                            color = AshGray
+                            fontSize = 11.sp,
+                            color = MutedGray
                         )
                     }
 
@@ -1327,17 +1310,18 @@ private fun NoticeBoardView(
                     Text(
                         text = notice.title,
                         fontFamily = DisplayFontFamily,
-                        fontSize = 14.5.sp,
+                        fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
-                        color = PureWhite
+                        color = InkBlack
                     )
 
                     Spacer(modifier = Modifier.height(4.dp))
 
                     Text(
                         text = notice.summary,
-                        fontSize = 12.sp,
-                        color = AshGray,
+                        fontFamily = BodyFontFamily,
+                        fontSize = 12.5.sp,
+                        color = SlateGray,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )

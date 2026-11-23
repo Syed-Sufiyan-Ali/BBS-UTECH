@@ -2,7 +2,6 @@ package com.example.ui.screens
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -19,7 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CutCornerShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Bookmark
@@ -45,27 +44,31 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ui.MainViewModel
-import com.example.ui.theme.AshGray
-import com.example.ui.theme.CarbonSurface
+import com.example.ui.theme.BodyFontFamily
+import com.example.ui.theme.CampusEmerald
+import com.example.ui.theme.CampusEmeraldBorder
+import com.example.ui.theme.CampusEmeraldDark
+import com.example.ui.theme.CampusEmeraldTint
 import com.example.ui.theme.DisplayFontFamily
-import com.example.ui.theme.GraphiteBorder
+import com.example.ui.theme.InkBlack
+import com.example.ui.theme.MistOutline
 import com.example.ui.theme.MonoFontFamily
-import com.example.ui.theme.NeonGreen
-import com.example.ui.theme.NeonGreenTint
-import com.example.ui.theme.ObsidianSurface
+import com.example.ui.theme.MutedGray
+import com.example.ui.theme.OnPixelBlueContainer
+import com.example.ui.theme.PixelBlue
+import com.example.ui.theme.PixelBlueContainer
+import com.example.ui.theme.PixelBlueTint
+import com.example.ui.theme.PorcelainCanvas
+import com.example.ui.theme.PureSurface
 import com.example.ui.theme.PureWhite
-import com.example.ui.theme.SportsRed
-import com.example.ui.theme.SportsRedTint
-import com.example.ui.theme.SteelGray
-import com.example.ui.theme.VoidBlack
+import com.example.ui.theme.SlateGray
+import com.example.ui.theme.TonalMist
 import java.util.Calendar
 
 @Composable
@@ -103,79 +106,67 @@ fun ScheduleScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(VoidBlack)
+            .background(PorcelainCanvas)
     ) {
-        // Header
+        // Pixel Header
         Surface(
-            color = VoidBlack,
+            color = PureSurface,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Column(
+            Row(
                 modifier = Modifier
-                    .drawBehind {
-                        drawLine(
-                            color = SportsRed,
-                            start = Offset(0f, 0f),
-                            end = Offset(size.width * 0.35f, 0f),
-                            strokeWidth = 5f
-                        )
-                    }
-                    .padding(horizontal = 16.dp, vertical = 14.dp)
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text(
-                            text = "CLASS SCHEDULE",
-                            fontFamily = DisplayFontFamily,
-                            fontSize = 18.sp,
-                            letterSpacing = 0.8.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = PureWhite
-                        )
-                        Text(
-                            text = "BBSUTSD // FALL 2026 TIMETABLE",
-                            fontFamily = MonoFontFamily,
-                            fontSize = 10.sp,
-                            color = NeonGreen
-                        )
-                    }
+                Column {
+                    Text(
+                        text = "Class Schedule",
+                        fontFamily = DisplayFontFamily,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = InkBlack
+                    )
+                    Text(
+                        text = "BBS-UTECH • Fall 2026 Timetable",
+                        fontFamily = BodyFontFamily,
+                        fontSize = 12.sp,
+                        color = SlateGray
+                    )
+                }
 
-                    Surface(
-                        color = if (isCurrentSaved) NeonGreen else CarbonSurface,
-                        shape = CutCornerShape(topEnd = 8.dp, bottomStart = 8.dp),
-                        border = BorderStroke(
-                            1.dp,
-                            if (isCurrentSaved) NeonGreen else SportsRed
-                        ),
-                        modifier = Modifier
-                            .clickable {
-                                viewModel.saveMySchedulePreference(selectedDept, selectedSemester, selectedSection)
-                            }
-                            .testTag("button_bookmark_schedule")
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = if (isCurrentSaved) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
-                                contentDescription = "Bookmark",
-                                tint = if (isCurrentSaved) VoidBlack else SportsRed,
-                                modifier = Modifier.size(15.dp)
-                            )
-                            Spacer(modifier = Modifier.width(5.dp))
-                            Text(
-                                text = if (isCurrentSaved) "MY TIMETABLE" else "SAVE MINE",
-                                fontFamily = MonoFontFamily,
-                                color = if (isCurrentSaved) VoidBlack else PureWhite,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                Surface(
+                    color = if (isCurrentSaved) CampusEmeraldTint else PixelBlueContainer,
+                    shape = RoundedCornerShape(50),
+                    border = BorderStroke(
+                        1.dp,
+                        if (isCurrentSaved) CampusEmeraldBorder else PixelBlueContainer
+                    ),
+                    modifier = Modifier
+                        .clickable {
+                            viewModel.saveMySchedulePreference(selectedDept, selectedSemester, selectedSection)
                         }
+                        .testTag("button_bookmark_schedule")
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = if (isCurrentSaved) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
+                            contentDescription = "Bookmark",
+                            tint = if (isCurrentSaved) CampusEmeraldDark else OnPixelBlueContainer,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = if (isCurrentSaved) "My Timetable" else "Save Mine",
+                            fontFamily = BodyFontFamily,
+                            color = if (isCurrentSaved) CampusEmeraldDark else OnPixelBlueContainer,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
                     }
                 }
             }
@@ -185,14 +176,14 @@ fun ScheduleScreen(
         val selectedDeptIndex = departments.indexOfFirst { it.first == selectedDept }.coerceAtLeast(0)
         ScrollableTabRow(
             selectedTabIndex = selectedDeptIndex,
-            containerColor = ObsidianSurface,
-            contentColor = PureWhite,
+            containerColor = PureSurface,
+            contentColor = PixelBlue,
             edgePadding = 12.dp,
-            divider = { HorizontalDivider(color = GraphiteBorder) },
+            divider = { HorizontalDivider(color = MistOutline) },
             indicator = { tabPositions ->
                 TabRowDefaults.SecondaryIndicator(
                     Modifier.tabIndicatorOffset(tabPositions[selectedDeptIndex]),
-                    color = SportsRed,
+                    color = PixelBlue,
                     height = 3.dp
                 )
             },
@@ -210,8 +201,8 @@ fun ScheduleScreen(
                             text = shortCode,
                             fontFamily = DisplayFontFamily,
                             fontWeight = FontWeight.Bold,
-                            color = if (isSelected) SportsRed else AshGray,
-                            fontSize = 13.sp
+                            color = if (isSelected) PixelBlue else SlateGray,
+                            fontSize = 13.5.sp
                         )
                     },
                     modifier = Modifier.testTag("tab_dept_$shortCode")
@@ -219,21 +210,21 @@ fun ScheduleScreen(
             }
         }
 
-        // Semester & Section Chips
+        // Semester & Section Pill Chips
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 6.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             Text(
-                text = "SEM:",
-                fontFamily = MonoFontFamily,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                color = SteelGray
+                text = "Sem",
+                fontFamily = BodyFontFamily,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium,
+                color = MutedGray
             )
 
             (1..4).forEach { sem ->
@@ -246,22 +237,22 @@ fun ScheduleScreen(
                         Text(
                             "S$sem",
                             fontFamily = MonoFontFamily,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold
+                            fontSize = 11.5.sp,
+                            fontWeight = FontWeight.SemiBold
                         )
                     },
-                    shape = CutCornerShape(6.dp),
+                    shape = RoundedCornerShape(50),
                     colors = FilterChipDefaults.filterChipColors(
-                        containerColor = CarbonSurface,
-                        labelColor = AshGray,
-                        selectedContainerColor = SportsRed,
+                        containerColor = PureSurface,
+                        labelColor = SlateGray,
+                        selectedContainerColor = PixelBlue,
                         selectedLabelColor = PureWhite
                     ),
                     border = FilterChipDefaults.filterChipBorder(
                         enabled = true,
                         selected = selectedSemester == sem,
-                        borderColor = GraphiteBorder,
-                        selectedBorderColor = SportsRed
+                        borderColor = MistOutline,
+                        selectedBorderColor = PixelBlue
                     ),
                     modifier = Modifier.testTag("chip_sem_$sem")
                 )
@@ -277,44 +268,44 @@ fun ScheduleScreen(
                     },
                     label = {
                         Text(
-                            "SEC $sec",
-                            fontFamily = MonoFontFamily,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold
+                            "Sec $sec",
+                            fontFamily = BodyFontFamily,
+                            fontSize = 11.5.sp,
+                            fontWeight = FontWeight.SemiBold
                         )
                     },
-                    shape = CutCornerShape(6.dp),
+                    shape = RoundedCornerShape(50),
                     colors = FilterChipDefaults.filterChipColors(
-                        containerColor = CarbonSurface,
-                        labelColor = AshGray,
-                        selectedContainerColor = NeonGreen,
-                        selectedLabelColor = VoidBlack
+                        containerColor = PureSurface,
+                        labelColor = SlateGray,
+                        selectedContainerColor = PixelBlueContainer,
+                        selectedLabelColor = OnPixelBlueContainer
                     ),
                     border = FilterChipDefaults.filterChipBorder(
                         enabled = true,
                         selected = selectedSection == sec,
-                        borderColor = GraphiteBorder,
-                        selectedBorderColor = NeonGreen
+                        borderColor = MistOutline,
+                        selectedBorderColor = PixelBlueContainer
                     ),
                     modifier = Modifier.testTag("chip_sec_$sec")
                 )
             }
         }
 
-        // Day Selector Strip
+        // Day Selector Pill Strip
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 4.dp),
+                .padding(horizontal = 16.dp, vertical = 2.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             daysOfWeek.forEach { day ->
                 val isSelected = selectedDay.equals(day, ignoreCase = true)
                 Surface(
-                    color = if (isSelected) SportsRed else ObsidianSurface,
-                    shape = CutCornerShape(topEnd = 8.dp, bottomStart = 8.dp),
-                    border = BorderStroke(1.dp, if (isSelected) SportsRed else GraphiteBorder),
+                    color = if (isSelected) PixelBlueContainer else PureSurface,
+                    shape = RoundedCornerShape(50),
+                    border = BorderStroke(1.dp, if (isSelected) PixelBlueContainer else MistOutline),
                     modifier = Modifier
                         .clickable {
                             viewModel.setScheduleFilter(selectedDept, selectedSemester, selectedSection, day)
@@ -322,19 +313,18 @@ fun ScheduleScreen(
                         .testTag("day_tab_$day")
                 ) {
                     Text(
-                        text = day.take(3).uppercase(),
-                        fontFamily = DisplayFontFamily,
-                        color = if (isSelected) PureWhite else AshGray,
-                        fontSize = 12.sp,
-                        letterSpacing = 0.7.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
+                        text = day.take(3),
+                        fontFamily = BodyFontFamily,
+                        color = if (isSelected) OnPixelBlueContainer else SlateGray,
+                        fontSize = 12.5.sp,
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                     )
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         // Classes List
         if (classes.isEmpty()) {
@@ -348,21 +338,22 @@ fun ScheduleScreen(
                     Icon(
                         imageVector = Icons.Default.CalendarMonth,
                         contentDescription = null,
-                        tint = SportsRed.copy(alpha = 0.6f),
+                        tint = PixelBlue.copy(alpha = 0.55f),
                         modifier = Modifier.size(48.dp)
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        text = "NO SESSIONS ON ${selectedDay.uppercase()}",
+                        text = "No sessions on $selectedDay",
                         fontFamily = DisplayFontFamily,
-                        fontSize = 15.sp,
+                        fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = PureWhite
+                        color = InkBlack
                     )
                     Text(
                         text = "Use this slot for Central Library or workshop hours.",
-                        fontSize = 12.sp,
-                        color = AshGray,
+                        fontFamily = BodyFontFamily,
+                        fontSize = 13.sp,
+                        color = SlateGray,
                         modifier = Modifier.padding(top = 4.dp)
                     )
                 }
@@ -380,18 +371,18 @@ fun ScheduleScreen(
 
                     Card(
                         colors = CardDefaults.cardColors(
-                            containerColor = if (isOngoing) NeonGreenTint else ObsidianSurface
+                            containerColor = if (isOngoing) CampusEmeraldTint else PureSurface
                         ),
-                        shape = CutCornerShape(topEnd = 14.dp, bottomStart = 14.dp),
+                        shape = RoundedCornerShape(24.dp),
                         border = BorderStroke(
                             if (isOngoing) 1.5.dp else 1.dp,
-                            if (isOngoing) NeonGreen else GraphiteBorder
+                            if (isOngoing) CampusEmerald else MistOutline
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
                             .testTag("class_card_${item.subjectCode}")
                     ) {
-                        Column(modifier = Modifier.padding(14.dp)) {
+                        Column(modifier = Modifier.padding(16.dp)) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -399,36 +390,31 @@ fun ScheduleScreen(
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Surface(
-                                        color = if (item.isLab) NeonGreenTint else SportsRedTint,
-                                        shape = CutCornerShape(4.dp),
-                                        border = BorderStroke(
-                                            1.dp,
-                                            if (item.isLab) NeonGreen.copy(alpha = 0.6f) else SportsRed.copy(alpha = 0.6f)
-                                        )
+                                        color = if (item.isLab) CampusEmeraldTint else PixelBlueContainer,
+                                        shape = RoundedCornerShape(50)
                                     ) {
                                         Text(
                                             text = item.subjectCode,
                                             fontFamily = MonoFontFamily,
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 11.sp,
-                                            color = if (item.isLab) NeonGreen else SportsRed,
-                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                            color = if (item.isLab) CampusEmeraldDark else OnPixelBlueContainer,
+                                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                                         )
                                     }
                                     if (item.isLab) {
                                         Spacer(modifier = Modifier.width(6.dp))
                                         Surface(
-                                            color = SportsRedTint,
-                                            shape = CutCornerShape(4.dp),
-                                            border = BorderStroke(1.dp, SportsRed.copy(alpha = 0.6f))
+                                            color = TonalMist,
+                                            shape = RoundedCornerShape(50)
                                         ) {
                                             Text(
-                                                text = "LAB",
-                                                fontFamily = MonoFontFamily,
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 9.5.sp,
-                                                color = SportsRed,
-                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
+                                                text = "Lab",
+                                                fontFamily = BodyFontFamily,
+                                                fontWeight = FontWeight.SemiBold,
+                                                fontSize = 10.5.sp,
+                                                color = SlateGray,
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                                             )
                                         }
                                     }
@@ -436,25 +422,25 @@ fun ScheduleScreen(
 
                                 if (isOngoing) {
                                     Surface(
-                                        color = NeonGreen,
-                                        shape = CutCornerShape(4.dp)
+                                        color = CampusEmerald,
+                                        shape = RoundedCornerShape(50)
                                     ) {
                                         Text(
-                                            text = "LIVE NOW",
-                                            fontFamily = MonoFontFamily,
-                                            color = VoidBlack,
-                                            fontSize = 10.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                            text = "Live Now",
+                                            fontFamily = BodyFontFamily,
+                                            color = PureWhite,
+                                            fontSize = 10.5.sp,
+                                            fontWeight = FontWeight.SemiBold,
+                                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                                         )
                                     }
                                 } else if (isUpcoming) {
                                     Text(
-                                        text = "UPCOMING",
-                                        fontFamily = MonoFontFamily,
-                                        color = AshGray,
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold
+                                        text = "Upcoming",
+                                        fontFamily = BodyFontFamily,
+                                        color = PixelBlue,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.SemiBold
                                     )
                                 }
                             }
@@ -464,9 +450,9 @@ fun ScheduleScreen(
                             Text(
                                 text = item.subjectTitle,
                                 fontFamily = DisplayFontFamily,
-                                fontSize = 16.sp,
+                                fontSize = 16.5.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = PureWhite
+                                color = InkBlack
                             )
 
                             Spacer(modifier = Modifier.height(6.dp))
@@ -475,16 +461,16 @@ fun ScheduleScreen(
                                 Icon(
                                     imageVector = Icons.Default.AccessTime,
                                     contentDescription = null,
-                                    tint = NeonGreen,
+                                    tint = PixelBlue,
                                     modifier = Modifier.size(14.dp)
                                 )
                                 Spacer(modifier = Modifier.width(5.dp))
                                 Text(
                                     text = item.timeSlot,
                                     fontFamily = MonoFontFamily,
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = PureWhite
+                                    fontSize = 11.5.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = InkBlack
                                 )
 
                                 Spacer(modifier = Modifier.width(14.dp))
@@ -492,27 +478,27 @@ fun ScheduleScreen(
                                 Icon(
                                     imageVector = Icons.Default.Person,
                                     contentDescription = null,
-                                    tint = AshGray,
+                                    tint = MutedGray,
                                     modifier = Modifier.size(14.dp)
                                 )
                                 Spacer(modifier = Modifier.width(5.dp))
                                 Text(
                                     text = item.instructor,
-                                    fontSize = 12.sp,
-                                    color = AshGray,
+                                    fontFamily = BodyFontFamily,
+                                    fontSize = 12.5.sp,
+                                    color = SlateGray,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
                             }
 
-                            Spacer(modifier = Modifier.height(10.dp))
+                            Spacer(modifier = Modifier.height(12.dp))
 
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(CarbonSurface, CutCornerShape(topEnd = 8.dp, bottomStart = 8.dp))
-                                    .border(1.dp, GraphiteBorder, CutCornerShape(topEnd = 8.dp, bottomStart = 8.dp))
-                                    .padding(horizontal = 10.dp, vertical = 7.dp),
+                                    .background(TonalMist, RoundedCornerShape(16.dp))
+                                    .padding(horizontal = 12.dp, vertical = 9.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
@@ -523,44 +509,45 @@ fun ScheduleScreen(
                                     Icon(
                                         imageVector = Icons.Default.LocationOn,
                                         contentDescription = null,
-                                        tint = SportsRed,
-                                        modifier = Modifier.size(15.dp)
+                                        tint = PixelBlue,
+                                        modifier = Modifier.size(16.dp)
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
                                         text = item.roomLabel,
-                                        fontSize = 12.sp,
+                                        fontFamily = BodyFontFamily,
+                                        fontSize = 12.5.sp,
                                         fontWeight = FontWeight.SemiBold,
-                                        color = PureWhite,
+                                        color = InkBlack,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
                                 }
 
                                 Surface(
-                                    color = SportsRed,
-                                    shape = CutCornerShape(4.dp),
+                                    color = PixelBlueTint,
+                                    shape = RoundedCornerShape(50),
                                     modifier = Modifier
                                         .clickable { viewModel.locatePinById(item.locationPinId) }
                                         .testTag("locate_room_${item.subjectCode}")
                                 ) {
                                     Row(
-                                        modifier = Modifier.padding(horizontal = 9.dp, vertical = 5.dp),
+                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Icon(
                                             imageVector = Icons.Default.Layers,
                                             contentDescription = null,
-                                            tint = PureWhite,
-                                            modifier = Modifier.size(12.dp)
+                                            tint = PixelBlue,
+                                            modifier = Modifier.size(13.dp)
                                         )
                                         Spacer(modifier = Modifier.width(4.dp))
                                         Text(
-                                            text = "LOCATE",
-                                            fontFamily = MonoFontFamily,
-                                            color = PureWhite,
-                                            fontSize = 10.sp,
-                                            fontWeight = FontWeight.Bold
+                                            text = "Locate",
+                                            fontFamily = BodyFontFamily,
+                                            color = PixelBlue,
+                                            fontSize = 11.5.sp,
+                                            fontWeight = FontWeight.SemiBold
                                         )
                                     }
                                 }

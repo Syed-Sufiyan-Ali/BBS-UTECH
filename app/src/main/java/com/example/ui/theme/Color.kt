@@ -3,40 +3,42 @@ package com.example.ui.theme
 import androidx.compose.ui.graphics.Color
 
 // =====================================================================
-// BBSUTSD GEN-Z PUNK // BLACK + SPORTS RED + NEON GREEN PALETTE
+// GOOGLE PIXEL MATERIAL YOU LIGHT // BBS-UTECH MINIMALIST WHITISH THEME
 // =====================================================================
 
-// Obsidian & Pitch-Black Surfaces
-val VoidBlack = Color(0xFF050507)
-val ObsidianSurface = Color(0xFF0D0E12)
-val CarbonSurface = Color(0xFF15171E)
-val ElevatedCarbon = Color(0xFF1C1F28)
-val GraphiteBorder = Color(0xFF282C38)
+// Porcelain Daylight Surfaces & Soft Hairlines
+val PorcelainCanvas = Color(0xFFF8FAFC)
+val PureSurface = Color(0xFFFFFFFF)
+val TonalMist = Color(0xFFEFF3F8)
+val ElevatedMist = Color(0xFFE4EAF2)
+val MistOutline = Color(0xFFE2E8F0)
+val SoftOutline = Color(0xFFDCE2EC)
 
-// Sports Red (Primary Power, Racing & Punk Accent)
-val SportsRed = Color(0xFFFF1E2D)
-val SportsRedBright = Color(0xFFFF3B47)
-val SportsRedDeep = Color(0xFFB80C18)
-val SportsRedTint = Color(0xFF26080D)
+// Primary Accent — BBS-UTECH Cobalt Blue & Signature Pixel Pill Tints
+val PixelBlue = Color(0xFF0B57D0)
+val PixelBlueBright = Color(0xFF1A73E8)
+val PixelBlueContainer = Color(0xFFD3E3FD)
+val OnPixelBlueContainer = Color(0xFF041E49)
+val PixelBlueTint = Color(0xFFE8F0FE)
 
-// Neon Green (Live Telemetry, GPS & Cyber-Punk Spark)
-val NeonGreen = Color(0xFF39FF14)
-val NeonGreenCrisp = Color(0xFF32E812)
-val NeonGreenMuted = Color(0xFF22C55E)
-val NeonGreenTint = Color(0xFF0B2407)
+// Secondary Accent — Campus Emerald (Live GPS, New Complex, Bus Arrival)
+val CampusEmerald = Color(0xFF0F9D58)
+val CampusEmeraldDark = Color(0xFF137333)
+val CampusEmeraldTint = Color(0xFFE6F4EA)
+val CampusEmeraldBorder = Color(0xFFCBE6D3)
 
-// High-Contrast Typography & Neutrals
-val PureWhite = Color(0xFFF8FAFC)
-val AshGray = Color(0xFFA1A7B3)
-val SteelGray = Color(0xFF687080)
+// University Crimson — Old Building Heritage & High-Priority Alerts
+val CampusCrimson = Color(0xFFB3261E)
+val CampusCrimsonTint = Color(0xFFFCE8E6)
+val CampusCrimsonBorder = Color(0xFFF2B8B5)
 
-// Legacy Theme Token Aliases (Mapped seamlessly to the new Black / Red / Neon Green system)
-val BBSUTSDNavy = VoidBlack
-val BBSUTSDNavyLight = CarbonSurface
-val BBSUTSDNavyDark = VoidBlack
-val BBSUTSDGold = NeonGreen
-val BBSUTSDGoldLight = NeonGreen
-val BBSUTSDGoldDark = NeonGreenMuted
-val BBSUTSDAccentBlue = SportsRed
-val BBSUTSDTeal = NeonGreenCrisp
-val BBSUTSDEmerald = NeonGreen
+// Library / Academic Violet & Sky Neutrals
+val LibraryViolet = Color(0xFF7C3AED)
+val LibraryVioletTint = Color(0xFFF3E8FF)
+val SkyTeal = Color(0xFF0284C7)
+
+// Crisp Ink Typography Hierarchy
+val InkBlack = Color(0xFF111827)
+val SlateGray = Color(0xFF444746)
+val MutedGray = Color(0xFF747775)
+val PureWhite = Color(0xFFFFFFFF)

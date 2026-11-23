@@ -35,7 +35,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.CutCornerShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CenterFocusStrong
@@ -97,20 +97,31 @@ import com.example.data.model.FloorLevel
 import com.example.data.model.PinCategory
 import com.example.data.repository.CampusRepository
 import com.example.ui.MainViewModel
-import com.example.ui.theme.AshGray
 import com.example.ui.theme.BodyFontFamily
-import com.example.ui.theme.CarbonSurface
+import com.example.ui.theme.CampusCrimson
+import com.example.ui.theme.CampusCrimsonBorder
+import com.example.ui.theme.CampusCrimsonTint
+import com.example.ui.theme.CampusEmerald
+import com.example.ui.theme.CampusEmeraldBorder
+import com.example.ui.theme.CampusEmeraldDark
+import com.example.ui.theme.CampusEmeraldTint
 import com.example.ui.theme.DisplayFontFamily
-import com.example.ui.theme.GraphiteBorder
+import com.example.ui.theme.InkBlack
+import com.example.ui.theme.LibraryViolet
+import com.example.ui.theme.MistOutline
 import com.example.ui.theme.MonoFontFamily
-import com.example.ui.theme.NeonGreen
-import com.example.ui.theme.NeonGreenTint
-import com.example.ui.theme.ObsidianSurface
+import com.example.ui.theme.MutedGray
+import com.example.ui.theme.OnPixelBlueContainer
+import com.example.ui.theme.PixelBlue
+import com.example.ui.theme.PixelBlueContainer
+import com.example.ui.theme.PixelBlueTint
+import com.example.ui.theme.PorcelainCanvas
+import com.example.ui.theme.PureSurface
 import com.example.ui.theme.PureWhite
-import com.example.ui.theme.SportsRed
-import com.example.ui.theme.SportsRedTint
-import com.example.ui.theme.SteelGray
-import com.example.ui.theme.VoidBlack
+import com.example.ui.theme.SkyTeal
+import com.example.ui.theme.SlateGray
+import com.example.ui.theme.SoftOutline
+import com.example.ui.theme.TonalMist
 import kotlinx.coroutines.delay
 import org.json.JSONArray
 import org.json.JSONObject
@@ -118,11 +129,11 @@ import kotlin.math.max
 import kotlin.math.roundToInt
 
 private enum class MapFilterTab(val key: String, val label: String) {
-    ALL("ALL", "ALL PINS"),
-    OFFICES("OFFICES", "VC & OFFICES"),
-    LABS_WORKSHOPS("LABS_WORKSHOPS", "LABS & SHOPS"),
-    TRANSPORT("TRANSPORT", "POINT & BUSES"),
-    AMENITIES("AMENITIES", "LIBRARY & FOOD")
+    ALL("ALL", "All"),
+    OFFICES("OFFICES", "Offices"),
+    LABS_WORKSHOPS("LABS_WORKSHOPS", "Labs & Shops"),
+    TRANSPORT("TRANSPORT", "Bus Points"),
+    AMENITIES("AMENITIES", "Library & Food")
 }
 
 private data class AndroidRouteStep(
@@ -217,7 +228,7 @@ fun OutdoorMapScreen(
     val hasPermission by viewModel.locationHelper.hasLocationPermission.collectAsState()
     val isGpsActive by viewModel.locationHelper.isGpsActive.collectAsState()
 
-    var isSatelliteView by remember { mutableStateOf(true) }
+    var isSatelliteView by remember { mutableStateOf(false) }
     var isMapLoaded by remember { mutableStateOf(false) }
     var isEngineReady by remember { mutableStateOf(false) }
     var webViewInstance by remember { mutableStateOf<WebView?>(null) }
@@ -368,9 +379,9 @@ fun OutdoorMapScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(VoidBlack)
+            .background(PorcelainCanvas)
     ) {
-        // 1. Real Interactive Satellite & Campus Map WebView
+        // 1. Interactive Campus Map WebView
         AndroidView(
             modifier = Modifier
                 .fillMaxSize()
@@ -452,8 +463,13 @@ fun OutdoorMapScreen(
                             },
                             onRouteCalculatedCallback = { routeJson ->
                                 post {
-                                    calculatedRoute = parseRouteJson(routeJson)
-                                    activeRouteStepIdx = 0
+                                    val parsed = parseRouteJson(routeJson)
+                                    calculatedRoute = parsed
+                                    activeRouteStepIdx = if (parsed != null && parsed.steps.isNotEmpty()) {
+                                        activeRouteStepIdx.coerceIn(0, parsed.steps.lastIndex)
+                                    } else {
+                                        0
+                                    }
                                 }
                             }
                         ),
@@ -474,7 +490,7 @@ fun OutdoorMapScreen(
             update = { view -> webViewInstance = view }
         )
 
-        // 2. Top Punk Tactical HUD + Search + GPS Boundary + Category Filters
+        // 2. Top Pixel Floating Search Pill + Boundary Status + Filter Pills
         Column(
             modifier = Modifier
                 .align(Alignment.TopCenter)
@@ -485,12 +501,12 @@ fun OutdoorMapScreen(
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .shadow(10.dp, CutCornerShape(topEnd = 16.dp, bottomStart = 16.dp)),
-                shape = CutCornerShape(topEnd = 16.dp, bottomStart = 16.dp),
-                color = VoidBlack.copy(alpha = 0.93f),
-                border = BorderStroke(1.dp, GraphiteBorder)
+                    .shadow(8.dp, RoundedCornerShape(24.dp)),
+                shape = RoundedCornerShape(24.dp),
+                color = PureSurface.copy(alpha = 0.96f),
+                border = BorderStroke(1.dp, MistOutline)
             ) {
-                Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
+                Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -498,36 +514,38 @@ fun OutdoorMapScreen(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "BBSUTSD // CAMPUS RADAR",
+                                text = "BBS-UTECH Campus Map",
                                 fontFamily = DisplayFontFamily,
-                                color = PureWhite,
+                                color = InkBlack,
                                 fontWeight = FontWeight.Bold,
-                                letterSpacing = 0.7.sp,
-                                fontSize = 15.sp
+                                fontSize = 15.5.sp
                             )
                             Text(
-                                text = "27.5108° N • 68.7416° E • KHAIRPUR",
+                                text = "Khairpur Mirs • 27.5108° N, 68.7416° E",
                                 fontFamily = MonoFontFamily,
-                                color = SportsRed,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold
+                                color = SlateGray,
+                                fontSize = 10.sp
                             )
                         }
 
                         Surface(
-                            shape = CutCornerShape(4.dp),
-                            color = if (isGpsActive && userLocation != null) NeonGreenTint else CarbonSurface,
+                            shape = RoundedCornerShape(50),
+                            color = when {
+                                !hasPermission -> CampusCrimsonTint
+                                isGpsActive && userLocation != null -> CampusEmeraldTint
+                                else -> TonalMist
+                            },
                             border = BorderStroke(
                                 1.dp,
                                 when {
-                                    !hasPermission -> SportsRed
-                                    isGpsActive && userLocation != null -> NeonGreen
-                                    else -> GraphiteBorder
+                                    !hasPermission -> CampusCrimsonBorder
+                                    isGpsActive && userLocation != null -> CampusEmeraldBorder
+                                    else -> MistOutline
                                 }
                             )
                         ) {
                             Row(
-                                modifier = Modifier.padding(horizontal = 9.dp, vertical = 5.dp),
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Box(
@@ -536,56 +554,59 @@ fun OutdoorMapScreen(
                                         .clip(CircleShape)
                                         .background(
                                             when {
-                                                !hasPermission -> SportsRed
-                                                userLocation != null -> NeonGreen
-                                                else -> AshGray
+                                                !hasPermission -> CampusCrimson
+                                                userLocation != null -> CampusEmerald
+                                                else -> MutedGray
                                             }
                                         )
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
                                     text = when {
-                                        !hasPermission -> "GPS OFF"
-                                        userLocation != null -> "GPS LIVE"
-                                        else -> "SCANNING"
+                                        !hasPermission -> "GPS Off"
+                                        userLocation != null -> "GPS Live"
+                                        else -> "Scanning"
                                     },
-                                    fontFamily = MonoFontFamily,
-                                    color = if (userLocation != null) NeonGreen else PureWhite,
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold
+                                    fontFamily = BodyFontFamily,
+                                    color = when {
+                                        !hasPermission -> CampusCrimson
+                                        userLocation != null -> CampusEmeraldDark
+                                        else -> SlateGray
+                                    },
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.SemiBold
                                 )
                             }
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
-                    // Minimalist Search Input
+                    // Google Pixel Full-Pill Search Bar
                     Surface(
-                        shape = CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp),
-                        color = CarbonSurface,
-                        border = BorderStroke(1.dp, GraphiteBorder)
+                        shape = RoundedCornerShape(50),
+                        color = TonalMist
                     ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 10.dp, vertical = 8.dp),
+                                .padding(horizontal = 14.dp, vertical = 10.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Search,
                                 contentDescription = "Search Landmarks",
-                                tint = SportsRed,
-                                modifier = Modifier.size(17.dp)
+                                tint = PixelBlue,
+                                modifier = Modifier.size(18.dp)
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
+                            Spacer(modifier = Modifier.width(10.dp))
                             Box(modifier = Modifier.weight(1f)) {
                                 if (searchText.isEmpty()) {
                                     Text(
-                                        text = "Find VC Office, Labs, Workshops, Point Parking...",
+                                        text = "Search VC office, labs, workshops, bus point...",
                                         fontFamily = BodyFontFamily,
-                                        color = SteelGray,
-                                        fontSize = 12.sp,
+                                        color = MutedGray,
+                                        fontSize = 13.sp,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
@@ -596,11 +617,11 @@ fun OutdoorMapScreen(
                                     singleLine = true,
                                     textStyle = TextStyle(
                                         fontFamily = BodyFontFamily,
-                                        color = PureWhite,
-                                        fontSize = 12.5.sp,
+                                        color = InkBlack,
+                                        fontSize = 13.5.sp,
                                         fontWeight = FontWeight.Medium
                                     ),
-                                    cursorBrush = SolidColor(NeonGreen),
+                                    cursorBrush = SolidColor(PixelBlue),
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .testTag("map_landmark_search_input")
@@ -610,7 +631,7 @@ fun OutdoorMapScreen(
                                 Icon(
                                     imageVector = Icons.Default.Close,
                                     contentDescription = "Clear Search",
-                                    tint = AshGray,
+                                    tint = SlateGray,
                                     modifier = Modifier
                                         .size(20.dp)
                                         .clickable { searchText = "" }
@@ -622,15 +643,15 @@ fun OutdoorMapScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Boundary Detection Status Strip
+                    // Boundary Detection Status Pill
                     when {
                         !hasPermission -> {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clip(CutCornerShape(6.dp))
-                                    .background(SportsRedTint)
-                                    .padding(horizontal = 10.dp, vertical = 6.dp),
+                                    .clip(RoundedCornerShape(50))
+                                    .background(CampusCrimsonTint)
+                                    .padding(horizontal = 12.dp, vertical = 6.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
@@ -641,14 +662,15 @@ fun OutdoorMapScreen(
                                     Icon(
                                         imageVector = Icons.Default.LocationOff,
                                         contentDescription = null,
-                                        tint = SportsRed,
+                                        tint = CampusCrimson,
                                         modifier = Modifier.size(15.dp)
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
-                                        text = "Enable GPS for live tracking",
-                                        color = PureWhite,
-                                        fontSize = 11.sp
+                                        text = "Enable GPS for live walking directions",
+                                        fontFamily = BodyFontFamily,
+                                        color = InkBlack,
+                                        fontSize = 11.5.sp
                                     )
                                 }
                                 Button(
@@ -661,18 +683,18 @@ fun OutdoorMapScreen(
                                         )
                                     },
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = SportsRed,
+                                        containerColor = PixelBlue,
                                         contentColor = PureWhite
                                     ),
-                                    shape = CutCornerShape(4.dp),
-                                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                                    shape = RoundedCornerShape(50),
+                                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
                                     modifier = Modifier.testTag("enable_gps_button")
                                 ) {
                                     Text(
-                                        text = "ENABLE",
-                                        fontFamily = MonoFontFamily,
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold
+                                        text = "Enable",
+                                        fontFamily = BodyFontFamily,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.SemiBold
                                     )
                                 }
                             }
@@ -682,23 +704,23 @@ fun OutdoorMapScreen(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clip(CutCornerShape(6.dp))
-                                    .background(CarbonSurface)
-                                    .padding(horizontal = 10.dp, vertical = 6.dp),
+                                    .clip(RoundedCornerShape(50))
+                                    .background(TonalMist)
+                                    .padding(horizontal = 12.dp, vertical = 7.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.MyLocation,
                                     contentDescription = null,
-                                    tint = NeonGreen,
+                                    tint = PixelBlue,
                                     modifier = Modifier.size(14.dp)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "LOCKING ON LIVE GPS SIGNAL...",
-                                    fontFamily = MonoFontFamily,
-                                    color = AshGray,
-                                    fontSize = 10.sp
+                                    text = "Acquiring live GPS position...",
+                                    fontFamily = BodyFontFamily,
+                                    color = SlateGray,
+                                    fontSize = 11.5.sp
                                 )
                             }
                         }
@@ -710,62 +732,62 @@ fun OutdoorMapScreen(
                                 "$distanceFromBoundaryMeters m"
                             }
                             Surface(
-                                color = SportsRedTint,
-                                shape = CutCornerShape(6.dp),
-                                border = BorderStroke(1.dp, SportsRed.copy(alpha = 0.7f)),
+                                color = CampusCrimsonTint,
+                                shape = RoundedCornerShape(50),
+                                border = BorderStroke(1.dp, CampusCrimsonBorder),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .testTag("outside_boundary_indicator")
                             ) {
                                 Row(
-                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.WarningAmber,
                                         contentDescription = "Outside University Boundary",
-                                        tint = SportsRed,
+                                        tint = CampusCrimson,
                                         modifier = Modifier.size(15.dp)
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
-                                        text = "OUTSIDE CAMPUS BOUNDS • $formattedDist AWAY",
-                                        fontFamily = MonoFontFamily,
-                                        color = PureWhite,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 10.sp
+                                        text = "Outside campus boundary • $formattedDist away",
+                                        fontFamily = BodyFontFamily,
+                                        color = CampusCrimson,
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 11.5.sp
                                     )
                                 }
                             }
                         }
 
                         else -> {
-                            val accText = userLocation?.accuracyMeters?.let { " (±${it.roundToInt()}M)" } ?: ""
+                            val accText = userLocation?.accuracyMeters?.let { " (±${it.roundToInt()} m)" } ?: ""
                             Surface(
-                                color = NeonGreenTint,
-                                shape = CutCornerShape(6.dp),
-                                border = BorderStroke(1.dp, NeonGreen.copy(alpha = 0.6f)),
+                                color = CampusEmeraldTint,
+                                shape = RoundedCornerShape(50),
+                                border = BorderStroke(1.dp, CampusEmeraldBorder),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .testTag("inside_boundary_indicator")
                             ) {
                                 Row(
-                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.GpsFixed,
                                         contentDescription = "Inside University Boundary",
-                                        tint = NeonGreen,
+                                        tint = CampusEmeraldDark,
                                         modifier = Modifier.size(15.dp)
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
-                                        text = "INSIDE BBSUTSD CAMPUS$accText",
-                                        fontFamily = MonoFontFamily,
-                                        color = NeonGreen,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 10.sp
+                                        text = "Inside BBS-UTECH Campus$accText",
+                                        fontFamily = BodyFontFamily,
+                                        color = CampusEmeraldDark,
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 11.5.sp
                                     )
                                 }
                             }
@@ -774,7 +796,7 @@ fun OutdoorMapScreen(
                 }
             }
 
-            // Category Filter Chips
+            // Category Filter Pills
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -785,23 +807,24 @@ fun OutdoorMapScreen(
                     val isSelected = selectedFilter == tab
                     Surface(
                         modifier = Modifier
-                            .clip(CutCornerShape(topEnd = 8.dp, bottomStart = 8.dp))
+                            .clip(RoundedCornerShape(50))
+                            .shadow(2.dp, RoundedCornerShape(50))
                             .clickable { selectedFilter = tab }
                             .testTag("map_filter_${tab.key.lowercase()}"),
-                        shape = CutCornerShape(topEnd = 8.dp, bottomStart = 8.dp),
-                        color = if (isSelected) SportsRed else VoidBlack.copy(alpha = 0.92f),
+                        shape = RoundedCornerShape(50),
+                        color = if (isSelected) PixelBlueContainer else PureSurface,
                         border = BorderStroke(
                             1.dp,
-                            if (isSelected) SportsRed else GraphiteBorder
+                            if (isSelected) PixelBlue else MistOutline
                         )
                     ) {
                         Text(
                             text = tab.label,
-                            fontFamily = MonoFontFamily,
-                            color = if (isSelected) PureWhite else AshGray,
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp)
+                            fontFamily = BodyFontFamily,
+                            color = if (isSelected) OnPixelBlueContainer else SlateGray,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
                         )
                     }
                 }
@@ -813,10 +836,10 @@ fun OutdoorMapScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(max = 210.dp)
-                        .shadow(10.dp, CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp)),
-                    shape = CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp),
-                    color = VoidBlack.copy(alpha = 0.97f),
-                    border = BorderStroke(1.dp, SportsRed)
+                        .shadow(10.dp, RoundedCornerShape(22.dp)),
+                    shape = RoundedCornerShape(22.dp),
+                    color = PureSurface,
+                    border = BorderStroke(1.dp, MistOutline)
                 ) {
                     LazyColumn {
                         items(searchSuggestions, key = { it.id }) { pin ->
@@ -832,34 +855,35 @@ fun OutdoorMapScreen(
                                             null
                                         )
                                     }
-                                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                                    .padding(horizontal = 16.dp, vertical = 12.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.LocationOn,
                                     contentDescription = null,
-                                    tint = NeonGreen,
-                                    modifier = Modifier.size(18.dp)
+                                    tint = PixelBlue,
+                                    modifier = Modifier.size(19.dp)
                                 )
-                                Spacer(modifier = Modifier.width(10.dp))
+                                Spacer(modifier = Modifier.width(12.dp))
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
                                         text = pin.mapLabel.ifBlank { pin.name },
                                         fontFamily = DisplayFontFamily,
-                                        color = PureWhite,
-                                        fontSize = 13.sp,
+                                        color = InkBlack,
+                                        fontSize = 13.5.sp,
                                         fontWeight = FontWeight.Bold
                                     )
                                     Text(
                                         text = "${pin.name} • ${pin.building.shortName}",
-                                        color = AshGray,
-                                        fontSize = 11.sp,
+                                        fontFamily = BodyFontFamily,
+                                        color = SlateGray,
+                                        fontSize = 11.5.sp,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
                                 }
                             }
-                            HorizontalDivider(color = GraphiteBorder)
+                            HorizontalDivider(color = MistOutline)
                         }
                     }
                 }
@@ -871,25 +895,27 @@ fun OutdoorMapScreen(
                 exit = fadeOut()
             ) {
                 Surface(
-                    shape = CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp),
-                    color = VoidBlack.copy(alpha = 0.96f),
-                    border = BorderStroke(1.dp, SportsRed)
+                    shape = RoundedCornerShape(50),
+                    color = PureSurface,
+                    border = BorderStroke(1.dp, CampusCrimsonBorder),
+                    modifier = Modifier.shadow(4.dp, RoundedCornerShape(50))
                 ) {
                     Text(
-                        text = "GPS outside BBSUTSD perimeter — map stays locked on campus.",
-                        color = PureWhite,
-                        fontSize = 11.5.sp,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                        text = "GPS is outside BBS-UTECH perimeter — map remains centered on campus.",
+                        fontFamily = BodyFontFamily,
+                        color = InkBlack,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
                     )
                 }
             }
         }
 
-        // 3. Right-Edge Floating Tactical Map Controls (48.dp)
+        // 3. Right-Edge Floating Pixel Map Controls (48.dp)
         Column(
             modifier = Modifier
                 .align(Alignment.CenterEnd)
-                .padding(end = 12.dp, top = 48.dp),
+                .padding(end = 12.dp, top = 56.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -898,7 +924,7 @@ fun OutdoorMapScreen(
                     .minimumInteractiveComponentSize()
                     .size(48.dp)
                     .clip(CircleShape)
-                    .shadow(8.dp, CircleShape)
+                    .shadow(6.dp, CircleShape)
                     .clickable {
                         isSatelliteView = !isSatelliteView
                         val mode = if (isSatelliteView) "satellite" else "roadmap"
@@ -906,14 +932,14 @@ fun OutdoorMapScreen(
                     }
                     .testTag("toggle_satellite_button"),
                 shape = CircleShape,
-                color = if (isSatelliteView) NeonGreen else VoidBlack,
-                border = BorderStroke(1.5.dp, if (isSatelliteView) NeonGreen else SportsRed)
+                color = if (isSatelliteView) PixelBlue else PureSurface,
+                border = BorderStroke(1.dp, if (isSatelliteView) PixelBlue else MistOutline)
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         imageVector = if (isSatelliteView) Icons.Default.Layers else Icons.Default.Map,
                         contentDescription = "Switch Satellite or Map View",
-                        tint = if (isSatelliteView) VoidBlack else PureWhite,
+                        tint = if (isSatelliteView) PureWhite else InkBlack,
                         modifier = Modifier.size(21.dp)
                     )
                 }
@@ -922,27 +948,27 @@ fun OutdoorMapScreen(
             MapCircleControl(
                 icon = Icons.Default.ZoomIn,
                 description = "Zoom In",
-                tint = PureWhite,
-                borderColor = GraphiteBorder,
-                bgColor = VoidBlack.copy(alpha = 0.94f),
+                tint = InkBlack,
+                borderColor = MistOutline,
+                bgColor = PureSurface,
                 testTag = "zoom_in_button"
             ) { webViewInstance?.evaluateJavascript("zoomInMap();", null) }
 
             MapCircleControl(
                 icon = Icons.Default.ZoomOut,
                 description = "Zoom Out",
-                tint = PureWhite,
-                borderColor = GraphiteBorder,
-                bgColor = VoidBlack.copy(alpha = 0.94f),
+                tint = InkBlack,
+                borderColor = MistOutline,
+                bgColor = PureSurface,
                 testTag = "zoom_out_button"
             ) { webViewInstance?.evaluateJavascript("zoomOutMap();", null) }
 
             MapCircleControl(
                 icon = if (isGpsActive && userLocation != null) Icons.Default.GpsFixed else Icons.Default.MyLocation,
                 description = "My Current GPS Location",
-                tint = if (isGpsActive && userLocation != null) VoidBlack else PureWhite,
-                borderColor = if (isGpsActive && userLocation != null) NeonGreen else SportsRed,
-                bgColor = if (isGpsActive && userLocation != null) NeonGreen else VoidBlack.copy(alpha = 0.94f),
+                tint = if (isGpsActive && userLocation != null) PureWhite else PixelBlue,
+                borderColor = if (isGpsActive && userLocation != null) PixelBlue else MistOutline,
+                bgColor = if (isGpsActive && userLocation != null) PixelBlue else PureSurface,
                 testTag = "my_location_button"
             ) {
                 if (!hasPermission) {
@@ -960,25 +986,25 @@ fun OutdoorMapScreen(
 
             MapCircleControl(
                 icon = Icons.Default.CenterFocusStrong,
-                description = "Center on BBSUTSD Campus Boundary",
-                tint = SportsRed,
-                borderColor = SportsRed,
-                bgColor = VoidBlack.copy(alpha = 0.94f),
+                description = "Center on BBS-UTECH Campus",
+                tint = InkBlack,
+                borderColor = MistOutline,
+                bgColor = PureSurface,
                 testTag = "campus_center_button"
             ) { webViewInstance?.evaluateJavascript("recenterCampus();", null) }
         }
 
-        // 4. Bottom Selected Landmark HUD Card OR Compact Legend Strip
+        // 4. Bottom Selected Landmark Sheet Card OR Minimalist Legend Pill
         val activePin = focusedMapPin
         if (activePin != null) {
             val pinColor = when (activePin.category) {
-                PinCategory.ADMIN -> SportsRed
-                PinCategory.STUDENT_SERVICE -> NeonGreen
-                PinCategory.LAB -> PureWhite
-                PinCategory.LIBRARY -> Color(0xFFFF4D5A)
-                PinCategory.AMENITY -> Color(0xFFA3E635)
-                PinCategory.TRANSPORT_GATE -> NeonGreen
-                PinCategory.ACADEMIC -> AshGray
+                PinCategory.ADMIN -> CampusCrimson
+                PinCategory.STUDENT_SERVICE -> PixelBlue
+                PinCategory.LAB -> CampusEmerald
+                PinCategory.LIBRARY -> LibraryViolet
+                PinCategory.AMENITY -> SkyTeal
+                PinCategory.TRANSPORT_GATE -> CampusEmeraldDark
+                PinCategory.ACADEMIC -> SlateGray
             }
             val distMeters = userLocation?.let { loc ->
                 viewModel.repository.calculateDistanceMeters(
@@ -994,13 +1020,13 @@ fun OutdoorMapScreen(
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp, vertical = 12.dp)
-                    .shadow(12.dp, CutCornerShape(topEnd = 18.dp, bottomStart = 18.dp))
+                    .shadow(12.dp, RoundedCornerShape(28.dp))
                     .testTag("selected_landmark_card"),
-                shape = CutCornerShape(topEnd = 18.dp, bottomStart = 18.dp),
-                color = VoidBlack.copy(alpha = 0.96f),
-                border = BorderStroke(1.5.dp, pinColor.copy(alpha = 0.85f))
+                shape = RoundedCornerShape(28.dp),
+                color = PureSurface,
+                border = BorderStroke(1.dp, MistOutline)
             ) {
-                Column(modifier = Modifier.padding(14.dp)) {
+                Column(modifier = Modifier.padding(16.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -1009,17 +1035,17 @@ fun OutdoorMapScreen(
                         Column(modifier = Modifier.weight(1f)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Surface(
-                                    color = CarbonSurface,
-                                    shape = CutCornerShape(4.dp),
-                                    border = BorderStroke(1.dp, pinColor)
+                                    color = TonalMist,
+                                    shape = RoundedCornerShape(50),
+                                    border = BorderStroke(1.dp, pinColor.copy(alpha = 0.4f))
                                 ) {
                                     Text(
-                                        text = "${activePin.building.shortName.uppercase()} • ${activePin.roomNumber}",
+                                        text = "${activePin.building.shortName} • ${activePin.roomNumber}",
                                         fontFamily = MonoFontFamily,
                                         color = pinColor,
-                                        fontSize = 9.5.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.dp)
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        modifier = Modifier.padding(horizontal = 9.dp, vertical = 3.dp)
                                     )
                                 }
                                 if (distMeters != null) {
@@ -1034,34 +1060,35 @@ fun OutdoorMapScreen(
                                         Icon(
                                             imageVector = Icons.Default.DirectionsWalk,
                                             contentDescription = null,
-                                            tint = NeonGreen,
-                                            modifier = Modifier.size(13.dp)
+                                            tint = CampusEmeraldDark,
+                                            modifier = Modifier.size(14.dp)
                                         )
                                         Spacer(modifier = Modifier.width(3.dp))
                                         Text(
-                                            text = "$distStr ($walkMins MIN)",
-                                            fontFamily = MonoFontFamily,
-                                            color = NeonGreen,
-                                            fontSize = 10.sp,
-                                            fontWeight = FontWeight.Bold
+                                            text = "$distStr ($walkMins min)",
+                                            fontFamily = BodyFontFamily,
+                                            color = CampusEmeraldDark,
+                                            fontSize = 11.5.sp,
+                                            fontWeight = FontWeight.SemiBold
                                         )
                                     }
                                 }
                             }
-                            Spacer(modifier = Modifier.height(6.dp))
+                            Spacer(modifier = Modifier.height(7.dp))
                             Text(
                                 text = activePin.name,
                                 fontFamily = DisplayFontFamily,
-                                color = PureWhite,
-                                fontSize = 15.5.sp,
+                                color = InkBlack,
+                                fontSize = 16.5.sp,
                                 fontWeight = FontWeight.Bold,
                                 maxLines = 2,
                                 overflow = TextOverflow.Ellipsis
                             )
                             Text(
                                 text = "${activePin.subTitle} • ${activePin.inCharge}",
-                                color = AshGray,
-                                fontSize = 11.sp,
+                                fontFamily = BodyFontFamily,
+                                color = SlateGray,
+                                fontSize = 12.sp,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
@@ -1071,12 +1098,14 @@ fun OutdoorMapScreen(
                                 focusedMapPin = null
                                 webViewInstance?.evaluateJavascript("clearSelectedPin();", null)
                             },
-                            modifier = Modifier.testTag("dismiss_selected_pin_button")
+                            modifier = Modifier
+                                .minimumInteractiveComponentSize()
+                                .testTag("dismiss_selected_pin_button")
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Close,
                                 contentDescription = "Close Landmark Card",
-                                tint = AshGray
+                                tint = SlateGray
                             )
                         }
                     }
@@ -1088,16 +1117,16 @@ fun OutdoorMapScreen(
                         val safeIdx = activeRouteStepIdx.coerceIn(0, route.steps.lastIndex)
                         val curStep = route.steps[safeIdx]
                         Surface(
-                            color = NeonGreenTint,
-                            shape = CutCornerShape(8.dp),
-                            border = BorderStroke(1.dp, NeonGreen.copy(alpha = 0.7f)),
+                            color = PixelBlueTint,
+                            shape = RoundedCornerShape(18.dp),
+                            border = BorderStroke(1.dp, PixelBlueContainer),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(bottom = 10.dp)
+                                .padding(bottom = 12.dp)
                                 .testTag("route_tutorial_bar")
                         ) {
                             Row(
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 val stepIcon = when {
@@ -1105,25 +1134,35 @@ fun OutdoorMapScreen(
                                     curStep.action.contains("RIGHT") -> Icons.Default.TurnRight
                                     else -> Icons.Default.Navigation
                                 }
-                                Icon(
-                                    imageVector = stepIcon,
-                                    contentDescription = null,
-                                    tint = NeonGreen,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
+                                Surface(
+                                    color = PixelBlue,
+                                    shape = CircleShape,
+                                    modifier = Modifier.size(32.dp)
+                                ) {
+                                    Box(contentAlignment = Alignment.Center) {
+                                        Icon(
+                                            imageVector = stepIcon,
+                                            contentDescription = null,
+                                            tint = PureWhite,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
+                                }
+                                Spacer(modifier = Modifier.width(10.dp))
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        text = "STEP ${safeIdx + 1}/${route.steps.size} • ${route.totalDistanceMeters}m (${route.estimatedMinutes} MIN)",
-                                        fontFamily = MonoFontFamily,
-                                        color = NeonGreen,
-                                        fontSize = 9.5.sp,
-                                        fontWeight = FontWeight.Bold
+                                        text = "Step ${safeIdx + 1}/${route.steps.size} • ${route.totalDistanceMeters} m (${route.estimatedMinutes} min)",
+                                        fontFamily = BodyFontFamily,
+                                        color = PixelBlue,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.SemiBold
                                     )
                                     Text(
                                         text = curStep.instruction,
-                                        color = PureWhite,
-                                        fontSize = 11.5.sp,
+                                        fontFamily = BodyFontFamily,
+                                        color = InkBlack,
+                                        fontSize = 12.5.sp,
+                                        fontWeight = FontWeight.Medium,
                                         maxLines = 2,
                                         overflow = TextOverflow.Ellipsis
                                     )
@@ -1135,12 +1174,12 @@ fun OutdoorMapScreen(
                                         webViewInstance?.evaluateJavascript("highlightRouteStep($prev);", null)
                                     },
                                     enabled = safeIdx > 0,
-                                    modifier = Modifier.size(32.dp)
+                                    modifier = Modifier.minimumInteractiveComponentSize()
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.ChevronLeft,
                                         contentDescription = "Previous step",
-                                        tint = if (safeIdx > 0) PureWhite else SteelGray
+                                        tint = if (safeIdx > 0) PixelBlue else MutedGray
                                     )
                                 }
                                 IconButton(
@@ -1150,13 +1189,66 @@ fun OutdoorMapScreen(
                                         webViewInstance?.evaluateJavascript("highlightRouteStep($next);", null)
                                     },
                                     enabled = safeIdx < route.steps.lastIndex,
-                                    modifier = Modifier.size(32.dp)
+                                    modifier = Modifier.minimumInteractiveComponentSize()
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.ChevronRight,
                                         contentDescription = "Next step",
-                                        tint = if (safeIdx < route.steps.lastIndex) PureWhite else SteelGray
+                                        tint = if (safeIdx < route.steps.lastIndex) PixelBlue else MutedGray
                                     )
+                                }
+                            }
+                        }
+                    } else {
+                        Surface(
+                            color = TonalMist,
+                            shape = RoundedCornerShape(16.dp),
+                            border = BorderStroke(1.dp, MistOutline),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 12.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = if (!hasPermission) {
+                                        "Enable GPS for shortest walking directions from your location"
+                                    } else {
+                                        "Acquiring live GPS fix to compute shortest path..."
+                                    },
+                                    fontFamily = BodyFontFamily,
+                                    color = SlateGray,
+                                    fontSize = 11.5.sp,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                if (!hasPermission) {
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Button(
+                                        onClick = {
+                                            permissionLauncher.launch(
+                                                arrayOf(
+                                                    Manifest.permission.ACCESS_FINE_LOCATION,
+                                                    Manifest.permission.ACCESS_COARSE_LOCATION
+                                                )
+                                            )
+                                        },
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = PixelBlue,
+                                            contentColor = PureWhite
+                                        ),
+                                        shape = RoundedCornerShape(50),
+                                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+                                    ) {
+                                        Text(
+                                            text = "Enable",
+                                            fontFamily = BodyFontFamily,
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -1171,10 +1263,10 @@ fun OutdoorMapScreen(
                             Button(
                                 onClick = { viewModel.openBusTimings() },
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = NeonGreen,
-                                    contentColor = VoidBlack
+                                    containerColor = CampusEmeraldTint,
+                                    contentColor = CampusEmeraldDark
                                 ),
-                                shape = CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp),
+                                shape = RoundedCornerShape(50),
                                 modifier = Modifier
                                     .weight(1f)
                                     .height(48.dp)
@@ -1187,10 +1279,10 @@ fun OutdoorMapScreen(
                                 )
                                 Spacer(modifier = Modifier.width(5.dp))
                                 Text(
-                                    text = "POINT BUSES",
-                                    fontFamily = DisplayFontFamily,
-                                    fontSize = 11.5.sp,
-                                    fontWeight = FontWeight.Bold
+                                    text = "Buses",
+                                    fontFamily = BodyFontFamily,
+                                    fontSize = 12.5.sp,
+                                    fontWeight = FontWeight.SemiBold
                                 )
                             }
                         }
@@ -1198,10 +1290,10 @@ fun OutdoorMapScreen(
                         Button(
                             onClick = { viewModel.selectPin(activePin) },
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = SportsRed,
+                                containerColor = PixelBlue,
                                 contentColor = PureWhite
                             ),
-                            shape = CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp),
+                            shape = RoundedCornerShape(50),
                             modifier = Modifier
                                 .weight(1f)
                                 .height(48.dp)
@@ -1214,18 +1306,18 @@ fun OutdoorMapScreen(
                             )
                             Spacer(modifier = Modifier.width(5.dp))
                             Text(
-                                text = "DETAILS",
-                                fontFamily = DisplayFontFamily,
-                                fontSize = 11.5.sp,
-                                fontWeight = FontWeight.Bold
+                                text = "Details",
+                                fontFamily = BodyFontFamily,
+                                fontSize = 12.5.sp,
+                                fontWeight = FontWeight.SemiBold
                             )
                         }
 
                         if (activePin.building != Building.CAMPUS_GROUNDS && activePin.floor != FloorLevel.OUTDOOR) {
                             OutlinedButton(
                                 onClick = { viewModel.locatePinIndoor(activePin) },
-                                border = BorderStroke(1.5.dp, PureWhite),
-                                shape = CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp),
+                                border = BorderStroke(1.dp, SoftOutline),
+                                shape = RoundedCornerShape(50),
                                 modifier = Modifier
                                     .weight(1f)
                                     .height(48.dp)
@@ -1234,16 +1326,16 @@ fun OutdoorMapScreen(
                                 Icon(
                                     imageVector = Icons.Default.Layers,
                                     contentDescription = null,
-                                    tint = NeonGreen,
+                                    tint = PixelBlue,
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(modifier = Modifier.width(5.dp))
                                 Text(
-                                    text = "FLOOR",
-                                    fontFamily = DisplayFontFamily,
-                                    color = PureWhite,
-                                    fontSize = 11.5.sp,
-                                    fontWeight = FontWeight.Bold
+                                    text = "Floor Plan",
+                                    fontFamily = BodyFontFamily,
+                                    color = InkBlack,
+                                    fontSize = 12.5.sp,
+                                    fontWeight = FontWeight.SemiBold
                                 )
                             }
                         }
@@ -1255,20 +1347,19 @@ fun OutdoorMapScreen(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(horizontal = 12.dp, vertical = 14.dp)
-                    .shadow(8.dp, CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp)),
-                shape = CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp),
-                color = VoidBlack.copy(alpha = 0.94f),
-                border = BorderStroke(1.dp, GraphiteBorder)
+                    .shadow(6.dp, RoundedCornerShape(50)),
+                shape = RoundedCornerShape(50),
+                color = PureSurface.copy(alpha = 0.96f),
+                border = BorderStroke(1.dp, MistOutline)
             ) {
                 Row(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 9.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    LegendChip(color = SportsRed, label = "OLD")
-                    LegendChip(color = NeonGreen, label = "NEW")
-                    LegendChip(color = PureWhite, label = "ROAD")
-                    LegendChip(color = NeonGreen, label = "GPS")
+                    LegendChip(color = CampusCrimson, label = "Old")
+                    LegendChip(color = CampusEmerald, label = "New")
+                    LegendChip(color = PixelBlue, label = "Zoom in for names")
                 }
             }
         }
@@ -1290,12 +1381,12 @@ private fun MapCircleControl(
             .minimumInteractiveComponentSize()
             .size(48.dp)
             .clip(CircleShape)
-            .shadow(8.dp, CircleShape)
+            .shadow(6.dp, CircleShape)
             .clickable(onClick = onClick)
             .testTag(testTag),
         shape = CircleShape,
         color = bgColor,
-        border = BorderStroke(1.5.dp, borderColor)
+        border = BorderStroke(1.dp, borderColor)
     ) {
         Box(contentAlignment = Alignment.Center) {
             Icon(
@@ -1320,13 +1411,13 @@ private fun LegendChip(
                 .clip(CircleShape)
                 .background(color)
         )
-        Spacer(modifier = Modifier.width(5.dp))
+        Spacer(modifier = Modifier.width(6.dp))
         Text(
             text = label,
-            fontFamily = MonoFontFamily,
-            color = PureWhite,
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Bold
+            fontFamily = BodyFontFamily,
+            color = InkBlack,
+            fontSize = 11.5.sp,
+            fontWeight = FontWeight.Medium
         )
     }
 }

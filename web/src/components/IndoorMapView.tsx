@@ -55,16 +55,16 @@ export function IndoorMapView({
   const getPinColor = (pin: CampusPin): string => {
     switch (pin.category) {
       case 'ADMIN':
-        return '#FF1E2D';
+        return '#B3261E';
       case 'ACADEMIC':
-        return '#F8FAFC';
+        return '#334155';
       case 'LAB':
       case 'LIBRARY':
-        return '#39FF14';
+        return '#0F9D58';
       case 'STUDENT_SERVICE':
-        return '#FF6B76';
+        return '#0B57D0';
       default:
-        return '#FF1E2D';
+        return '#0B57D0';
     }
   };
 
@@ -80,10 +80,10 @@ export function IndoorMapView({
 
   return (
     <div className="flex flex-col gap-4 pb-24 lg:pb-10">
-      {/* Building Tabs + Floor Chips + Route Toggle */}
-      <div className="border border-[#282C38] bg-[#0D0E12] p-4 cut-corner">
+      {/* Building Segmented Control + Floor Pills + Route Toggle */}
+      <div className="rounded-[24px] border border-[#E2E8F0] bg-[#FFFFFF] p-4 shadow-xs">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 rounded-full bg-[#EFF3F8] p-1">
             {INDOOR_BUILDINGS.map((bld) => {
               const active = building === bld;
               return (
@@ -94,20 +94,20 @@ export function IndoorMapView({
                     onSelectBuilding(bld);
                     resetTransform();
                   }}
-                  className={`border px-4 py-2 font-display text-xs font-bold tracking-wider transition cursor-pointer cut-corner-sm ${
+                  className={`rounded-full px-4 py-2 font-display text-xs font-semibold transition cursor-pointer ${
                     active
-                      ? 'border-[#FF1E2D] bg-[#FF1E2D] text-white'
-                      : 'border-[#282C38] bg-[#15171E] text-[#A1A7B3] hover:border-[#39FF14] hover:text-white'
+                      ? 'bg-[#0B57D0] text-white shadow-xs'
+                      : 'text-[#444746] hover:text-[#111827]'
                   }`}
                 >
-                  {bld === 'OLD_BUILDING' ? 'OLD BUILDING' : 'NEW COMPLEX'}
+                  {bld === 'OLD_BUILDING' ? 'Old Building' : 'New Complex'}
                 </button>
               );
             })}
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-mono text-[11px] font-bold text-[#A1A7B3]">LVL:</span>
+            <span className="text-xs font-semibold text-[#5F6368]">Floor:</span>
             {INDOOR_FLOORS.map((fl) => {
               const active = floor === fl;
               const meta = FLOORS[fl];
@@ -119,13 +119,13 @@ export function IndoorMapView({
                     onSelectFloor(fl);
                     resetTransform();
                   }}
-                  className={`border px-3 py-1.5 font-mono text-[11px] font-bold transition cursor-pointer cut-corner-sm ${
+                  className={`rounded-full px-3.5 py-1.5 font-display text-xs font-semibold transition cursor-pointer ${
                     active
-                      ? 'border-[#FF1E2D] bg-[#FF1E2D] text-white'
-                      : 'border-[#282C38] bg-[#050507] text-[#A1A7B3] hover:border-[#39FF14] hover:text-white'
+                      ? 'bg-[#D3E3FD] text-[#041E49]'
+                      : 'bg-[#EFF3F8] text-[#444746] hover:bg-[#E2E8F0]'
                   }`}
                 >
-                  {meta.code} • {meta.displayName.split(' ')[0].toUpperCase()}
+                  {meta.code} • {meta.displayName.split(' ')[0]}
                 </button>
               );
             })}
@@ -133,52 +133,53 @@ export function IndoorMapView({
             <button
               type="button"
               onClick={() => setShowRoute((r) => !r)}
-              className={`ml-1 flex items-center gap-1.5 border px-3 py-1.5 font-mono text-[11px] font-bold transition cursor-pointer cut-corner-sm ${
+              className={`ml-1 flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-display text-xs font-semibold transition cursor-pointer ${
                 showRoute
-                  ? 'border-[#39FF14] bg-[#0B2407] text-[#39FF14]'
-                  : 'border-[#282C38] bg-[#050507] text-[#A1A7B3]'
+                  ? 'bg-[#E6F4EA] text-[#137333]'
+                  : 'bg-[#EFF3F8] text-[#5F6368]'
               }`}
             >
               <Route className="h-3.5 w-3.5" />
-              <span>{showRoute ? 'PATH ON' : 'PATH OFF'}</span>
+              <span>{showRoute ? 'Path On' : 'Path Off'}</span>
             </button>
           </div>
         </div>
 
         {/* Selected Room Banner */}
         {selectedPin && (
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border border-[#39FF14]/70 bg-[#050507] px-4 py-3 cut-corner-sm">
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#CBE6D3] bg-[#E6F4EA] px-4 py-3">
             <div className="flex items-center gap-3 min-w-0">
-              <Footprints className="h-5 w-5 shrink-0 text-[#39FF14]" />
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#0F9D58] text-white">
+                <Footprints className="h-4 w-4" />
+              </div>
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-mono text-xs font-bold text-[#FF1E2D]">
+                  <span className="rounded-full bg-[#FFFFFF] px-2 py-0.5 font-mono text-[11px] font-bold text-[#0B57D0]">
                     {selectedPin.roomNumber}
                   </span>
-                  <span className="font-display text-sm font-bold text-[#F8FAFC]">
+                  <span className="font-display text-sm font-bold text-[#111827]">
                     {selectedPin.name}
                   </span>
                 </div>
-                <p className="text-xs text-[#A1A7B3]">{selectedPin.indoorGuide}</p>
+                <p className="mt-0.5 text-xs text-[#1E4620]">{selectedPin.indoorGuide}</p>
               </div>
             </div>
             <button
               type="button"
               onClick={() => onOpenPinDetail(selectedPin)}
-              className="flex items-center gap-1.5 border border-[#39FF14] bg-[#0B2407] px-3 py-1.5 font-mono text-xs font-bold text-[#39FF14] hover:brightness-125 cursor-pointer cut-corner-sm"
+              className="flex items-center gap-1.5 rounded-full bg-[#0B57D0] px-4 py-2 font-display text-xs font-semibold text-white transition hover:bg-[#0842A0] cursor-pointer"
             >
               <Info className="h-3.5 w-3.5" />
-              <span>FULL INFO</span>
+              <span>Full Info</span>
             </button>
           </div>
         )}
       </div>
 
-      {/* Main Split View: Interactive Blueprint Canvas + Floor Directory */}
+      {/* Main Split View: Architectural Light Drafting Canvas + Floor Directory */}
       <div className="grid gap-4 lg:grid-cols-[1.65fr_1fr]">
-        {/* Architectural SVG Blueprint Canvas */}
         <div
-          className="relative h-[430px] sm:h-[520px] overflow-hidden border border-[#282C38] bg-[#07080B] cut-corner select-none"
+          className="relative h-[430px] sm:h-[520px] overflow-hidden rounded-[28px] border border-[#E2E8F0] bg-[#F8FAFC] shadow-xs select-none"
           onWheel={(e) => {
             e.preventDefault();
             const factor = e.deltaY < 0 ? 1.12 : 0.9;
@@ -205,12 +206,11 @@ export function IndoorMapView({
             dragRef.current.active = false;
           }}
         >
-          {/* Watermark */}
-          <div className="pointer-events-none absolute top-3 left-3 z-10 border border-[#FF1E2D]/70 bg-[#050507]/90 px-3 py-1.5 font-mono text-[11px] font-bold text-[#F8FAFC] cut-corner-sm">
-            {BUILDINGS[building].shortName.toUpperCase()} // {FLOORS[floor].displayName.toUpperCase()}
+          {/* Floating Pixel Floor Pill Watermark */}
+          <div className="pointer-events-none absolute top-3.5 left-3.5 z-10 rounded-full border border-[#DCE2EC] bg-[#FFFFFF]/95 px-3.5 py-1.5 font-display text-xs font-bold text-[#111827] shadow-xs">
+            {BUILDINGS[building].shortName} • {FLOORS[floor].displayName}
           </div>
 
-          {/* Interactive SVG */}
           <svg
             viewBox="0 0 1000 640"
             className="h-full w-full cursor-grab active:cursor-grabbing"
@@ -218,18 +218,18 @@ export function IndoorMapView({
             <g
               transform={`translate(${offset.x} ${offset.y}) translate(500 320) scale(${scale}) translate(-500 -320)`}
             >
-              {/* Subtle Grid */}
+              {/* Clean Architectural Drafting Grid */}
               <defs>
-                <pattern id="bpGrid" width="40" height="40" patternUnits="userSpaceOnUse">
+                <pattern id="bpGridLight" width="40" height="40" patternUnits="userSpaceOnUse">
                   <path
                     d="M 40 0 L 0 0 0 40"
                     fill="none"
-                    stroke="#15171E"
+                    stroke="#E2E8F0"
                     strokeWidth="1"
                   />
                 </pattern>
               </defs>
-              <rect width="1000" height="640" fill="url(#bpGrid)" />
+              <rect width="1000" height="640" fill="url(#bpGridLight)" />
 
               {/* Building Outer Shell */}
               <rect
@@ -237,10 +237,10 @@ export function IndoorMapView({
                 y={toSvg(0.12, 0.12).y}
                 width={toSvg(0.88, 0.88).x - toSvg(0.12, 0.12).x}
                 height={toSvg(0.88, 0.88).y - toSvg(0.12, 0.12).y}
-                rx="12"
-                fill="#0E1015"
-                stroke="#FF1E2D"
-                strokeOpacity="0.8"
+                rx="18"
+                fill="#FFFFFF"
+                stroke="#0B57D0"
+                strokeOpacity="0.85"
                 strokeWidth="3"
               />
 
@@ -250,18 +250,18 @@ export function IndoorMapView({
                 y={toSvg(0.12, 0.44).y}
                 width={toSvg(0.88, 0.56).x - toSvg(0.12, 0.44).x}
                 height={toSvg(0.88, 0.56).y - toSvg(0.12, 0.44).y}
-                fill="#171A22"
+                fill="#EFF3F8"
               />
               <rect
                 x={toSvg(0.44, 0.12).x}
                 y={toSvg(0.44, 0.12).y}
                 width={toSvg(0.56, 0.88).x - toSvg(0.44, 0.12).x}
                 height={toSvg(0.56, 0.88).y - toSvg(0.44, 0.12).y}
-                fill="#171A22"
+                fill="#EFF3F8"
               />
 
               {/* Inner Room Partition Walls */}
-              <g stroke="#323746" strokeWidth="2.5">
+              <g stroke="#CBD5E1" strokeWidth="2.5">
                 <line x1={toSvg(0.28, 0.12).x} y1={toSvg(0.28, 0.12).y} x2={toSvg(0.28, 0.44).x} y2={toSvg(0.28, 0.44).y} />
                 <line x1={toSvg(0.12, 0.44).x} y1={toSvg(0.12, 0.44).y} x2={toSvg(0.44, 0.44).x} y2={toSvg(0.44, 0.44).y} />
                 <line x1={toSvg(0.72, 0.12).x} y1={toSvg(0.72, 0.12).y} x2={toSvg(0.72, 0.44).x} y2={toSvg(0.72, 0.44).y} />
@@ -278,18 +278,18 @@ export function IndoorMapView({
                 y={toSvg(0.45, 0.7).y}
                 width={toSvg(0.55, 0.82).x - toSvg(0.45, 0.7).x}
                 height={toSvg(0.55, 0.82).y - toSvg(0.45, 0.7).y}
-                rx="6"
-                fill="#26080D"
-                stroke="#FF1E2D"
-                strokeWidth="2.2"
+                rx="8"
+                fill="#FCE8E6"
+                stroke="#B3261E"
+                strokeWidth="2"
               />
               <text
                 x={toSvg(0.5, 0.765).x}
                 y={toSvg(0.5, 0.765).y}
                 textAnchor="middle"
-                fill="#FF1E2D"
+                fill="#B3261E"
                 fontSize="11"
-                fontFamily="JetBrains Mono, monospace"
+                fontFamily="Plus Jakarta Sans, sans-serif"
                 fontWeight="700"
               >
                 STAIRS
@@ -301,28 +301,28 @@ export function IndoorMapView({
                 y={toSvg(0.42, 0.88).y}
                 width={toSvg(0.58, 0.94).x - toSvg(0.42, 0.88).x}
                 height={toSvg(0.58, 0.94).y - toSvg(0.42, 0.88).y}
-                fill="#39FF14"
+                rx="6"
+                fill="#0F9D58"
               />
               <text
                 x={toSvg(0.5, 0.975).x}
                 y={toSvg(0.5, 0.975).y}
                 textAnchor="middle"
-                fill="#39FF14"
+                fill="#137333"
                 fontSize="11"
-                fontFamily="JetBrains Mono, monospace"
+                fontFamily="Plus Jakarta Sans, sans-serif"
                 fontWeight="700"
               >
                 MAIN ENTRANCE / FOYER
               </text>
 
-              {/* Neon Green Indoor Path Route */}
+              {/* Google Maps Style Walkable Indoor Route */}
               {showRoute && targetSvg && (
                 <g>
                   <polyline
                     points={`${entranceSvg.x},${entranceSvg.y} ${entranceSvg.x},${corridorY} ${targetSvg.x},${corridorY} ${targetSvg.x},${targetSvg.y}`}
                     fill="none"
-                    stroke="#39FF14"
-                    strokeOpacity="0.25"
+                    stroke="#D3E3FD"
                     strokeWidth="12"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -330,14 +330,14 @@ export function IndoorMapView({
                   <polyline
                     points={`${entranceSvg.x},${entranceSvg.y} ${entranceSvg.x},${corridorY} ${targetSvg.x},${corridorY} ${targetSvg.x},${targetSvg.y}`}
                     fill="none"
-                    stroke="#39FF14"
-                    strokeWidth="4"
-                    strokeDasharray="12 8"
+                    stroke="#0B57D0"
+                    strokeWidth="4.5"
+                    strokeDasharray="10 7"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
-                  <circle cx={entranceSvg.x} cy={entranceSvg.y} r="7" fill="#39FF14" />
-                  <circle cx={entranceSvg.x} cy={entranceSvg.y} r="3" fill="#050507" />
+                  <circle cx={entranceSvg.x} cy={entranceSvg.y} r="7" fill="#0F9D58" />
+                  <circle cx={entranceSvg.x} cy={entranceSvg.y} r="3" fill="#FFFFFF" />
                 </g>
               )}
 
@@ -354,32 +354,31 @@ export function IndoorMapView({
                   >
                     {isSelected && (
                       <>
-                        <circle cx={pos.x} cy={pos.y} r="28" fill="#39FF14" fillOpacity="0.32" />
-                        <circle cx={pos.x} cy={pos.y} r="20" fill="#FF1E2D" fillOpacity="0.45" />
+                        <circle cx={pos.x} cy={pos.y} r="28" fill="#0B57D0" fillOpacity="0.18" />
+                        <circle cx={pos.x} cy={pos.y} r="19" fill="#0B57D0" fillOpacity="0.3" />
                       </>
                     )}
-                    <circle cx={pos.x} cy={pos.y + 2} r="14" fill="#000" fillOpacity="0.6" />
-                    <circle cx={pos.x} cy={pos.y} r="13" fill="#F8FAFC" />
-                    <circle cx={pos.x} cy={pos.y} r="10" fill={color} />
-                    <circle cx={pos.x} cy={pos.y} r="3.5" fill="#050507" />
+                    <circle cx={pos.x} cy={pos.y + 2} r="13" fill="#0F172A" fillOpacity="0.15" />
+                    <circle cx={pos.x} cy={pos.y} r="12.5" fill="#FFFFFF" />
+                    <circle cx={pos.x} cy={pos.y} r="9.5" fill={isSelected ? '#0B57D0' : color} />
+                    <circle cx={pos.x} cy={pos.y} r="3" fill="#FFFFFF" />
                     <rect
-                      x={pos.x - 56}
-                      y={pos.y - 34}
-                      width="112"
-                      height="18"
-                      rx="3"
-                      fill="#050507"
-                      fillOpacity="0.92"
-                      stroke={isSelected ? '#39FF14' : color}
+                      x={pos.x - 58}
+                      y={pos.y - 36}
+                      width="116"
+                      height="20"
+                      rx="10"
+                      fill={isSelected ? '#0B57D0' : '#FFFFFF'}
+                      stroke={isSelected ? '#0B57D0' : '#DCE2EC'}
                       strokeWidth="1.2"
                     />
                     <text
                       x={pos.x}
-                      y={pos.y - 22}
+                      y={pos.y - 23}
                       textAnchor="middle"
-                      fill="#F8FAFC"
+                      fill={isSelected ? '#FFFFFF' : '#111827'}
                       fontSize="10"
-                      fontFamily="JetBrains Mono, monospace"
+                      fontFamily="Plus Jakarta Sans, sans-serif"
                       fontWeight="700"
                     >
                       {pin.roomNumber} • {pin.mapLabel.slice(0, 10)}
@@ -390,13 +389,13 @@ export function IndoorMapView({
             </g>
           </svg>
 
-          {/* Zoom Controls */}
-          <div className="absolute right-3 bottom-3 z-10 flex flex-col gap-2">
+          {/* Floating Pixel Zoom Pills */}
+          <div className="absolute right-3.5 bottom-3.5 z-10 flex flex-col gap-2">
             <button
               type="button"
               title="Zoom In"
               onClick={() => setScale((s) => Math.min(2.8, Number((s * 1.2).toFixed(2))))}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-[#282C38] bg-[#050507]/95 text-[#F8FAFC] hover:border-[#39FF14] cursor-pointer"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-[#E2E8F0] bg-[#FFFFFF] text-[#111827] shadow-md hover:bg-[#EFF3F8] cursor-pointer"
             >
               <ZoomIn className="h-4 w-4" />
             </button>
@@ -404,7 +403,7 @@ export function IndoorMapView({
               type="button"
               title="Zoom Out"
               onClick={() => setScale((s) => Math.max(0.75, Number((s * 0.82).toFixed(2))))}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-[#282C38] bg-[#050507]/95 text-[#F8FAFC] hover:border-[#39FF14] cursor-pointer"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-[#E2E8F0] bg-[#FFFFFF] text-[#111827] shadow-md hover:bg-[#EFF3F8] cursor-pointer"
             >
               <ZoomOut className="h-4 w-4" />
             </button>
@@ -412,7 +411,7 @@ export function IndoorMapView({
               type="button"
               title="Reset View"
               onClick={resetTransform}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-[#39FF14]/60 bg-[#050507]/95 text-[#39FF14] hover:border-[#39FF14] cursor-pointer"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-[#D3E3FD] text-[#041E49] shadow-md hover:bg-[#C2D7FC] cursor-pointer"
             >
               <Compass className="h-4 w-4" />
             </button>
@@ -420,17 +419,17 @@ export function IndoorMapView({
         </div>
 
         {/* Floor Directory List */}
-        <div className="border border-[#282C38] bg-[#0D0E12] p-4 cut-corner flex flex-col">
-          <div className="flex items-center justify-between border-b border-[#282C38] pb-3">
-            <span className="font-mono text-xs font-bold text-[#A1A7B3]">
-              FLOOR DIRECTORY ({floorPins.length})
+        <div className="rounded-[28px] border border-[#E2E8F0] bg-[#FFFFFF] p-5 shadow-xs flex flex-col">
+          <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
+            <span className="font-display text-xs font-bold uppercase tracking-wider text-[#5F6368]">
+              Floor Directory ({floorPins.length})
             </span>
-            <span className="font-mono text-[10px] font-bold text-[#39FF14]">
-              TAP ROOM TO ROUTE
+            <span className="rounded-full bg-[#E8F0FE] px-2.5 py-0.5 text-[11px] font-semibold text-[#0B57D0]">
+              Tap to route
             </span>
           </div>
 
-          <div className="mt-3 space-y-2.5 overflow-y-auto max-h-[450px] pr-1">
+          <div className="mt-3 space-y-2 overflow-y-auto max-h-[450px] pr-1">
             {floorPins.map((pin) => {
               const active = selectedPin?.id === pin.id;
               return (
@@ -438,26 +437,26 @@ export function IndoorMapView({
                   key={pin.id}
                   type="button"
                   onClick={() => onSelectPin(pin)}
-                  className={`flex w-full items-center gap-3 border p-3 text-left transition cursor-pointer cut-corner-sm ${
+                  className={`flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition cursor-pointer ${
                     active
-                      ? 'border-[#FF1E2D] bg-[#26080D]'
-                      : 'border-[#282C38] bg-[#15171E] hover:border-[#39FF14]'
+                      ? 'border-[#0B57D0] bg-[#E8F0FE]'
+                      : 'border-[#E2E8F0] bg-[#F8FAFC] hover:border-[#0B57D0]/50 hover:bg-[#FFFFFF]'
                   }`}
                 >
                   <span
-                    className={`shrink-0 px-2 py-1 font-mono text-[10px] font-bold ${
+                    className={`shrink-0 rounded-full px-2.5 py-1 font-mono text-[10.5px] font-bold ${
                       active
-                        ? 'bg-[#FF1E2D] text-white'
-                        : 'bg-[#050507] text-[#39FF14]'
+                        ? 'bg-[#0B57D0] text-white'
+                        : 'bg-[#FFFFFF] text-[#0B57D0] border border-[#DCE2EC]'
                     }`}
                   >
                     {pin.roomNumber}
                   </span>
                   <div className="min-w-0">
-                    <div className="truncate font-display text-sm font-bold text-[#F8FAFC]">
+                    <div className="truncate font-display text-sm font-bold text-[#111827]">
                       {pin.name}
                     </div>
-                    <div className="truncate text-xs text-[#A1A7B3]">{pin.subTitle}</div>
+                    <div className="truncate text-xs text-[#5F6368]">{pin.subTitle}</div>
                   </div>
                 </button>
               );

@@ -1,22 +1,25 @@
 @import "tailwindcss";
 
 @theme {
-  --color-void: #050507;
-  --color-obsidian: #0D0E12;
-  --color-carbon: #15171E;
-  --color-elevated: #1C1F28;
-  --color-graphite: #282C38;
-  --color-sports-red: #FF1E2D;
-  --color-sports-red-bright: #FF3B47;
-  --color-sports-red-tint: #26080D;
-  --color-neon-green: #39FF14;
-  --color-neon-green-tint: #0B2407;
-  --color-pure-white: #F8FAFC;
-  --color-ash-gray: #A1A7B3;
-  --color-steel-gray: #687080;
+  --color-canvas: #F8FAFC;
+  --color-surface: #FFFFFF;
+  --color-tonal: #EFF3F8;
+  --color-tonal-strong: #E3E9F2;
+  --color-outline: #DCE2EC;
+  --color-primary: #0B57D0;
+  --color-primary-container: #D3E3FD;
+  --color-on-primary-container: #041E49;
+  --color-emerald: #0F9D58;
+  --color-emerald-dark: #137333;
+  --color-emerald-container: #E6F4EA;
+  --color-crimson: #B3261E;
+  --color-crimson-container: #FCE8E6;
+  --color-ink: #111827;
+  --color-slate: #444746;
+  --color-muted: #747775;
 
-  --font-display: "Chakra Petch", system-ui, sans-serif;
-  --font-sans: "Space Grotesk", system-ui, sans-serif;
+  --font-display: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-sans: "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 }
 
@@ -25,53 +28,31 @@
   body,
   #root {
     min-height: 100%;
-    background-color: #050507;
-    color: #f8fafc;
+    background-color: #F8FAFC;
+    color: #111827;
     font-family: var(--font-sans);
   }
 }
 
-.cut-corner {
-  clip-path: polygon(
-    0 0,
-    calc(100% - 14px) 0,
-    100% 14px,
-    100% 100%,
-    14px 100%,
-    0 calc(100% - 14px)
-  );
-}
-
-.cut-corner-sm {
-  clip-path: polygon(
-    0 0,
-    calc(100% - 8px) 0,
-    100% 8px,
-    100% 100%,
-    8px 100%,
-    0 calc(100% - 8px)
-  );
-}
-
-/* Custom sleek dark scrollbar */
+/* Custom subtle light scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #050507;
+  background: #F1F5F9;
 }
 ::-webkit-scrollbar-thumb {
-  background: #282c38;
-  border-radius: 3px;
+  background: #CBD5E1;
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #ff1e2d;
+  background: #0B57D0;
 }
 
-/* Leaflet custom pin and pulsing GPS styles */
+/* Leaflet Pixel / Google Maps Light Pin & GPS Styling */
 .leaflet-container {
-  background: #050507 !important;
+  background: #F8FAFC !important;
   font-family: var(--font-sans) !important;
 }
 
@@ -85,148 +66,195 @@
 .campus-pin {
   position: relative;
   display: inline-flex;
-  flex-direction: column;
   align-items: center;
+  justify-content: center;
   cursor: pointer;
   pointer-events: auto !important;
-  transform: translate(-50%, -100%);
-  transition: transform 0.15s ease;
+  transform: translate(-50%, -50%);
+  transition: transform 0.16s cubic-bezier(0.2, 0.8, 0.2, 1);
   touch-action: manipulation;
+  padding: 4px; /* Expands interactive hit target cleanly */
 }
 
 .campus-pin:hover {
-  transform: translate(-50%, -100%) scale(1.08);
-  z-index: 800 !important;
+  transform: translate(-50%, -50%) scale(1.1);
+  z-index: 820 !important;
 }
 
 .campus-pin-label {
-  padding: 3px 8px;
-  border-radius: 3px;
-  background: rgba(5, 5, 7, 0.94);
-  color: #f8fafc;
-  font-family: "JetBrains Mono", monospace;
-  font-size: 10px;
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px) scale(0.92);
+  padding: 3.5px 9px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.96);
+  color: #111827;
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  font-size: 11px;
   font-weight: 700;
   line-height: 1.25;
   white-space: nowrap;
-  border: 1.5px solid var(--pin-color, #ff1e2d);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.85);
-  margin-bottom: 3px;
-  letter-spacing: 0.25px;
+  border: 1.5px solid var(--pin-color, #0B57D0);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.16);
+  letter-spacing: 0.1px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.16s ease, transform 0.16s ease, visibility 0.16s ease;
 }
 
-.campus-pin-dot {
-  width: 12px;
-  height: 12px;
+.map-show-labels .campus-pin-label,
+.campus-pin.is-selected .campus-pin-label,
+.campus-pin.is-origin .campus-pin-label,
+.campus-pin:hover .campus-pin-label {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+
+.campus-pin-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  background: var(--pin-color, #ff1e2d);
-  border: 2px solid #050507;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+  background: var(--pin-color, #0B57D0);
+  color: #FFFFFF;
+  border: 2.5px solid #FFFFFF;
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.28);
+  transition: transform 0.16s ease, background-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.campus-pin-icon svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.campus-pin.is-origin .campus-pin-icon {
+  background: #0F9D58;
+  width: 32px;
+  height: 32px;
+  border-width: 3px;
+  box-shadow: 0 0 0 4px rgba(15, 157, 88, 0.22), 0 4px 12px rgba(15, 157, 88, 0.35);
+}
+
+.campus-pin.is-origin .campus-pin-label {
+  background: #E6F4EA;
+  color: #137333;
+  border-color: #0F9D58;
 }
 
 .campus-pin.is-selected {
   z-index: 950 !important;
-  transform: translate(-50%, -100%) scale(1.16);
+  transform: translate(-50%, -50%) scale(1.12);
 }
 
 .campus-pin.is-selected .campus-pin-label {
-  background: #ff1e2d;
-  color: #f8fafc;
-  border-color: #39ff14;
-  box-shadow: 0 4px 16px rgba(255, 30, 45, 0.65);
+  background: #0B57D0;
+  color: #FFFFFF;
+  border-color: #FFFFFF;
+  box-shadow: 0 6px 18px rgba(11, 87, 208, 0.4);
 }
 
-.campus-pin.is-selected .campus-pin-dot {
-  width: 15px;
-  height: 15px;
-  background: #39ff14;
-  border-color: #050507;
-  border-width: 2.5px;
+.campus-pin.is-selected .campus-pin-icon {
+  width: 34px;
+  height: 34px;
+  background: #0B57D0;
+  border-color: #FFFFFF;
+  border-width: 3px;
+  box-shadow: 0 0 0 5px rgba(11, 87, 208, 0.24), 0 6px 16px rgba(11, 87, 208, 0.45);
 }
 
 .route-turn-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 22px;
-  height: 22px;
-  padding: 0 5px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
   border-radius: 9999px;
-  background: #050507;
-  color: #39ff14;
-  border: 2px solid #39ff14;
+  background: #FFFFFF;
+  color: #0B57D0;
+  border: 2px solid #0B57D0;
   font-family: "JetBrains Mono", monospace;
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 800;
   transform: translate(-50%, -50%);
   pointer-events: auto;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.85);
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.25);
 }
 
 .route-turn-badge.is-active {
-  background: #ff1e2d;
-  color: #f8fafc;
-  border-color: #f8fafc;
-  transform: translate(-50%, -50%) scale(1.18);
+  background: #0B57D0;
+  color: #FFFFFF;
+  border-color: #FFFFFF;
+  transform: translate(-50%, -50%) scale(1.16);
+  box-shadow: 0 4px 14px rgba(11, 87, 208, 0.48);
 }
 
 .route-origin-badge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 3px 8px;
-  border-radius: 4px;
-  background: #39ff14;
-  color: #050507;
-  border: 2px solid #050507;
-  font-family: "JetBrains Mono", monospace;
-  font-size: 9.5px;
-  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background: #0F9D58;
+  color: #FFFFFF;
+  border: 2px solid #FFFFFF;
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
   white-space: nowrap;
   transform: translate(-50%, -125%);
-  box-shadow: 0 4px 12px rgba(57, 255, 20, 0.5);
+  box-shadow: 0 4px 12px rgba(15, 157, 88, 0.4);
   pointer-events: none;
 }
 
 .zone-badge {
   display: inline-block;
-  padding: 3px 8px;
-  border-radius: 3px;
-  font-family: "JetBrains Mono", monospace;
-  font-size: 9.5px;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
+  letter-spacing: 0.3px;
   white-space: nowrap;
   pointer-events: none;
   transform: translate(-50%, -50%);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.9);
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.22);
 }
 
 .zone-badge-old {
-  background: rgba(5, 5, 7, 0.95);
-  color: #ff1e2d;
-  border: 1.5px solid #ff1e2d;
+  background: rgba(255, 255, 255, 0.94);
+  color: #B3261E;
+  border: 1.5px solid #B3261E;
 }
 
 .zone-badge-new {
-  background: rgba(5, 5, 7, 0.95);
-  color: #39ff14;
-  border: 1.5px solid #39ff14;
+  background: rgba(255, 255, 255, 0.94);
+  color: #0F9D58;
+  border: 1.5px solid #0F9D58;
 }
 
 .zone-badge-road {
-  background: rgba(5, 5, 7, 0.95);
-  color: #f8fafc;
-  border: 1.5px solid #f8fafc;
-  font-size: 8.5px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #0B57D0;
+  border: 1.5px solid #0B57D0;
+  font-size: 9px;
 }
 
 .gps-dot-wrapper {
   position: relative;
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -235,11 +263,11 @@
 
 .gps-dot-pulse {
   position: absolute;
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  background: rgba(57, 255, 20, 0.42);
-  animation: gpsPulse 1.8s ease-out infinite;
+  background: rgba(11, 87, 208, 0.32);
+  animation: gpsPulse 1.9s ease-out infinite;
 }
 
 .gps-dot-core {
@@ -247,9 +275,9 @@
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: #39ff14;
-  border: 2.5px solid #050507;
-  box-shadow: 0 0 12px rgba(57, 255, 20, 0.9);
+  background: #0B57D0;
+  border: 3px solid #FFFFFF;
+  box-shadow: 0 2px 10px rgba(11, 87, 208, 0.65);
 }
 
 @keyframes gpsPulse {

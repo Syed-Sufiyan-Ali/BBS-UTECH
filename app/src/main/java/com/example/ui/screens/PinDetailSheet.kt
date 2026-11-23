@@ -1,7 +1,9 @@
 package com.example.ui.screens
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,7 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CutCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -36,6 +38,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -50,18 +53,25 @@ import com.example.data.model.CampusPin
 import com.example.data.model.FloorLevel
 import com.example.data.model.UserLocation
 import com.example.data.repository.CampusRepository
-import com.example.ui.theme.AshGray
-import com.example.ui.theme.CarbonSurface
+import com.example.ui.theme.BodyFontFamily
+import com.example.ui.theme.CampusCrimson
+import com.example.ui.theme.CampusCrimsonTint
+import com.example.ui.theme.CampusEmeraldBorder
+import com.example.ui.theme.CampusEmeraldDark
+import com.example.ui.theme.CampusEmeraldTint
 import com.example.ui.theme.DisplayFontFamily
-import com.example.ui.theme.GraphiteBorder
+import com.example.ui.theme.InkBlack
+import com.example.ui.theme.MistOutline
 import com.example.ui.theme.MonoFontFamily
-import com.example.ui.theme.NeonGreen
-import com.example.ui.theme.NeonGreenTint
-import com.example.ui.theme.ObsidianSurface
+import com.example.ui.theme.MutedGray
+import com.example.ui.theme.OnPixelBlueContainer
+import com.example.ui.theme.PixelBlue
+import com.example.ui.theme.PixelBlueContainer
+import com.example.ui.theme.PureSurface
 import com.example.ui.theme.PureWhite
-import com.example.ui.theme.SportsRed
-import com.example.ui.theme.SportsRedTint
-import com.example.ui.theme.VoidBlack
+import com.example.ui.theme.SlateGray
+import com.example.ui.theme.SoftOutline
+import com.example.ui.theme.TonalMist
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -88,9 +98,9 @@ fun PinDetailSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = ObsidianSurface,
-        contentColor = PureWhite,
-        shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
+        containerColor = PureSurface,
+        contentColor = InkBlack,
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         modifier = Modifier.testTag("pin_detail_bottom_sheet")
     ) {
         Column(
@@ -105,61 +115,61 @@ fun PinDetailSheet(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
                     Surface(
-                        color = SportsRedTint,
-                        shape = CutCornerShape(4.dp),
-                        border = BorderStroke(1.dp, SportsRed)
+                        color = if (pin.building == Building.OLD_BUILDING) CampusCrimsonTint else PixelBlueContainer,
+                        shape = RoundedCornerShape(50)
                     ) {
                         Text(
-                            text = pin.building.shortName.uppercase(),
-                            fontFamily = MonoFontFamily,
-                            color = SportsRed,
-                            fontSize = 10.5.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            text = pin.building.shortName,
+                            fontFamily = BodyFontFamily,
+                            color = if (pin.building == Building.OLD_BUILDING) CampusCrimson else OnPixelBlueContainer,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
                         )
                     }
-                    Spacer(modifier = Modifier.width(6.dp))
                     Surface(
-                        color = NeonGreenTint,
-                        shape = CutCornerShape(4.dp),
-                        border = BorderStroke(1.dp, NeonGreen.copy(alpha = 0.7f))
+                        color = CampusEmeraldTint,
+                        shape = RoundedCornerShape(50)
                     ) {
                         Text(
-                            text = if (pin.floor == FloorLevel.OUTDOOR) "GROUNDS" else pin.floor.code,
+                            text = if (pin.floor == FloorLevel.OUTDOOR) "Grounds" else pin.floor.code,
                             fontFamily = MonoFontFamily,
-                            color = NeonGreen,
-                            fontSize = 10.5.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            color = CampusEmeraldDark,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
                         )
                     }
-                    Spacer(modifier = Modifier.width(6.dp))
                     Surface(
-                        color = CarbonSurface,
-                        shape = CutCornerShape(4.dp),
-                        border = BorderStroke(1.dp, GraphiteBorder)
+                        color = TonalMist,
+                        shape = RoundedCornerShape(50)
                     ) {
                         Text(
                             text = pin.roomNumber,
                             fontFamily = MonoFontFamily,
-                            color = PureWhite,
-                            fontSize = 10.5.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            color = SlateGray,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
                         )
                     }
                 }
 
                 IconButton(
                     onClick = onDismiss,
-                    modifier = Modifier.testTag("close_detail_sheet_button")
+                    modifier = Modifier
+                        .minimumInteractiveComponentSize()
+                        .testTag("close_detail_sheet_button")
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Close",
-                        tint = AshGray
+                        tint = SlateGray
                     )
                 }
             }
@@ -169,52 +179,62 @@ fun PinDetailSheet(
             Text(
                 text = pin.name,
                 fontFamily = DisplayFontFamily,
-                fontSize = 21.sp,
+                fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
-                color = PureWhite
+                color = InkBlack
             )
 
             Text(
                 text = pin.subTitle,
-                fontSize = 13.sp,
-                color = AshGray,
+                fontFamily = BodyFontFamily,
+                fontSize = 13.5.sp,
+                color = SlateGray,
                 modifier = Modifier.padding(top = 3.dp)
             )
 
             if (distanceMeters != null) {
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(14.dp))
                 Card(
-                    colors = CardDefaults.cardColors(containerColor = NeonGreenTint),
-                    shape = CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp),
-                    border = BorderStroke(1.dp, NeonGreen.copy(alpha = 0.6f))
+                    colors = CardDefaults.cardColors(containerColor = CampusEmeraldTint),
+                    shape = RoundedCornerShape(20.dp),
+                    border = BorderStroke(1.dp, CampusEmeraldBorder)
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 14.dp, vertical = 10.dp),
+                            .padding(horizontal = 14.dp, vertical = 12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.NearMe,
-                            contentDescription = null,
-                            tint = NeonGreen,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
+                        Surface(
+                            color = PureWhite,
+                            shape = CircleShape,
+                            modifier = Modifier.size(34.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.NearMe,
+                                    contentDescription = null,
+                                    tint = CampusEmeraldDark,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             val distText = if (distanceMeters < 1000) "$distanceMeters m away" else String.format("%.1f km away", distanceMeters / 1000f)
                             val walkTime = "${maxOf(1, (distanceMeters / 75.0).toInt())} min walk"
                             Text(
                                 text = "$distText • $walkTime",
-                                fontFamily = MonoFontFamily,
+                                fontFamily = DisplayFontFamily,
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 12.sp,
-                                color = NeonGreen
+                                fontSize = 13.5.sp,
+                                color = CampusEmeraldDark
                             )
                             Text(
-                                text = "From your ${if (userLocation?.isSimulated == true) "simulated" else "live GPS"} position",
-                                fontSize = 11.sp,
-                                color = PureWhite.copy(alpha = 0.85f)
+                                text = "From your ${if (userLocation?.isSimulated == true) "selected" else "live GPS"} location",
+                                fontFamily = BodyFontFamily,
+                                fontSize = 11.5.sp,
+                                color = InkBlack.copy(alpha = 0.78f)
                             )
                         }
                     }
@@ -222,48 +242,48 @@ fun PinDetailSheet(
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-            HorizontalDivider(color = GraphiteBorder)
+            HorizontalDivider(color = MistOutline)
             Spacer(modifier = Modifier.height(12.dp))
 
             InfoRow(
                 icon = Icons.Default.Person,
-                label = "IN-CHARGE // OFFICER",
+                label = "In-Charge / Officer",
                 value = pin.inCharge
             )
 
             InfoRow(
                 icon = Icons.Default.AccessTime,
-                label = "OFFICE HOURS",
+                label = "Office Hours",
                 value = pin.timings
             )
 
             InfoRow(
                 icon = Icons.Default.Phone,
-                label = "CONTACT & EXT",
+                label = "Contact & Extension",
                 value = pin.contact
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = "DETAILS",
-                fontFamily = MonoFontFamily,
-                fontSize = 11.sp,
+                text = "About this location",
+                fontFamily = DisplayFontFamily,
+                fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
-                color = SportsRed
+                color = InkBlack
             )
             Text(
                 text = pin.description,
+                fontFamily = BodyFontFamily,
                 fontSize = 13.sp,
-                lineHeight = 19.sp,
-                color = AshGray,
-                modifier = Modifier.padding(top = 4.dp, bottom = 12.dp)
+                lineHeight = 20.sp,
+                color = SlateGray,
+                modifier = Modifier.padding(top = 4.dp, bottom = 14.dp)
             )
 
             Card(
-                colors = CardDefaults.cardColors(containerColor = CarbonSurface),
-                shape = CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp),
-                border = BorderStroke(1.dp, GraphiteBorder),
+                colors = CardDefaults.cardColors(containerColor = TonalMist),
+                shape = RoundedCornerShape(20.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(14.dp)) {
@@ -271,24 +291,25 @@ fun PinDetailSheet(
                         Icon(
                             imageVector = Icons.Default.DirectionsWalk,
                             contentDescription = null,
-                            tint = NeonGreen,
-                            modifier = Modifier.size(16.dp)
+                            tint = PixelBlue,
+                            modifier = Modifier.size(17.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "INDOOR ROUTE",
-                            fontFamily = MonoFontFamily,
-                            fontSize = 11.sp,
+                            text = "Indoor Walkthrough",
+                            fontFamily = DisplayFontFamily,
+                            fontSize = 12.5.sp,
                             fontWeight = FontWeight.Bold,
-                            color = NeonGreen
+                            color = PixelBlue
                         )
                     }
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = pin.indoorGuide,
+                        fontFamily = BodyFontFamily,
                         fontSize = 12.5.sp,
-                        lineHeight = 18.sp,
-                        color = PureWhite.copy(alpha = 0.9f)
+                        lineHeight = 19.sp,
+                        color = InkBlack
                     )
                 }
             }
@@ -302,10 +323,10 @@ fun PinDetailSheet(
                         onOpenBusTimings()
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = NeonGreen,
-                        contentColor = VoidBlack
+                        containerColor = CampusEmeraldTint,
+                        contentColor = CampusEmeraldDark
                     ),
-                    shape = CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp),
+                    shape = RoundedCornerShape(50),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp)
@@ -314,10 +335,10 @@ fun PinDetailSheet(
                     Icon(Icons.Default.DirectionsBus, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "VIEW POINT 1–5 BUS TIMINGS",
-                        fontFamily = DisplayFontFamily,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold
+                        text = "View Point 1–5 Bus Timings",
+                        fontFamily = BodyFontFamily,
+                        fontSize = 13.5.sp,
+                        fontWeight = FontWeight.SemiBold
                     )
                 }
                 Spacer(modifier = Modifier.height(10.dp))
@@ -336,10 +357,10 @@ fun PinDetailSheet(
                             onNavigateIndoor(pin)
                         },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = SportsRed,
+                            containerColor = PixelBlue,
                             contentColor = PureWhite
                         ),
-                        shape = CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp),
+                        shape = RoundedCornerShape(50),
                         modifier = Modifier
                             .weight(1f)
                             .height(48.dp)
@@ -348,10 +369,10 @@ fun PinDetailSheet(
                         Icon(Icons.Default.Layers, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "INDOOR PLAN",
-                            fontFamily = DisplayFontFamily,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold
+                            text = "Indoor Plan",
+                            fontFamily = BodyFontFamily,
+                            fontSize = 13.5.sp,
+                            fontWeight = FontWeight.SemiBold
                         )
                     }
                 }
@@ -361,21 +382,21 @@ fun PinDetailSheet(
                         onDismiss()
                         onNavigateOutdoor(pin)
                     },
-                    border = BorderStroke(1.5.dp, PureWhite),
-                    shape = CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp),
+                    border = BorderStroke(1.dp, SoftOutline),
+                    shape = RoundedCornerShape(50),
                     modifier = Modifier
                         .weight(1f)
                         .height(48.dp)
                         .testTag("action_outdoor_compass")
                 ) {
-                    Icon(Icons.Default.LocationOn, contentDescription = null, tint = NeonGreen, modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.LocationOn, contentDescription = null, tint = PixelBlue, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "OUTDOOR GPS",
-                        fontFamily = DisplayFontFamily,
-                        color = PureWhite,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold
+                        text = "Campus Map",
+                        fontFamily = BodyFontFamily,
+                        color = InkBlack,
+                        fontSize = 13.5.sp,
+                        fontWeight = FontWeight.SemiBold
                     )
                 }
             }
@@ -393,30 +414,37 @@ private fun InfoRow(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 6.dp),
-        verticalAlignment = Alignment.Top
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = SportsRed,
-            modifier = Modifier
-                .size(18.dp)
-                .padding(top = 2.dp)
-        )
+        Surface(
+            color = TonalMist,
+            shape = CircleShape,
+            modifier = Modifier.size(34.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = PixelBlue,
+                    modifier = Modifier.size(17.dp)
+                )
+            }
+        }
         Spacer(modifier = Modifier.width(12.dp))
         Column {
             Text(
                 text = label,
-                fontFamily = MonoFontFamily,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                color = AshGray
+                fontFamily = BodyFontFamily,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium,
+                color = MutedGray
             )
             Text(
                 text = value,
-                fontSize = 13.sp,
+                fontFamily = BodyFontFamily,
+                fontSize = 13.5.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = PureWhite
+                color = InkBlack
             )
         }
     }

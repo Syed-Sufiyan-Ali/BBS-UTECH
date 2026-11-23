@@ -23,7 +23,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.CutCornerShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CompassCalibration
 import androidx.compose.material.icons.filled.DirectionsWalk
@@ -54,6 +54,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -75,18 +76,27 @@ import com.example.data.model.CampusPin
 import com.example.data.model.FloorLevel
 import com.example.data.model.PinCategory
 import com.example.ui.MainViewModel
-import com.example.ui.theme.AshGray
-import com.example.ui.theme.CarbonSurface
+import com.example.ui.theme.BodyFontFamily
+import com.example.ui.theme.CampusCrimson
+import com.example.ui.theme.CampusEmerald
+import com.example.ui.theme.CampusEmeraldDark
+import com.example.ui.theme.CampusEmeraldTint
 import com.example.ui.theme.DisplayFontFamily
-import com.example.ui.theme.GraphiteBorder
+import com.example.ui.theme.InkBlack
+import com.example.ui.theme.LibraryViolet
+import com.example.ui.theme.MistOutline
 import com.example.ui.theme.MonoFontFamily
-import com.example.ui.theme.NeonGreen
-import com.example.ui.theme.NeonGreenTint
-import com.example.ui.theme.ObsidianSurface
+import com.example.ui.theme.OnPixelBlueContainer
+import com.example.ui.theme.PixelBlue
+import com.example.ui.theme.PixelBlueContainer
+import com.example.ui.theme.PixelBlueTint
+import com.example.ui.theme.PorcelainCanvas
+import com.example.ui.theme.PureSurface
 import com.example.ui.theme.PureWhite
-import com.example.ui.theme.SportsRed
-import com.example.ui.theme.SportsRedTint
-import com.example.ui.theme.VoidBlack
+import com.example.ui.theme.SkyTeal
+import com.example.ui.theme.SlateGray
+import com.example.ui.theme.SoftOutline
+import com.example.ui.theme.TonalMist
 
 @Composable
 fun IndoorMapScreen(
@@ -112,7 +122,7 @@ fun IndoorMapScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(VoidBlack)
+            .background(PorcelainCanvas)
     ) {
         // Building Selector Tabs
         val buildings = listOf(Building.OLD_BUILDING, Building.NEW_BUILDING)
@@ -120,13 +130,13 @@ fun IndoorMapScreen(
 
         TabRow(
             selectedTabIndex = selectedBuildingIndex,
-            containerColor = VoidBlack,
-            contentColor = PureWhite,
-            divider = { HorizontalDivider(color = GraphiteBorder) },
+            containerColor = PureSurface,
+            contentColor = PixelBlue,
+            divider = { HorizontalDivider(color = MistOutline) },
             indicator = { tabPositions ->
                 TabRowDefaults.SecondaryIndicator(
                     Modifier.tabIndicatorOffset(tabPositions[selectedBuildingIndex]),
-                    color = SportsRed,
+                    color = PixelBlue,
                     height = 3.dp
                 )
             },
@@ -144,12 +154,11 @@ fun IndoorMapScreen(
                     },
                     text = {
                         Text(
-                            text = if (bld == Building.OLD_BUILDING) "OLD BUILDING" else "NEW COMPLEX",
+                            text = if (bld == Building.OLD_BUILDING) "Old Building" else "New Complex",
                             fontFamily = DisplayFontFamily,
                             fontWeight = FontWeight.Bold,
-                            letterSpacing = 0.8.sp,
-                            color = if (isSelected) SportsRed else AshGray,
-                            fontSize = 13.sp
+                            color = if (isSelected) PixelBlue else SlateGray,
+                            fontSize = 14.sp
                         )
                     },
                     modifier = Modifier.testTag("tab_building_${bld.name.lowercase()}")
@@ -157,23 +166,15 @@ fun IndoorMapScreen(
             }
         }
 
-        // Floor Level Selector + Route Toggle
+        // Floor Level Selector + Route Pill Toggle
         val floors = listOf(FloorLevel.GROUND, FloorLevel.FIRST, FloorLevel.SECOND)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 8.dp),
+                .padding(horizontal = 14.dp, vertical = 10.dp),
             horizontalArrangement = Arrangement.spacedBy(6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "LVL:",
-                fontFamily = MonoFontFamily,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                color = AshGray
-            )
-
             floors.forEach { floor ->
                 val isSelected = currentFloor == floor
                 FilterChip(
@@ -186,24 +187,24 @@ fun IndoorMapScreen(
                     },
                     label = {
                         Text(
-                            text = "${floor.code} • ${floor.displayName.substringBefore(" ").uppercase()}",
-                            fontFamily = MonoFontFamily,
-                            fontSize = 10.5.sp,
-                            fontWeight = FontWeight.Bold
+                            text = "${floor.code} • ${floor.displayName.substringBefore(" ")}",
+                            fontFamily = BodyFontFamily,
+                            fontSize = 11.5.sp,
+                            fontWeight = FontWeight.SemiBold
                         )
                     },
-                    shape = CutCornerShape(6.dp),
+                    shape = RoundedCornerShape(50),
                     colors = FilterChipDefaults.filterChipColors(
-                        containerColor = ObsidianSurface,
-                        labelColor = AshGray,
-                        selectedContainerColor = SportsRed,
-                        selectedLabelColor = PureWhite
+                        containerColor = PureSurface,
+                        labelColor = SlateGray,
+                        selectedContainerColor = PixelBlueContainer,
+                        selectedLabelColor = OnPixelBlueContainer
                     ),
                     border = FilterChipDefaults.filterChipBorder(
                         enabled = true,
                         selected = isSelected,
-                        borderColor = GraphiteBorder,
-                        selectedBorderColor = SportsRed
+                        borderColor = MistOutline,
+                        selectedBorderColor = PixelBlueContainer
                     ),
                     modifier = Modifier.testTag("chip_floor_${floor.code.lowercase()}")
                 )
@@ -212,28 +213,28 @@ fun IndoorMapScreen(
             Spacer(modifier = Modifier.weight(1f))
 
             Surface(
-                color = if (showRoute) NeonGreenTint else ObsidianSurface,
-                shape = CutCornerShape(6.dp),
-                border = BorderStroke(1.dp, if (showRoute) NeonGreen else GraphiteBorder),
+                color = if (showRoute) PixelBlue else PureSurface,
+                shape = RoundedCornerShape(50),
+                border = BorderStroke(1.dp, if (showRoute) PixelBlue else MistOutline),
                 modifier = Modifier.clickable { viewModel.toggleIndoorRoute() }
             ) {
                 Row(
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 7.dp),
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
                         imageVector = Icons.Default.Route,
                         contentDescription = "Toggle Route",
-                        tint = if (showRoute) NeonGreen else AshGray,
-                        modifier = Modifier.size(14.dp)
+                        tint = if (showRoute) PureWhite else SlateGray,
+                        modifier = Modifier.size(15.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = if (showRoute) "PATH" else "OFF",
-                        fontFamily = MonoFontFamily,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (showRoute) NeonGreen else AshGray
+                        text = if (showRoute) "Path" else "Off",
+                        fontFamily = BodyFontFamily,
+                        fontSize = 11.5.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = if (showRoute) PureWhite else SlateGray
                     )
                 }
             }
@@ -243,9 +244,9 @@ fun IndoorMapScreen(
         if (selectedIndoorPin != null) {
             val pin = selectedIndoorPin!!
             Card(
-                colors = CardDefaults.cardColors(containerColor = ObsidianSurface),
-                shape = CutCornerShape(topEnd = 12.dp, bottomStart = 12.dp),
-                border = BorderStroke(1.dp, NeonGreen.copy(alpha = 0.7f)),
+                colors = CardDefaults.cardColors(containerColor = PureSurface),
+                shape = RoundedCornerShape(22.dp),
+                border = BorderStroke(1.dp, PixelBlue.copy(alpha = 0.35f)),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 14.dp, vertical = 4.dp)
@@ -257,12 +258,20 @@ fun IndoorMapScreen(
                         .padding(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.DirectionsWalk,
-                        contentDescription = null,
-                        tint = NeonGreen,
-                        modifier = Modifier.size(20.dp)
-                    )
+                    Surface(
+                        color = PixelBlueTint,
+                        shape = CircleShape,
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Default.DirectionsWalk,
+                                contentDescription = null,
+                                tint = PixelBlue,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
                     Spacer(modifier = Modifier.width(10.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -271,23 +280,24 @@ fun IndoorMapScreen(
                                 fontFamily = MonoFontFamily,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 11.sp,
-                                color = SportsRed
+                                color = PixelBlue
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = pin.name,
                                 fontFamily = DisplayFontFamily,
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 13.5.sp,
-                                color = PureWhite,
+                                fontSize = 14.sp,
+                                color = InkBlack,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
                         }
                         Text(
                             text = pin.indoorGuide,
-                            fontSize = 11.sp,
-                            color = AshGray,
+                            fontFamily = BodyFontFamily,
+                            fontSize = 11.5.sp,
+                            color = SlateGray,
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -299,22 +309,22 @@ fun IndoorMapScreen(
                         Icon(
                             imageVector = Icons.Default.Info,
                             contentDescription = "Details",
-                            tint = NeonGreen
+                            tint = PixelBlue
                         )
                     }
                 }
             }
         }
 
-        // Tactical Obsidian Blueprint Canvas
+        // Architectural Daylight Blueprint Canvas
         BoxWithConstraints(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
                 .padding(horizontal = 12.dp, vertical = 6.dp)
-                .clip(CutCornerShape(topEnd = 16.dp, bottomStart = 16.dp))
-                .background(Color(0xFF07080B))
-                .border(1.dp, GraphiteBorder, CutCornerShape(topEnd = 16.dp, bottomStart = 16.dp))
+                .clip(RoundedCornerShape(24.dp))
+                .background(PorcelainCanvas)
+                .border(1.dp, MistOutline, RoundedCornerShape(24.dp))
         ) {
             val canvasW = constraints.maxWidth.toFloat()
             val canvasH = constraints.maxHeight.toFloat()
@@ -361,7 +371,7 @@ fun IndoorMapScreen(
                     normToScreen = ::normToScreen
                 )
 
-                // Neon Green Indoor Route Path
+                // Cobalt Blue Indoor Route Path
                 if (showRoute && selectedIndoorPin != null) {
                     val targetPin = selectedIndoorPin!!
                     val entrancePos = normToScreen(0.50f, 0.90f)
@@ -380,23 +390,23 @@ fun IndoorMapScreen(
 
                     drawPath(
                         path = routePath,
-                        color = NeonGreen.copy(alpha = 0.28f),
-                        style = Stroke(width = 11f * scale, cap = StrokeCap.Round, join = StrokeJoin.Round)
+                        color = PixelBlueContainer,
+                        style = Stroke(width = 12f * scale, cap = StrokeCap.Round, join = StrokeJoin.Round)
                     )
 
                     drawPath(
                         path = routePath,
-                        color = NeonGreen,
+                        color = PixelBlue,
                         style = Stroke(
-                            width = 4f * scale,
+                            width = 4.5f * scale,
                             cap = StrokeCap.Round,
                             join = StrokeJoin.Round,
                             pathEffect = PathEffect.dashPathEffect(floatArrayOf(14f * scale, 8f * scale), 0f)
                         )
                     )
 
-                    drawCircle(color = NeonGreen, radius = 8f * scale, center = entrancePos)
-                    drawCircle(color = VoidBlack, radius = 3.5f * scale, center = entrancePos)
+                    drawCircle(color = CampusEmerald, radius = 9f * scale, center = entrancePos)
+                    drawCircle(color = PureWhite, radius = 4f * scale, center = entrancePos)
                 }
 
                 // Floor Pins
@@ -405,50 +415,54 @@ fun IndoorMapScreen(
                     val isSelected = selectedIndoorPin?.id == pin.id
 
                     val pinColor = when (pin.category) {
-                        PinCategory.ADMIN -> SportsRed
-                        PinCategory.ACADEMIC -> Color(0xFFF8FAFC)
-                        PinCategory.LAB -> NeonGreen
-                        PinCategory.LIBRARY -> NeonGreen
-                        PinCategory.STUDENT_SERVICE -> Color(0xFFFF6B76)
-                        else -> SportsRed
+                        PinCategory.ADMIN -> CampusCrimson
+                        PinCategory.ACADEMIC -> SlateGray
+                        PinCategory.LAB -> CampusEmerald
+                        PinCategory.LIBRARY -> LibraryViolet
+                        PinCategory.STUDENT_SERVICE -> PixelBlue
+                        else -> SkyTeal
                     }
 
                     if (isSelected) {
                         drawCircle(
-                            color = NeonGreen.copy(alpha = 0.38f),
+                            color = PixelBlueContainer,
                             radius = 27f * scale,
                             center = pos
                         )
                         drawCircle(
-                            color = SportsRed.copy(alpha = 0.5f),
+                            color = PixelBlue.copy(alpha = 0.4f),
                             radius = 20f * scale,
                             center = pos
                         )
                     }
 
-                    drawCircle(color = Color.Black.copy(alpha = 0.65f), radius = 15f * scale, center = Offset(pos.x, pos.y + 2f * scale))
+                    drawCircle(
+                        color = Color(0x220F172A),
+                        radius = 14.5f * scale,
+                        center = Offset(pos.x, pos.y + 2f * scale)
+                    )
                     drawCircle(color = PureWhite, radius = 13f * scale, center = pos)
                     drawCircle(color = pinColor, radius = 10f * scale, center = pos)
-                    drawCircle(color = VoidBlack, radius = 3.5f * scale, center = pos)
+                    drawCircle(color = PureWhite, radius = 3.5f * scale, center = pos)
                 }
             }
 
-            // Top-Left Blueprint Watermark
+            // Top-Left Blueprint Pill Badge
             Surface(
-                color = VoidBlack.copy(alpha = 0.9f),
-                shape = CutCornerShape(6.dp),
-                border = BorderStroke(1.dp, SportsRed.copy(alpha = 0.7f)),
+                color = PureSurface.copy(alpha = 0.96f),
+                shape = RoundedCornerShape(50),
+                border = BorderStroke(1.dp, MistOutline),
                 modifier = Modifier
                     .align(Alignment.TopStart)
                     .padding(12.dp)
             ) {
                 Text(
-                    text = "${currentBuilding.shortName.uppercase()} // ${currentFloor.displayName.uppercase()}",
-                    fontFamily = MonoFontFamily,
-                    color = PureWhite,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(horizontal = 9.dp, vertical = 5.dp)
+                    text = "${currentBuilding.shortName} • ${currentFloor.displayName}",
+                    fontFamily = BodyFontFamily,
+                    color = InkBlack,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                 )
             }
 
@@ -462,19 +476,19 @@ fun IndoorMapScreen(
                 BlueprintZoomButton(
                     icon = Icons.Default.ZoomIn,
                     desc = "Zoom In",
-                    accent = PureWhite
+                    accent = InkBlack
                 ) { scale = (scale * 1.25f).coerceAtMost(3.0f) }
 
                 BlueprintZoomButton(
                     icon = Icons.Default.ZoomOut,
                     desc = "Zoom Out",
-                    accent = PureWhite
+                    accent = InkBlack
                 ) { scale = (scale * 0.8f).coerceAtLeast(0.7f) }
 
                 BlueprintZoomButton(
                     icon = Icons.Default.CompassCalibration,
                     desc = "Reset View",
-                    accent = NeonGreen
+                    accent = PixelBlue
                 ) {
                     scale = 1.0f
                     offsetX = 0f
@@ -487,17 +501,17 @@ fun IndoorMapScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 8.dp)
+                .padding(horizontal = 14.dp, vertical = 10.dp)
         ) {
             Text(
-                text = "FLOOR DIRECTORY (${floorPins.size})",
-                fontFamily = MonoFontFamily,
-                fontSize = 10.5.sp,
+                text = "Floor Directory (${floorPins.size} rooms)",
+                fontFamily = DisplayFontFamily,
+                fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
-                color = AshGray
+                color = InkBlack
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -507,32 +521,32 @@ fun IndoorMapScreen(
                     val isSelected = selectedIndoorPin?.id == pin.id
                     Card(
                         colors = CardDefaults.cardColors(
-                            containerColor = if (isSelected) SportsRedTint else ObsidianSurface
+                            containerColor = if (isSelected) PixelBlueContainer else PureSurface
                         ),
-                        shape = CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp),
+                        shape = RoundedCornerShape(18.dp),
                         border = BorderStroke(
                             1.dp,
-                            if (isSelected) SportsRed else GraphiteBorder
+                            if (isSelected) PixelBlue else MistOutline
                         ),
                         modifier = Modifier
                             .clickable { viewModel.selectIndoorPin(pin) }
                             .testTag("pin_chip_${pin.roomNumber}")
                     ) {
                         Row(
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Surface(
-                                color = if (isSelected) SportsRed else CarbonSurface,
-                                shape = CutCornerShape(4.dp)
+                                color = if (isSelected) PixelBlue else TonalMist,
+                                shape = RoundedCornerShape(50)
                             ) {
                                 Text(
                                     text = pin.roomNumber,
                                     fontFamily = MonoFontFamily,
-                                    fontSize = 10.sp,
+                                    fontSize = 10.5.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (isSelected) PureWhite else NeonGreen,
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    color = if (isSelected) PureWhite else PixelBlue,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
                                 )
                             }
                             Spacer(modifier = Modifier.width(8.dp))
@@ -540,15 +554,16 @@ fun IndoorMapScreen(
                                 Text(
                                     text = pin.name,
                                     fontFamily = DisplayFontFamily,
-                                    fontSize = 12.5.sp,
+                                    fontSize = 13.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = PureWhite,
+                                    color = if (isSelected) OnPixelBlueContainer else InkBlack,
                                     maxLines = 1
                                 )
                                 Text(
                                     text = pin.subTitle,
-                                    fontSize = 10.sp,
-                                    color = AshGray,
+                                    fontFamily = BodyFontFamily,
+                                    fontSize = 11.sp,
+                                    color = SlateGray,
                                     maxLines = 1
                                 )
                             }
@@ -568,10 +583,12 @@ private fun BlueprintZoomButton(
     onClick: () -> Unit
 ) {
     Surface(
-        color = VoidBlack.copy(alpha = 0.92f),
+        color = PureSurface,
         shape = CircleShape,
-        border = BorderStroke(1.dp, GraphiteBorder),
-        modifier = Modifier.size(48.dp)
+        border = BorderStroke(1.dp, MistOutline),
+        modifier = Modifier
+            .size(48.dp)
+            .shadow(4.dp, CircleShape)
     ) {
         IconButton(
             onClick = onClick,
@@ -588,10 +605,10 @@ private fun DrawScope.drawBlueprintLayout(
     scale: Float,
     normToScreen: (Float, Float) -> Offset
 ) {
-    val shellStroke = Color(0xFFFF1E2D).copy(alpha = 0.78f) // Sports Red perimeter
-    val wallColor = Color(0xFF323746) // Graphite inner dividers
-    val wallFill = Color(0xFF0E1015) // Matte carbon room floor
-    val corridorColor = Color(0xFF171A22) // Spine corridor
+    val shellStroke = Color(0xFF94A3B8)
+    val wallColor = Color(0xFFCBD5E1)
+    val wallFill = Color(0xFFFFFFFF)
+    val corridorColor = Color(0xFFEFF3F8)
     val strokeW = 2.5f * scale
 
     val pTL = normToScreen(0.12f, 0.12f)
@@ -602,14 +619,14 @@ private fun DrawScope.drawBlueprintLayout(
         color = wallFill,
         topLeft = pTL,
         size = shellSize,
-        cornerRadius = CornerRadius(10f * scale, 10f * scale)
+        cornerRadius = CornerRadius(14f * scale, 14f * scale)
     )
     drawRoundRect(
         color = shellStroke,
         topLeft = pTL,
         size = shellSize,
-        cornerRadius = CornerRadius(10f * scale, 10f * scale),
-        style = Stroke(width = strokeW * 1.4f)
+        cornerRadius = CornerRadius(14f * scale, 14f * scale),
+        style = Stroke(width = strokeW * 1.3f)
     )
 
     // Corridors
@@ -629,30 +646,31 @@ private fun DrawScope.drawBlueprintLayout(
         size = Size(maxOf(1f, vCorridorBR.x - vCorridorTL.x), maxOf(1f, vCorridorBR.y - vCorridorTL.y))
     )
 
-    // Central Staircase & Core (Sports Red Frame)
+    // Central Staircase & Core
     val stairsTL = normToScreen(0.45f, 0.70f)
     val stairsBR = normToScreen(0.55f, 0.82f)
     drawRoundRect(
-        color = Color(0xFF26080D),
+        color = Color(0xFFFCE8E6),
         topLeft = stairsTL,
         size = Size(maxOf(1f, stairsBR.x - stairsTL.x), maxOf(1f, stairsBR.y - stairsTL.y)),
-        cornerRadius = CornerRadius(4f * scale, 4f * scale)
+        cornerRadius = CornerRadius(6f * scale, 6f * scale)
     )
     drawRoundRect(
-        color = Color(0xFFFF1E2D),
+        color = Color(0xFFB3261E),
         topLeft = stairsTL,
         size = Size(maxOf(1f, stairsBR.x - stairsTL.x), maxOf(1f, stairsBR.y - stairsTL.y)),
-        cornerRadius = CornerRadius(4f * scale, 4f * scale),
+        cornerRadius = CornerRadius(6f * scale, 6f * scale),
         style = Stroke(width = 2f * scale)
     )
 
-    // Main Entrance Porch (Neon Green)
+    // Main Entrance Porch (Campus Emerald)
     val entryTL = normToScreen(0.42f, 0.88f)
     val entryBR = normToScreen(0.58f, 0.94f)
-    drawRect(
-        color = Color(0xFF39FF14),
+    drawRoundRect(
+        color = Color(0xFF0F9D58),
         topLeft = entryTL,
-        size = Size(maxOf(1f, entryBR.x - entryTL.x), maxOf(1f, entryBR.y - entryTL.y))
+        size = Size(maxOf(1f, entryBR.x - entryTL.x), maxOf(1f, entryBR.y - entryTL.y)),
+        cornerRadius = CornerRadius(4f * scale, 4f * scale)
     )
 
     // Room Dividers

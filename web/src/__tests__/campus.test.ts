@@ -114,4 +114,38 @@ describe('BBSUTSD Web Data & Geospatial Logic', () => {
     expect(vcToTransport.polyline.length).toBeGreaterThan(2);
     expect(vcToTransport.steps.some((s) => /turn|keep|head/i.test(s.instruction))).toBe(true);
   });
+
+  it('uses edge-projection to find the shortest possible walkable path without backwards detours from live user coordinates', () => {
+    const lib = CAMPUS_PINS.find((p) => p.id === 'new_1_library')!;
+    // User standing mid-edge on Dividing Road between mosque_jct and quad_jct
+    const midRoadLiveGps = { lat: 27.51048, lng: 68.74128 };
+    const route = computeCampusRoute(midRoadLiveGps, 'Your Live Location', lib);
+
+    const directMeters = calculateDistanceMeters(
+      midRoadLiveGps.lat,
+      midRoadLiveGps.lng,
+      lib.latitude,
+      lib.longitude
+    );
+    // Must stay tightly bounded near optimal walkable distance (no backtracking south to gate/mosque_jct)
+    expect(route.totalDistanceMeters).toBeGreaterThanOrEqual(Math.floor(directMeters));
+    expect(route.totalDistanceMeters).toBeLessThan(directMeters + 45);
+    expect(route.polyline[0].lat).toBeCloseTo(midRoadLiveGps.lat, 5);
+    expect(route.polyline[0].lng).toBeCloseTo(midRoadLiveGps.lng, 5);
+    expect(route.steps[0].action).toBe('START');
+    expect(route.steps[route.steps.length - 1].action).toBe('ARRIVE');
+  });
+
+  it('routes directly for very short intra-courtyard distances without artificial node detours', () => {
+    const welfare = CAMPUS_PINS.find((p) => p.id === 'old_g_welfare')!;
+    const nearbyUser = { lat: welfare.latitude - 0.00012, lng: welfare.longitude + 0.00008 };
+    const directMeters = calculateDistanceMeters(
+      nearbyUser.lat,
+      nearbyUser.lng,
+      welfare.latitude,
+      welfare.longitude
+    );
+    const route = computeCampusRoute(nearbyUser, 'Your Live Location', welfare);
+    expect(route.totalDistanceMeters).toBeLessThanOrEqual(Math.ceil(directMeters) + 2);
+  });
 });

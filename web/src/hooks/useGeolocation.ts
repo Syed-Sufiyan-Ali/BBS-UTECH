@@ -5,7 +5,7 @@ import type { UserLocation } from '../types/campus';
 export type GpsMode = 'LIVE' | 'SIMULATED';
 
 export function useGeolocation() {
-  const [gpsMode, setGpsMode] = useState<GpsMode>('SIMULATED');
+  const [gpsMode, setGpsMode] = useState<GpsMode>('LIVE');
   const [presetIndex, setPresetIndex] = useState<number>(0);
   const [liveLocation, setLiveLocation] = useState<UserLocation | null>(null);
   const [gpsError, setGpsError] = useState<string | null>(null);
@@ -22,8 +22,9 @@ export function useGeolocation() {
 
   const requestLiveGps = useCallback(() => {
     if (typeof navigator === 'undefined' || !navigator.geolocation) {
-      setGpsError('Browser Geolocation is unavailable. Using Campus GPS preset.');
-      setGpsMode('SIMULATED');
+      setGpsError('Browser Geolocation is unavailable. Select a campus preset to preview directions.');
+      setGpsMode('LIVE');
+      setIsWatching(false);
       return;
     }
 
@@ -33,6 +34,7 @@ export function useGeolocation() {
 
     if (watchIdRef.current !== null) {
       navigator.geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
     }
 
     navigator.geolocation.getCurrentPosition(
@@ -41,14 +43,15 @@ export function useGeolocation() {
           latitude: pos.coords.latitude,
           longitude: pos.coords.longitude,
           isSimulated: false,
-          label: 'Live Browser GPS',
+          label: 'Your Live Location',
           accuracyMeters: pos.coords.accuracy,
         });
+        setGpsError(null);
       },
       (err) => {
         setGpsError(err.message || 'Location permission denied');
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 3000 }
     );
 
     watchIdRef.current = navigator.geolocation.watchPosition(
@@ -57,7 +60,7 @@ export function useGeolocation() {
           latitude: pos.coords.latitude,
           longitude: pos.coords.longitude,
           isSimulated: false,
-          label: 'Live Browser GPS',
+          label: 'Your Live Location',
           accuracyMeters: pos.coords.accuracy,
         });
         setGpsError(null);
@@ -65,7 +68,7 @@ export function useGeolocation() {
       (err) => {
         setGpsError(err.message || 'GPS signal unavailable');
       },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 }
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 3000 }
     );
   }, []);
 
@@ -79,11 +82,13 @@ export function useGeolocation() {
     [stopWatching]
   );
 
+  // Automatically track the user's real live browser location on startup
   useEffect(() => {
+    requestLiveGps();
     return () => {
       stopWatching();
     };
-  }, [stopWatching]);
+  }, [requestLiveGps, stopWatching]);
 
   const currentLocation: UserLocation | null =
     gpsMode === 'LIVE'
@@ -96,6 +101,7 @@ export function useGeolocation() {
     currentLocation,
     gpsError,
     isWatching,
+    isAcquiring: gpsMode === 'LIVE' && liveLocation === null && gpsError === null,
     requestLiveGps,
     selectPresetLocation,
     presets: PRESET_USER_LOCATIONS,

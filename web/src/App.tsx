@@ -137,7 +137,7 @@ export function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#050507] text-[#F8FAFC]">
+    <div className="min-h-screen bg-[#F8FAFC] text-[#111827]">
       <Navbar
         activeTab={activeTab}
         onSelectTab={setActiveTab}
@@ -166,6 +166,7 @@ export function App() {
           <OutdoorMapView
             userLocation={geo.currentLocation}
             gpsMode={geo.gpsMode}
+            isAcquiringGps={geo.isAcquiring}
             presetIndex={geo.presetIndex}
             presets={geo.presets}
             gpsError={geo.gpsError}

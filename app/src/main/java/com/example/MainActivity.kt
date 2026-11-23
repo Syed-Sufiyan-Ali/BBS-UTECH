@@ -13,12 +13,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -29,9 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -47,15 +42,15 @@ import com.example.ui.screens.OutdoorMapScreen
 import com.example.ui.screens.PinDetailSheet
 import com.example.ui.screens.ResourcesScreen
 import com.example.ui.screens.ScheduleScreen
-import com.example.ui.theme.AshGray
-import com.example.ui.theme.DisplayFontFamily
-import com.example.ui.theme.GraphiteBorder
+import com.example.ui.theme.BodyFontFamily
+import com.example.ui.theme.InkBlack
+import com.example.ui.theme.MistOutline
 import com.example.ui.theme.MyApplicationTheme
-import com.example.ui.theme.NeonGreen
-import com.example.ui.theme.PureWhite
-import com.example.ui.theme.SportsRed
-import com.example.ui.theme.SportsRedTint
-import com.example.ui.theme.VoidBlack
+import com.example.ui.theme.OnPixelBlueContainer
+import com.example.ui.theme.PixelBlueContainer
+import com.example.ui.theme.PorcelainCanvas
+import com.example.ui.theme.PureSurface
+import com.example.ui.theme.SlateGray
 
 class MainActivity : ComponentActivity() {
 
@@ -66,8 +61,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT),
-            navigationBarStyle = SystemBarStyle.dark(AndroidColor.TRANSPARENT)
+            statusBarStyle = SystemBarStyle.light(AndroidColor.TRANSPARENT, AndroidColor.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.light(AndroidColor.TRANSPARENT, AndroidColor.TRANSPARENT)
         )
 
         repository = CampusRepository()
@@ -104,12 +99,12 @@ fun BBSUTSDApp(viewModel: MainViewModel) {
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        containerColor = VoidBlack,
+        containerColor = PorcelainCanvas,
         bottomBar = {
             Column(modifier = Modifier.fillMaxWidth()) {
-                HorizontalDivider(color = GraphiteBorder, thickness = 1.dp)
+                HorizontalDivider(color = MistOutline, thickness = 1.dp)
                 NavigationBar(
-                    containerColor = VoidBlack,
+                    containerColor = PureSurface,
                     tonalElevation = 0.dp,
                     windowInsets = WindowInsets.navigationBars,
                     modifier = Modifier.testTag("main_bottom_nav_bar")
@@ -120,50 +115,34 @@ fun BBSUTSDApp(viewModel: MainViewModel) {
                             selected = isSelected,
                             onClick = { viewModel.navigateToScreen(screen) },
                             icon = {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    if (isSelected) {
-                                        Box(
-                                            modifier = Modifier
-                                                .width(18.dp)
-                                                .height(2.5.dp)
-                                                .clip(CutCornerShape(2.dp))
-                                                .background(NeonGreen)
-                                        )
-                                    } else {
-                                        Box(modifier = Modifier.height(2.5.dp))
-                                    }
-                                    Box(modifier = Modifier.padding(top = 3.dp)) {
-                                        Icon(
-                                            imageVector = if (isSelected) screen.selectedIcon else screen.unselectedIcon,
-                                            contentDescription = screen.title,
-                                            modifier = Modifier.size(22.dp)
-                                        )
-                                    }
-                                }
+                                Icon(
+                                    imageVector = if (isSelected) screen.selectedIcon else screen.unselectedIcon,
+                                    contentDescription = screen.title,
+                                    modifier = Modifier.size(22.dp)
+                                )
                             },
                             label = {
                                 Text(
                                     text = when (screen) {
-                                        AppScreen.HOME -> "HOME"
-                                        AppScreen.OUTDOOR_MAP -> "GPS MAP"
-                                        AppScreen.INDOOR_MAP -> "INDOOR"
-                                        AppScreen.SCHEDULE -> "CLASSES"
-                                        AppScreen.RESOURCES -> "HUB"
+                                        AppScreen.HOME -> "Home"
+                                        AppScreen.OUTDOOR_MAP -> "Map"
+                                        AppScreen.INDOOR_MAP -> "Indoor"
+                                        AppScreen.SCHEDULE -> "Classes"
+                                        AppScreen.RESOURCES -> "Hub"
                                     },
-                                    fontFamily = DisplayFontFamily,
-                                    fontSize = 10.sp,
-                                    letterSpacing = 0.6.sp,
+                                    fontFamily = BodyFontFamily,
+                                    fontSize = 11.sp,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium
                                 )
                             },
                             colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = SportsRed,
-                                selectedTextColor = PureWhite,
-                                indicatorColor = SportsRedTint,
-                                unselectedIconColor = AshGray,
-                                unselectedTextColor = AshGray
+                                selectedIconColor = OnPixelBlueContainer,
+                                selectedTextColor = InkBlack,
+                                indicatorColor = PixelBlueContainer,
+                                unselectedIconColor = SlateGray,
+                                unselectedTextColor = SlateGray
                             ),
                             modifier = Modifier.testTag(screen.testTag)
                         )
@@ -175,7 +154,7 @@ fun BBSUTSDApp(viewModel: MainViewModel) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(VoidBlack)
+                .background(PorcelainCanvas)
                 .padding(innerPadding)
         ) {
             when (currentScreen) {

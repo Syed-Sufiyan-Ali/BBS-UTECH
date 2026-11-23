@@ -1,54 +1,55 @@
 package com.example.ui.theme
 
-import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
-import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 
-private val PunkDarkColorScheme = darkColorScheme(
-    primary = SportsRed,
+private val PixelLightColorScheme = lightColorScheme(
+    primary = PixelBlue,
     onPrimary = PureWhite,
-    primaryContainer = SportsRedTint,
-    onPrimaryContainer = SportsRedBright,
-    secondary = NeonGreen,
-    onSecondary = VoidBlack,
-    secondaryContainer = NeonGreenTint,
-    onSecondaryContainer = NeonGreen,
-    tertiary = NeonGreenCrisp,
-    onTertiary = VoidBlack,
-    background = VoidBlack,
-    onBackground = PureWhite,
-    surface = ObsidianSurface,
-    onSurface = PureWhite,
-    surfaceVariant = CarbonSurface,
-    onSurfaceVariant = AshGray,
-    outline = GraphiteBorder,
-    outlineVariant = ElevatedCarbon,
-    error = SportsRedBright,
-    onError = VoidBlack
+    primaryContainer = PixelBlueContainer,
+    onPrimaryContainer = OnPixelBlueContainer,
+    secondary = CampusEmerald,
+    onSecondary = PureWhite,
+    secondaryContainer = CampusEmeraldTint,
+    onSecondaryContainer = CampusEmeraldDark,
+    tertiary = SkyTeal,
+    onTertiary = PureWhite,
+    background = PorcelainCanvas,
+    onBackground = InkBlack,
+    surface = PureSurface,
+    onSurface = InkBlack,
+    surfaceVariant = TonalMist,
+    onSurfaceVariant = SlateGray,
+    outline = MistOutline,
+    outlineVariant = SoftOutline,
+    error = CampusCrimson,
+    onError = PureWhite,
+    errorContainer = CampusCrimsonTint,
+    onErrorContainer = CampusCrimson
 )
 
-val PunkShapes = Shapes(
-    extraSmall = CutCornerShape(4.dp),
-    small = CutCornerShape(topEnd = 8.dp, bottomStart = 8.dp),
-    medium = CutCornerShape(topEnd = 14.dp, bottomStart = 14.dp),
-    large = CutCornerShape(topEnd = 18.dp, bottomStart = 18.dp),
-    extraLarge = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+val PixelShapes = Shapes(
+    extraSmall = RoundedCornerShape(8.dp),
+    small = RoundedCornerShape(14.dp),
+    medium = RoundedCornerShape(20.dp),
+    large = RoundedCornerShape(24.dp),
+    extraLarge = RoundedCornerShape(28.dp)
 )
 
 @Composable
 fun MyApplicationTheme(
-    darkTheme: Boolean = true,
+    darkTheme: Boolean = false,
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     MaterialTheme(
-        colorScheme = PunkDarkColorScheme,
+        colorScheme = PixelLightColorScheme,
         typography = Typography,
-        shapes = PunkShapes,
+        shapes = PixelShapes,
         content = content
     )
 }

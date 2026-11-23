@@ -64,16 +64,17 @@ type MapFilterTab = 'ALL' | 'OFFICES' | 'LABS_WORKSHOPS' | 'TRANSPORT' | 'AMENIT
 type MobileSheetTab = 'DIRECTIONS' | 'INFO';
 
 const FILTER_TABS: { key: MapFilterTab; label: string }[] = [
-  { key: 'ALL', label: 'ALL PINS' },
-  { key: 'OFFICES', label: 'VC & OFFICES' },
-  { key: 'LABS_WORKSHOPS', label: 'LABS & SHOPS' },
-  { key: 'TRANSPORT', label: 'POINT & BUSES' },
-  { key: 'AMENITIES', label: 'LIBRARY & FOOD' },
+  { key: 'ALL', label: 'All Pins' },
+  { key: 'OFFICES', label: 'VC & Offices' },
+  { key: 'LABS_WORKSHOPS', label: 'Labs & Shops' },
+  { key: 'TRANSPORT', label: 'Point Buses' },
+  { key: 'AMENITIES', label: 'Library & Food' },
 ];
 
 interface OutdoorMapViewProps {
   userLocation: UserLocation | null;
   gpsMode: GpsMode;
+  isAcquiringGps?: boolean;
   presetIndex: number;
   presets: UserLocation[];
   gpsError: string | null;
@@ -133,9 +134,54 @@ function TurnGlyph({ action, className }: { action: TurnAction; className?: stri
   }
 }
 
+const LABEL_ZOOM_THRESHOLD = 18;
+
+function getCategoryPinSvg(pin: CampusPin): string {
+  const id = pin.id;
+  if (id === 'campus_mosque') {
+    return '<svg viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>';
+  }
+  if (id === 'campus_cafeteria') {
+    return '<svg viewBox="0 0 24 24"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/></svg>';
+  }
+  if (id === 'campus_sports') {
+    return '<svg viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>';
+  }
+  if (id.startsWith('hostel_')) {
+    return '<svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>';
+  }
+  if (id === 'gate_main') {
+    return '<svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V9a7 7 0 0 1 14 0v12"/><path d="M9 21v-6a3 3 0 0 1 6 0v6"/></svg>';
+  }
+  if (id === 'new_g_medical') {
+    return '<svg viewBox="0 0 24 24"><path d="M12 6v12"/><path d="M6 12h12"/><rect x="3" y="3" width="18" height="18" rx="4"/></svg>';
+  }
+  if (id.startsWith('ws_') || id === 'campus_workshops') {
+    return '<svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>';
+  }
+  switch (pin.category) {
+    case 'ADMIN':
+      return '<svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V8l7-4 7 4v13"/><path d="M9 21v-5h6v5"/><path d="M9 11h.01"/><path d="M15 11h.01"/></svg>';
+    case 'STUDENT_SERVICE':
+      return '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>';
+    case 'LAB':
+      return '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2"/><path d="M9 2v2"/><path d="M15 20v2"/><path d="M9 20v2"/><path d="M2 15h2"/><path d="M2 9h2"/><path d="M20 15h2"/><path d="M20 9h2"/></svg>';
+    case 'LIBRARY':
+      return '<svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>';
+    case 'TRANSPORT_GATE':
+      return '<svg viewBox="0 0 24 24"><path d="M8 6v6"/><path d="M16 6v6"/><path d="M2 12h19.6"/><path d="M4 18V7a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v11"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>';
+    case 'AMENITY':
+      return '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>';
+    case 'ACADEMIC':
+    default:
+      return '<svg viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>';
+  }
+}
+
 export function OutdoorMapView({
   userLocation,
   gpsMode,
+  isAcquiringGps = false,
   presetIndex,
   presets,
   gpsError,
@@ -155,8 +201,10 @@ export function OutdoorMapView({
   const markersLayerGroupRef = useRef<L.LayerGroup | null>(null);
   const userLayerGroupRef = useRef<L.LayerGroup | null>(null);
   const guideLayerGroupRef = useRef<L.LayerGroup | null>(null);
+  const lastOsrmOriginRef = useRef<{ pinId: string; coord: LatLng } | null>(null);
 
-  const [isSatellite, setIsSatellite] = useState(true);
+  const [isSatellite, setIsSatellite] = useState(false);
+  const [mapZoom, setMapZoom] = useState(17);
   const [selectedFilter, setSelectedFilter] = useState<MapFilterTab>('ALL');
   const [searchText, setSearchText] = useState('');
   const [focusedPin, setFocusedPin] = useState<CampusPin | null>(null);
@@ -174,7 +222,6 @@ export function OutdoorMapView({
   const [osmRoads, setOsmRoads] = useState<LatLng[][]>([]);
   const [outsideNotice, setOutsideNotice] = useState(false);
 
-  // Resolve effective starting coordinates (either GPS/Preset OR user-chosen campus landmark)
   const effectiveOrigin = useMemo<{ coord: LatLng; label: string; isPinOrigin: boolean } | null>(
     () => {
       if (customOriginPinId !== 'AUTO_GPS') {
@@ -190,15 +237,11 @@ export function OutdoorMapView({
       if (userLocation) {
         return {
           coord: { lat: userLocation.latitude, lng: userLocation.longitude },
-          label: userLocation.label || 'Your Location',
+          label: userLocation.label || 'Your Live Location',
           isPinOrigin: false,
         };
       }
-      return {
-        coord: { lat: BBSUTSD_CENTER.lat, lng: BBSUTSD_CENTER.lng },
-        label: 'Campus Center',
-        isPinOrigin: false,
-      };
+      return null;
     },
     [customOriginPinId, userLocation]
   );
@@ -221,18 +264,20 @@ export function OutdoorMapView({
     return CAMPUS_PINS.filter((p) => matchesFilter(p, selectedFilter, searchText));
   }, [selectedFilter, searchText]);
 
-  // Compute walkable multi-segment campus route with turn-by-turn steps
   const localCampusRoute = useMemo<ComputedRoute | null>(() => {
     if (!focusedPin || !effectiveOrigin) return null;
     return computeCampusRoute(effectiveOrigin.coord, effectiveOrigin.label, focusedPin);
   }, [focusedPin, effectiveOrigin]);
 
-  // When user uses live GPS outside campus perimeter (>450m), enrich with OSRM road route
   useEffect(() => {
-    setExternalRoute(null);
     setActiveStepIndex(0);
+  }, [focusedPin?.id, customOriginPinId]);
+
+  useEffect(() => {
     if (!focusedPin || !effectiveOrigin || effectiveOrigin.isPinOrigin) {
+      setExternalRoute(null);
       setIsFetchingExternalRoute(false);
+      lastOsrmOriginRef.current = null;
       return;
     }
     const distFromCampus = calculateDistanceMeters(
@@ -242,10 +287,27 @@ export function OutdoorMapView({
       BBSUTSD_CENTER.lng
     );
     if (distFromCampus <= 450 || distFromCampus > 50000) {
+      setExternalRoute(null);
       setIsFetchingExternalRoute(false);
+      lastOsrmOriginRef.current = null;
       return;
     }
 
+    const last = lastOsrmOriginRef.current;
+    if (
+      last &&
+      last.pinId === focusedPin.id &&
+      calculateDistanceMeters(
+        last.coord.lat,
+        last.coord.lng,
+        effectiveOrigin.coord.lat,
+        effectiveOrigin.coord.lng
+      ) < 18
+    ) {
+      return;
+    }
+
+    lastOsrmOriginRef.current = { pinId: focusedPin.id, coord: effectiveOrigin.coord };
     let cancelled = false;
     setIsFetchingExternalRoute(true);
     fetchOsrmRoadRoute(effectiveOrigin.coord, focusedPin)
@@ -290,7 +352,6 @@ export function OutdoorMapView({
     }
   }, []);
 
-  // Stable ref so Leaflet DOM handlers never read stale callbacks
   const handleSelectPinRef = useRef(handleSelectPin);
   handleSelectPinRef.current = handleSelectPin;
 
@@ -340,7 +401,7 @@ export function OutdoorMapView({
       maxZoom: 19,
     });
 
-    sat.addTo(map);
+    street.addTo(map);
 
     const geoGroup = L.layerGroup().addTo(map);
     const guideGroup = L.layerGroup().addTo(map);
@@ -351,6 +412,14 @@ export function OutdoorMapView({
       setFocusedPin(null);
     });
 
+    const syncZoomLabels = () => {
+      const z = map.getZoom();
+      setMapZoom(z);
+      map.getContainer().classList.toggle('map-show-labels', z >= LABEL_ZOOM_THRESHOLD);
+    };
+    map.on('zoomend', syncZoomLabels);
+    syncZoomLabels();
+
     mapRef.current = map;
     satLayerRef.current = sat;
     streetLayerRef.current = street;
@@ -359,14 +428,12 @@ export function OutdoorMapView({
     markersLayerGroupRef.current = markersGroup;
     userLayerGroupRef.current = userGroup;
 
-    // Keep Leaflet viewport synced on responsive resizes & tab transitions
     const resizeObserver = new ResizeObserver(() => {
       map.invalidateSize({ animate: false });
     });
     resizeObserver.observe(container);
     const initTimer = window.setTimeout(() => map.invalidateSize({ animate: false }), 120);
 
-    // Fetch up-to-date OpenStreetMap campus buildings & roads
     const controller = new AbortController();
     const query = `[out:json][timeout:12];
       (
@@ -444,7 +511,7 @@ export function OutdoorMapView({
     };
   }, []);
 
-  // 2. Toggle Satellite vs Street Layer
+  // 2. Toggle Satellite vs Map View Layer
   useEffect(() => {
     const map = mapRef.current;
     const sat = satLayerRef.current;
@@ -470,24 +537,24 @@ export function OutdoorMapView({
       L.polygon(
         osmBoundary.map((p) => [p.lat, p.lng]),
         {
-          color: '#39FF14',
+          color: '#0B57D0',
           weight: 2.5,
-          opacity: 0.85,
+          opacity: 0.78,
           dashArray: '8, 6',
-          fillColor: '#39FF14',
-          fillOpacity: 0.05,
+          fillColor: '#0B57D0',
+          fillOpacity: 0.04,
           interactive: false,
         }
       ).addTo(group);
     } else {
       L.circle([BBSUTSD_CENTER.lat, BBSUTSD_CENTER.lng], {
         radius: CAMPUS_RADIUS_M,
-        color: '#39FF14',
+        color: '#0B57D0',
         weight: 2.5,
-        opacity: 0.85,
+        opacity: 0.78,
         dashArray: '8, 6',
-        fillColor: '#39FF14',
-        fillOpacity: 0.05,
+        fillColor: '#0B57D0',
+        fillOpacity: 0.04,
         interactive: false,
       }).addTo(group);
     }
@@ -495,12 +562,12 @@ export function OutdoorMapView({
     L.polygon(
       OLD_COMPLEX_ZONE.map((p) => [p.lat, p.lng]),
       {
-        color: '#FF1E2D',
+        color: '#B3261E',
         weight: 2,
-        opacity: 0.92,
+        opacity: 0.85,
         dashArray: '6, 5',
-        fillColor: '#FF1E2D',
-        fillOpacity: 0.16,
+        fillColor: '#B3261E',
+        fillOpacity: 0.14,
         interactive: false,
       }
     ).addTo(group);
@@ -508,11 +575,11 @@ export function OutdoorMapView({
     L.polygon(
       NEW_COMPLEX_ZONE.map((p) => [p.lat, p.lng]),
       {
-        color: '#39FF14',
+        color: '#0F9D58',
         weight: 2,
-        opacity: 0.92,
+        opacity: 0.85,
         dashArray: '6, 5',
-        fillColor: '#39FF14',
+        fillColor: '#0F9D58',
         fillOpacity: 0.14,
         interactive: false,
       }
@@ -520,15 +587,15 @@ export function OutdoorMapView({
 
     osmBuildings.forEach((bld) => {
       const isOld = bld.centerLat >= 27.51085 || bld.centerLng < 68.74162;
-      const color = isOld ? '#FF1E2D' : '#39FF14';
+      const color = isOld ? '#B3261E' : '#0F9D58';
       L.polygon(
         bld.coords.map((p) => [p.lat, p.lng]),
         {
           color,
           weight: 2,
-          opacity: 0.92,
+          opacity: 0.88,
           fillColor: color,
-          fillOpacity: 0.28,
+          fillOpacity: 0.22,
           interactive: false,
         }
       ).addTo(group);
@@ -537,9 +604,9 @@ export function OutdoorMapView({
     L.polyline(
       DIVIDING_ROAD_PATH.map((p) => [p.lat, p.lng]),
       {
-        color: '#050507',
+        color: '#FFFFFF',
         weight: 8,
-        opacity: 0.78,
+        opacity: 0.88,
         interactive: false,
       }
     ).addTo(group);
@@ -547,10 +614,10 @@ export function OutdoorMapView({
     L.polyline(
       DIVIDING_ROAD_PATH.map((p) => [p.lat, p.lng]),
       {
-        color: '#F8FAFC',
-        weight: 4,
-        opacity: 0.95,
-        dashArray: '10, 6',
+        color: '#0B57D0',
+        weight: 3.5,
+        opacity: 0.9,
+        dashArray: '8, 6',
         interactive: false,
       }
     ).addTo(group);
@@ -559,9 +626,9 @@ export function OutdoorMapView({
       L.polyline(
         segment.map((p) => [p.lat, p.lng]),
         {
-          color: '#F8FAFC',
+          color: '#FFFFFF',
           weight: 3,
-          opacity: 0.78,
+          opacity: 0.72,
           interactive: false,
         }
       ).addTo(group);
@@ -582,7 +649,7 @@ export function OutdoorMapView({
     addBadge(27.51018, 68.7422, 'New Building Complex', 'zone-badge-new');
   }, [osmBoundary, osmBuildings, osmRoads]);
 
-  // 4. Render Labeled Campus Pins with bullet-proof DOM click handling
+  // 4. Render Labeled Campus Pill Pins
   useEffect(() => {
     const group = markersLayerGroupRef.current;
     if (!group) return;
@@ -593,12 +660,12 @@ export function OutdoorMapView({
     );
 
     visiblePins.forEach((pin) => {
-      const color = CATEGORY_COLORS[pin.category] ?? '#FF1E2D';
+      const color = CATEGORY_COLORS[pin.category] ?? '#0B57D0';
       const isSelected = focusedPin?.id === pin.id;
       const isOrigin = customOriginPinId === pin.id;
-      const html = `<div class="campus-pin${isSelected ? ' is-selected' : ''}" role="button" tabindex="0" aria-label="${escapeHtml(pin.name)}" style="--pin-color:${color}">
-        <div class="campus-pin-label">${isOrigin ? 'START: ' : ''}${escapeHtml(pin.mapLabel || pin.name)}</div>
-        <div class="campus-pin-dot"></div>
+      const html = `<div class="campus-pin${isSelected ? ' is-selected' : ''}${isOrigin ? ' is-origin' : ''}" role="button" tabindex="0" aria-label="${escapeHtml(pin.name)}" style="--pin-color:${color}">
+        <div class="campus-pin-label">${isOrigin ? 'Start: ' : ''}${escapeHtml(pin.mapLabel || pin.name)}</div>
+        <div class="campus-pin-icon">${getCategoryPinSvg(pin)}</div>
       </div>`;
 
       const icon = L.divIcon({
@@ -636,7 +703,7 @@ export function OutdoorMapView({
     });
   }, [selectedFilter, searchText, focusedPin, customOriginPinId]);
 
-  // 5. Render Live / Simulated User GPS Marker
+  // 5. Render User GPS Blue Dot
   useEffect(() => {
     const group = userLayerGroupRef.current;
     if (!group) return;
@@ -646,19 +713,19 @@ export function OutdoorMapView({
     const acc = Math.min(Math.max(userLocation.accuracyMeters ?? 15, 5), 120);
     L.circle([userLocation.latitude, userLocation.longitude], {
       radius: acc,
-      color: '#39FF14',
-      weight: 1,
-      opacity: 0.55,
-      fillColor: '#39FF14',
-      fillOpacity: 0.16,
+      color: '#0B57D0',
+      weight: 1.5,
+      opacity: 0.45,
+      fillColor: '#0B57D0',
+      fillOpacity: 0.14,
       interactive: false,
     }).addTo(group);
 
     const gpsIcon = L.divIcon({
       className: '',
       html: '<div class="gps-dot-wrapper"><div class="gps-dot-pulse"></div><div class="gps-dot-core"></div></div>',
-      iconSize: [26, 26],
-      iconAnchor: [13, 13],
+      iconSize: [28, 28],
+      iconAnchor: [14, 14],
     });
 
     L.marker([userLocation.latitude, userLocation.longitude], {
@@ -668,7 +735,7 @@ export function OutdoorMapView({
     }).addTo(group);
   }, [userLocation]);
 
-  // 6. Render Multi-Segment Turn-by-Turn Path, Corner Badges, & Active Step Highlight
+  // 6. Render Google Maps Style Cobalt Blue Multi-Segment Turn-by-Turn Path
   useEffect(() => {
     const group = guideLayerGroupRef.current;
     if (!group) return;
@@ -677,33 +744,30 @@ export function OutdoorMapView({
 
     const latLngs: [number, number][] = activeRoute.polyline.map((p) => [p.lat, p.lng]);
 
-    // Dark outer casing for crisp satellite readability
     L.polyline(latLngs, {
-      color: '#050507',
-      weight: 8,
-      opacity: 0.85,
-      lineCap: 'round',
-      lineJoin: 'round',
-      interactive: false,
-    }).addTo(group);
-
-    // Neon Green main walkable path
-    L.polyline(latLngs, {
-      color: '#39FF14',
-      weight: 4.5,
+      color: '#FFFFFF',
+      weight: 9,
       opacity: 0.96,
       lineCap: 'round',
       lineJoin: 'round',
       interactive: false,
     }).addTo(group);
 
-    // Highlight currently selected tutorial segment in Sports Red
+    L.polyline(latLngs, {
+      color: '#0B57D0',
+      weight: 5,
+      opacity: 0.96,
+      lineCap: 'round',
+      lineJoin: 'round',
+      interactive: false,
+    }).addTo(group);
+
     const currentStep = activeRoute.steps[activeStepIndex];
     if (currentStep && currentStep.segmentCoords.length >= 2) {
       L.polyline(
         currentStep.segmentCoords.map((p) => [p.lat, p.lng] as [number, number]),
         {
-          color: '#FF1E2D',
+          color: '#0F9D58',
           weight: 6.5,
           opacity: 0.98,
           lineCap: 'round',
@@ -713,11 +777,10 @@ export function OutdoorMapView({
       ).addTo(group);
     }
 
-    // Origin badge if starting from a custom landmark pin
     if (effectiveOrigin?.isPinOrigin) {
       const originIcon = L.divIcon({
         className: 'campus-leaflet-icon',
-        html: `<div class="route-origin-badge">START • ${escapeHtml(effectiveOrigin.label)}</div>`,
+        html: `<div class="route-origin-badge">Start • ${escapeHtml(effectiveOrigin.label)}</div>`,
         iconSize: [0, 0],
         iconAnchor: [0, 0],
       });
@@ -728,7 +791,6 @@ export function OutdoorMapView({
       }).addTo(group);
     }
 
-    // Numbered turn-point corner nodes
     activeRoute.steps.forEach((step, idx) => {
       if (step.action === 'ARRIVE') return;
       const isStepActive = idx === activeStepIndex;
@@ -810,53 +872,53 @@ export function OutdoorMapView({
   const currentTutorialStep = activeRoute?.steps[activeStepIndex] ?? null;
 
   return (
-    <div className="flex flex-col lg:grid lg:grid-cols-[400px_1fr] xl:grid-cols-[420px_1fr] h-[calc(100dvh-128px)] lg:h-[calc(100dvh-92px)] min-h-[560px] w-full overflow-hidden border border-[#282C38] bg-[#050507] cut-corner">
+    <div className="flex flex-col lg:grid lg:grid-cols-[400px_1fr] xl:grid-cols-[420px_1fr] h-[calc(100dvh-136px)] lg:h-[calc(100dvh-96px)] min-h-[560px] w-full overflow-hidden rounded-[28px] border border-[#E2E8F0] bg-[#FFFFFF] shadow-sm">
       {/* =================================================================== */}
-      {/* DESKTOP LEFT TACTICAL DRAWER (Hidden < lg so mobile stays clean)    */}
+      {/* DESKTOP LEFT PIXEL PANEL (Hidden < lg so mobile stays full-screen)  */}
       {/* =================================================================== */}
-      <aside className="hidden lg:flex flex-col h-full overflow-hidden border-r border-[#282C38] bg-[#0D0E12]">
+      <aside className="hidden lg:flex flex-col h-full overflow-hidden border-r border-[#E2E8F0] bg-[#FFFFFF]">
         {/* Header & Search */}
-        <div className="border-b border-[#282C38] p-4 space-y-3 bg-[#050507]">
+        <div className="border-b border-[#E2E8F0] p-4 space-y-3 bg-[#F8FAFC]">
           <div className="flex items-center justify-between gap-2">
             <div>
-              <h1 className="font-display text-base font-bold tracking-wider text-[#F8FAFC]">
-                BBSUTSD // NAVIGATOR
+              <h1 className="font-display text-base font-bold text-[#111827]">
+                Campus Directions
               </h1>
-              <p className="font-mono text-[10px] font-bold text-[#FF1E2D]">
-                27.5108° N • 68.7416° E • KHAIRPUR MIRS
+              <p className="font-mono text-[10.5px] font-medium text-[#5F6368]">
+                27.5108° N • 68.7416° E • Khairpur Mirs
               </p>
             </div>
             <button
               type="button"
               onClick={onRequestLiveGps}
-              className={`flex items-center gap-1.5 border px-2.5 py-1 font-mono text-[10px] font-bold cursor-pointer transition ${
+              className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 font-display text-[11px] font-semibold cursor-pointer transition ${
                 gpsMode === 'LIVE'
-                  ? 'border-[#39FF14] bg-[#0B2407] text-[#39FF14]'
-                  : 'border-[#282C38] bg-[#15171E] text-[#A1A7B3] hover:border-[#39FF14] hover:text-[#39FF14]'
+                  ? 'bg-[#E6F4EA] text-[#137333] border border-[#0F9D58]'
+                  : 'bg-[#EFF3F8] text-[#444746] hover:bg-[#E2E8F0]'
               }`}
             >
               <Radio className="h-3 w-3" />
-              <span>{gpsMode === 'LIVE' ? 'LIVE GPS' : 'USE LIVE GPS'}</span>
+              <span>{gpsMode === 'LIVE' ? 'Live GPS' : 'Use GPS'}</span>
             </button>
           </div>
 
           {/* Start From (Origin) Selector */}
-          <div className="border border-[#282C38] bg-[#15171E] p-2.5 cut-corner-sm space-y-2">
+          <div className="rounded-2xl border border-[#DCE2EC] bg-[#FFFFFF] p-3 space-y-2">
             <div className="flex items-center justify-between gap-2">
               <label
                 htmlFor="desktop-origin-select"
-                className="font-mono text-[10px] font-bold text-[#39FF14]"
+                className="text-[11px] font-bold text-[#0F9D58]"
               >
-                A // START LOCATION
+                A • Start Location
               </label>
               {customOriginPinId !== 'AUTO_GPS' && (
                 <button
                   type="button"
                   onClick={() => setCustomOriginPinId('AUTO_GPS')}
-                  className="flex items-center gap-1 font-mono text-[10px] text-[#A1A7B3] hover:text-[#39FF14] cursor-pointer"
+                  className="flex items-center gap-1 text-[11px] font-semibold text-[#0B57D0] hover:underline cursor-pointer"
                 >
                   <RotateCcw className="h-3 w-3" />
-                  RESET GPS
+                  Reset GPS
                 </button>
               )}
             </div>
@@ -867,7 +929,7 @@ export function OutdoorMapView({
                 setCustomOriginPinId(e.target.value);
                 setActiveStepIndex(0);
               }}
-              className="w-full border border-[#282C38] bg-[#050507] px-2.5 py-1.5 font-mono text-[11px] font-semibold text-[#F8FAFC] outline-none focus:border-[#39FF14]"
+              className="w-full rounded-xl border border-[#DCE2EC] bg-[#EFF3F8] px-3 py-2 text-xs font-medium text-[#111827] outline-none focus:border-[#0B57D0]"
             >
               <option value="AUTO_GPS">
                 {gpsMode === 'LIVE'
@@ -885,12 +947,12 @@ export function OutdoorMapView({
 
             {customOriginPinId === 'AUTO_GPS' && gpsMode === 'SIMULATED' && (
               <div className="flex items-center justify-between gap-2 pt-0.5">
-                <span className="font-mono text-[9.5px] text-[#A1A7B3]">QUICK TELEPORT:</span>
+                <span className="text-[10.5px] font-semibold text-[#5F6368]">Preset:</span>
                 <select
                   aria-label="Campus GPS Preset"
                   value={presetIndex}
                   onChange={(e) => onSelectPreset(Number(e.target.value))}
-                  className="flex-1 border border-[#282C38] bg-[#050507] px-2 py-1 font-mono text-[10px] text-[#F8FAFC] outline-none focus:border-[#FF1E2D]"
+                  className="flex-1 rounded-xl border border-[#DCE2EC] bg-[#F8FAFC] px-2.5 py-1.5 text-[11px] text-[#111827] outline-none focus:border-[#0B57D0]"
                 >
                   {presets.map((p, idx) => (
                     <option key={p.label} value={idx}>
@@ -902,22 +964,22 @@ export function OutdoorMapView({
             )}
           </div>
 
-          {/* Destination Search */}
+          {/* Destination Search Pill */}
           <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#FF1E2D]" />
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#0B57D0]" />
             <input
               type="text"
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
-              placeholder="B // Search destination (VC, Library, CS Lab, Gate)..."
-              className="w-full border border-[#282C38] bg-[#15171E] py-2 pl-9 pr-8 text-xs text-[#F8FAFC] placeholder-[#687080] outline-none focus:border-[#FF1E2D] cut-corner-sm"
+              placeholder="B • Destination (VC, Library, CS Lab, Gate)..."
+              className="w-full rounded-full border border-[#DCE2EC] bg-[#FFFFFF] py-2.5 pl-10 pr-8 text-xs text-[#111827] placeholder-[#747775] outline-none focus:border-[#0B57D0]"
             />
             {searchText && (
               <button
                 type="button"
                 onClick={() => setSearchText('')}
                 aria-label="Clear search"
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#A1A7B3] hover:text-white cursor-pointer"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#5F6368] hover:text-[#111827] cursor-pointer"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -933,10 +995,10 @@ export function OutdoorMapView({
                   key={tab.key}
                   type="button"
                   onClick={() => setSelectedFilter(tab.key)}
-                  className={`shrink-0 border px-2.5 py-1 font-mono text-[10px] font-bold transition cursor-pointer ${
+                  className={`shrink-0 rounded-full px-3 py-1 font-display text-[11px] font-semibold transition cursor-pointer ${
                     active
-                      ? 'border-[#FF1E2D] bg-[#FF1E2D] text-white'
-                      : 'border-[#282C38] bg-[#15171E] text-[#A1A7B3] hover:border-[#39FF14] hover:text-white'
+                      ? 'bg-[#D3E3FD] text-[#041E49]'
+                      : 'bg-[#EFF3F8] text-[#444746] hover:bg-[#E2E8F0]'
                   }`}
                 >
                   {tab.label}
@@ -945,96 +1007,102 @@ export function OutdoorMapView({
             })}
           </div>
 
-          {/* Boundary Status Strip */}
+          {/* Boundary / Live Location Status Strip */}
           {gpsError && gpsMode === 'LIVE' ? (
-            <div className="flex items-center justify-between border border-[#FF1E2D] bg-[#26080D] px-2.5 py-1.5 font-mono text-[10px] font-bold text-[#F8FAFC]">
+            <div className="flex items-center justify-between gap-2 rounded-2xl border border-[#F2B8B5] bg-[#FCE8E6] px-3 py-2 text-[11px] font-semibold text-[#B3261E]">
               <span className="flex items-center gap-1.5 truncate">
-                <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-[#FF1E2D]" />
+                <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
                 <span className="truncate">{gpsError}</span>
               </span>
               <button
                 type="button"
                 onClick={() => onSelectPreset(0)}
-                className="shrink-0 text-[#39FF14] underline cursor-pointer ml-2"
+                className="shrink-0 text-[#0B57D0] underline cursor-pointer ml-1"
               >
-                USE PRESET
+                Use Gate Demo
               </button>
             </div>
+          ) : isAcquiringGps ? (
+            <div className="flex items-center gap-2 rounded-2xl border border-[#D3E3FD] bg-[#E8F0FE] px-3 py-2 text-[11px] font-semibold text-[#0B57D0]">
+              <LocateFixed className="h-3.5 w-3.5 shrink-0 animate-pulse" />
+              <span className="truncate">Acquiring your live GPS location...</span>
+            </div>
           ) : boundaryStatus?.isInside === false ? (
-            <div className="flex items-center gap-2 border border-[#FF1E2D]/70 bg-[#26080D] px-2.5 py-1.5 font-mono text-[10px] font-bold text-[#F8FAFC]">
-              <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-[#FF1E2D]" />
-              <span>OUTSIDE CAMPUS • {formatDistance(boundaryStatus.distanceMeters)} AWAY</span>
+            <div className="flex items-center gap-2 rounded-2xl border border-[#F2B8B5] bg-[#FCE8E6] px-3 py-2 text-[11px] font-semibold text-[#B3261E]">
+              <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+              <span>Outside campus • {formatDistance(boundaryStatus.distanceMeters)} away</span>
             </div>
           ) : (
-            <div className="flex items-center gap-2 border border-[#39FF14]/50 bg-[#0B2407] px-2.5 py-1.5 font-mono text-[10px] font-bold text-[#39FF14]">
+            <div className="flex items-center gap-2 rounded-2xl border border-[#CBE6D3] bg-[#E6F4EA] px-3 py-2 text-[11px] font-semibold text-[#137333]">
               <Compass className="h-3.5 w-3.5 shrink-0" />
               <span className="truncate">
-                INSIDE CAMPUS • {filteredDirectoryPins.length} PINS ACTIVE
+                {gpsMode === 'LIVE' ? 'Live GPS active' : 'Demo origin active'} •{' '}
+                {filteredDirectoryPins.length} pins
               </span>
             </div>
           )}
         </div>
 
-        {/* Scrollable Drawer Body: Focused Pin Details & Turn-by-Turn OR Directory */}
+        {/* Scrollable Drawer Body */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {focusedPin ? (
             <>
               {/* Pin Info Card */}
-              <div className="border border-[#FF1E2D] bg-[#15171E] p-3.5 cut-corner-sm space-y-2.5">
+              <div className="rounded-3xl border border-[#E2E8F0] bg-[#FFFFFF] p-4 shadow-xs space-y-3">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <div className="flex flex-wrap items-center gap-1.5 font-mono text-[10px] font-bold">
-                      <span className="border border-[#FF1E2D] bg-[#26080D] px-1.5 py-0.5 text-[#FF1E2D]">
-                        {BUILDINGS[focusedPin.building].shortName.toUpperCase()}
+                    <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-semibold">
+                      <span className="rounded-full bg-[#E8F0FE] px-2.5 py-0.5 text-[#0B57D0]">
+                        {BUILDINGS[focusedPin.building].shortName}
                       </span>
-                      <span className="border border-[#39FF14]/60 bg-[#0B2407] px-1.5 py-0.5 text-[#39FF14]">
+                      <span className="rounded-full bg-[#E6F4EA] px-2.5 py-0.5 text-[#137333]">
                         {focusedPin.floor === 'OUTDOOR'
-                          ? 'GROUNDS'
+                          ? 'Grounds'
                           : FLOORS[focusedPin.floor].code}{' '}
                         • {focusedPin.roomNumber}
                       </span>
                     </div>
-                    <h2 className="mt-2 font-display text-base font-bold text-[#F8FAFC]">
+                    <h2 className="mt-2 font-display text-base font-bold text-[#111827]">
                       {focusedPin.name}
                     </h2>
-                    <p className="text-xs text-[#A1A7B3]">{focusedPin.subTitle}</p>
+                    <p className="text-xs text-[#5F6368]">{focusedPin.subTitle}</p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setFocusedPin(null)}
                     aria-label="Back to pin directory"
-                    className="p-1 text-[#A1A7B3] hover:text-white cursor-pointer"
+                    className="flex h-8 w-8 items-center justify-center rounded-full bg-[#EFF3F8] text-[#444746] hover:bg-[#E2E8F0] cursor-pointer"
                   >
                     <X className="h-4 w-4" />
                   </button>
                 </div>
 
                 {/* Essential Info Rows */}
-                <div className="grid grid-cols-1 gap-1.5 border-t border-[#282C38] pt-2 text-[11px]">
-                  <div className="flex items-center gap-2 text-[#F8FAFC]">
-                    <User className="h-3.5 w-3.5 shrink-0 text-[#FF1E2D]" />
-                    <span className="truncate">{focusedPin.inCharge}</span>
+                <div className="grid grid-cols-1 gap-1.5 border-t border-[#E2E8F0] pt-2.5 text-xs">
+                  <div className="flex items-center gap-2 text-[#111827]">
+                    <User className="h-3.5 w-3.5 shrink-0 text-[#0B57D0]" />
+                    <span className="truncate font-medium">{focusedPin.inCharge}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-[#A1A7B3]">
-                    <Clock className="h-3.5 w-3.5 shrink-0 text-[#FF1E2D]" />
+                  <div className="flex items-center gap-2 text-[#5F6368]">
+                    <Clock className="h-3.5 w-3.5 shrink-0 text-[#0B57D0]" />
                     <span className="truncate">{focusedPin.timings}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-[#A1A7B3]">
-                    <Phone className="h-3.5 w-3.5 shrink-0 text-[#FF1E2D]" />
+                  <div className="flex items-center gap-2 text-[#5F6368]">
+                    <Phone className="h-3.5 w-3.5 shrink-0 text-[#0B57D0]" />
                     <span className="truncate">{focusedPin.contact}</span>
                   </div>
                 </div>
 
-                <p className="text-xs leading-relaxed text-[#A1A7B3]">{focusedPin.description}</p>
+                <p className="text-xs leading-relaxed text-[#444746]">{focusedPin.description}</p>
 
-                <div className="border border-[#282C38] bg-[#050507] p-2.5 text-[11px]">
-                  <div className="font-mono text-[10px] font-bold text-[#39FF14]">
-                    INDOOR WALK GUIDE
+                <div className="rounded-2xl bg-[#EFF3F8] p-3 text-xs">
+                  <div className="font-display text-[11px] font-bold text-[#0B57D0]">
+                    Indoor Walk Guide
                   </div>
-                  <p className="mt-1 text-[#F8FAFC]/90">{focusedPin.indoorGuide}</p>
+                  <p className="mt-0.5 text-[#111827]">{focusedPin.indoorGuide}</p>
                 </div>
 
-                {/* Action Row */}
+                {/* Action Pills */}
                 <div className="flex flex-wrap gap-2 pt-1">
                   <button
                     type="button"
@@ -1042,28 +1110,28 @@ export function OutdoorMapView({
                       setCustomOriginPinId(focusedPin.id);
                       setActiveStepIndex(0);
                     }}
-                    className="flex items-center gap-1 border border-[#282C38] bg-[#050507] px-2.5 py-1.5 font-mono text-[10px] font-bold text-[#39FF14] hover:border-[#39FF14] cursor-pointer"
+                    className="flex items-center gap-1.5 rounded-full bg-[#E6F4EA] px-3 py-1.5 font-display text-[11px] font-semibold text-[#137333] hover:bg-[#D7EFE0] cursor-pointer"
                   >
                     <Navigation className="h-3 w-3" />
-                    SET AS START
+                    Set Start
                   </button>
                   <button
                     type="button"
                     onClick={() => onOpenPinDetail(focusedPin)}
-                    className="flex items-center gap-1 bg-[#FF1E2D] px-2.5 py-1.5 font-mono text-[10px] font-bold text-white hover:bg-[#FF3B47] cursor-pointer"
+                    className="flex items-center gap-1.5 rounded-full bg-[#0B57D0] px-3 py-1.5 font-display text-[11px] font-semibold text-white hover:bg-[#0842A0] cursor-pointer"
                   >
                     <Info className="h-3 w-3" />
-                    FULL INFO
+                    Full Info
                   </button>
                   {focusedPin.building !== 'CAMPUS_GROUNDS' &&
                     focusedPin.floor !== 'OUTDOOR' && (
                       <button
                         type="button"
                         onClick={() => onOpenIndoorPlan(focusedPin)}
-                        className="flex items-center gap-1 border border-[#F8FAFC] bg-[#050507] px-2.5 py-1.5 font-mono text-[10px] font-bold text-[#F8FAFC] hover:border-[#39FF14] hover:text-[#39FF14] cursor-pointer"
+                        className="flex items-center gap-1.5 rounded-full bg-[#D3E3FD] px-3 py-1.5 font-display text-[11px] font-semibold text-[#041E49] hover:bg-[#C2D7FC] cursor-pointer"
                       >
-                        <Layers className="h-3 w-3 text-[#39FF14]" />
-                        FLOOR PLAN
+                        <Layers className="h-3 w-3" />
+                        Floor Plan
                       </button>
                     )}
                   {(focusedPin.id === 'campus_transport_office' ||
@@ -1071,52 +1139,54 @@ export function OutdoorMapView({
                     <button
                       type="button"
                       onClick={onOpenBusTimings}
-                      className="flex items-center gap-1 bg-[#39FF14] px-2.5 py-1.5 font-mono text-[10px] font-bold text-[#050507] hover:brightness-110 cursor-pointer"
+                      className="flex items-center gap-1.5 rounded-full bg-[#0F9D58] px-3 py-1.5 font-display text-[11px] font-semibold text-white hover:bg-[#0B8043] cursor-pointer"
                     >
                       <Bus className="h-3 w-3" />
-                      POINT BUSES
+                      Point Buses
                     </button>
                   )}
                 </div>
               </div>
 
               {/* Google Maps Style Turn-by-Turn Tutorial */}
-              {activeRoute && (
-                <div className="border border-[#39FF14]/60 bg-[#050507] p-3.5 cut-corner-sm space-y-3">
+              {activeRoute ? (
+                <div className="rounded-3xl border border-[#DCE2EC] bg-[#F8FAFC] p-4 space-y-3">
                   <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <RouteIcon className="h-4 w-4 text-[#39FF14]" />
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#0B57D0] text-white">
+                        <RouteIcon className="h-4 w-4" />
+                      </div>
                       <div>
-                        <div className="font-display text-xs font-bold text-[#F8FAFC]">
-                          TURN-BY-TURN ROUTE
+                        <div className="font-display text-xs font-bold text-[#111827]">
+                          Shortest Route Directions
                         </div>
-                        <div className="font-mono text-[10px] font-bold text-[#39FF14]">
+                        <div className="font-mono text-[11px] font-semibold text-[#137333]">
                           {formatDistance(activeRoute.totalDistanceMeters)} •{' '}
-                          {activeRoute.estimatedMinutes} MIN WALK • {activeRoute.steps.length} STEPS
+                          {activeRoute.estimatedMinutes} min walk • {activeRoute.steps.length} steps
                         </div>
                       </div>
                     </div>
                     <button
                       type="button"
                       onClick={() => fitRouteBounds(activeRoute, focusedPin)}
-                      className="border border-[#282C38] bg-[#15171E] px-2 py-1 font-mono text-[9.5px] font-bold text-[#F8FAFC] hover:border-[#39FF14] cursor-pointer"
+                      className="rounded-full bg-[#FFFFFF] border border-[#DCE2EC] px-2.5 py-1 text-[10.5px] font-semibold text-[#0B57D0] hover:bg-[#E8F0FE] cursor-pointer"
                     >
-                      FIT PATH
+                      Fit Path
                     </button>
                   </div>
 
                   {isFetchingExternalRoute && (
-                    <div className="font-mono text-[10px] text-[#A1A7B3]">
+                    <div className="text-[11px] text-[#5F6368]">
                       Calculating city street route to campus gate...
                     </div>
                   )}
 
-                  {/* Active Tutorial Step Controls */}
+                  {/* Active Tutorial Step Banner */}
                   {currentTutorialStep && (
-                    <div className="border border-[#FF1E2D] bg-[#26080D]/70 p-2.5 space-y-2">
-                      <div className="flex items-center justify-between font-mono text-[10px] font-bold text-[#FF1E2D]">
+                    <div className="rounded-2xl bg-[#D3E3FD] p-3 space-y-2">
+                      <div className="flex items-center justify-between text-[11px] font-bold text-[#041E49]">
                         <span>
-                          STEP {activeStepIndex + 1} OF {activeRoute.steps.length}
+                          Step {activeStepIndex + 1} of {activeRoute.steps.length}
                         </span>
                         <div className="flex items-center gap-1">
                           <button
@@ -1126,10 +1196,10 @@ export function OutdoorMapView({
                               const prev = Math.max(0, activeStepIndex - 1);
                               focusStepOnMap(activeRoute.steps[prev], prev);
                             }}
-                            className="flex h-6 w-6 items-center justify-center border border-[#282C38] bg-[#050507] text-[#F8FAFC] disabled:opacity-40 cursor-pointer"
+                            className="flex h-7 w-7 items-center justify-center rounded-full bg-[#FFFFFF] text-[#041E49] disabled:opacity-40 cursor-pointer"
                             aria-label="Previous step"
                           >
-                            <ChevronLeft className="h-3.5 w-3.5" />
+                            <ChevronLeft className="h-4 w-4" />
                           </button>
                           <button
                             type="button"
@@ -1141,18 +1211,18 @@ export function OutdoorMapView({
                               );
                               focusStepOnMap(activeRoute.steps[next], next);
                             }}
-                            className="flex h-6 w-6 items-center justify-center border border-[#282C38] bg-[#050507] text-[#F8FAFC] disabled:opacity-40 cursor-pointer"
+                            className="flex h-7 w-7 items-center justify-center rounded-full bg-[#FFFFFF] text-[#041E49] disabled:opacity-40 cursor-pointer"
                             aria-label="Next step"
                           >
-                            <ChevronRight className="h-3.5 w-3.5" />
+                            <ChevronRight className="h-4 w-4" />
                           </button>
                         </div>
                       </div>
                       <div className="flex items-start gap-2.5">
-                        <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center bg-[#FF1E2D] text-white">
+                        <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0B57D0] text-white">
                           <TurnGlyph action={currentTutorialStep.action} className="h-4 w-4" />
                         </div>
-                        <div className="text-xs font-semibold text-[#F8FAFC]">
+                        <div className="text-xs font-semibold text-[#041E49]">
                           {currentTutorialStep.instruction}
                         </div>
                       </div>
@@ -1168,32 +1238,32 @@ export function OutdoorMapView({
                           key={step.id}
                           type="button"
                           onClick={() => focusStepOnMap(step, idx)}
-                          className={`flex w-full items-start gap-2.5 border p-2 text-left transition cursor-pointer ${
+                          className={`flex w-full items-start gap-2.5 rounded-2xl border p-2.5 text-left transition cursor-pointer ${
                             active
-                              ? 'border-[#39FF14] bg-[#0B2407]'
-                              : 'border-[#282C38] bg-[#15171E] hover:border-[#FF1E2D]'
+                              ? 'border-[#0B57D0] bg-[#E8F0FE]'
+                              : 'border-[#E2E8F0] bg-[#FFFFFF] hover:border-[#0B57D0]/50'
                           }`}
                         >
                           <span
                             className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full font-mono text-[10px] font-bold ${
                               active
-                                ? 'bg-[#39FF14] text-[#050507]'
-                                : 'bg-[#050507] text-[#A1A7B3] border border-[#282C38]'
+                                ? 'bg-[#0B57D0] text-white'
+                                : 'bg-[#EFF3F8] text-[#444746]'
                             }`}
                           >
                             {idx + 1}
                           </span>
                           <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-1.5 text-xs font-medium text-[#F8FAFC]">
+                            <div className="flex items-center gap-1.5 text-xs font-semibold text-[#111827]">
                               <TurnGlyph
                                 action={step.action}
                                 className={`h-3.5 w-3.5 shrink-0 ${
-                                  step.action === 'ARRIVE' ? 'text-[#FF1E2D]' : 'text-[#39FF14]'
+                                  step.action === 'ARRIVE' ? 'text-[#0F9D58]' : 'text-[#0B57D0]'
                                 }`}
                               />
                               <span>{step.instruction}</span>
                             </div>
-                            <div className="mt-0.5 font-mono text-[10px] text-[#A1A7B3]">
+                            <div className="mt-0.5 text-[11px] text-[#5F6368]">
                               {step.streetName}
                               {step.distanceMeters > 0
                                 ? ` • ${formatDistance(step.distanceMeters)}`
@@ -1205,36 +1275,63 @@ export function OutdoorMapView({
                     })}
                   </div>
                 </div>
+              ) : (
+                <div className="rounded-3xl border border-[#DCE2EC] bg-[#F8FAFC] p-4 space-y-2.5">
+                  <div className="font-display text-xs font-bold text-[#111827]">
+                    {isAcquiringGps
+                      ? 'Waiting for your live GPS location...'
+                      : 'Location access needed for live directions'}
+                  </div>
+                  <p className="text-[11px] text-[#5F6368]">
+                    Allow location access to trace the shortest path from where you are standing right now, or select a starting landmark above.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={onRequestLiveGps}
+                      className="rounded-full bg-[#0B57D0] px-3 py-1.5 font-display text-[11px] font-semibold text-white hover:bg-[#0842A0] cursor-pointer"
+                    >
+                      Enable Live GPS
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onSelectPreset(0)}
+                      className="rounded-full bg-[#FFFFFF] border border-[#DCE2EC] px-3 py-1.5 font-display text-[11px] font-semibold text-[#111827] hover:bg-[#EFF3F8] cursor-pointer"
+                    >
+                      Preview from Main Gate
+                    </button>
+                  </div>
+                </div>
               )}
             </>
           ) : (
             <div className="space-y-2">
-              <div className="flex items-center justify-between font-mono text-[10px] font-bold text-[#A1A7B3]">
-                <span>CAMPUS DIRECTORY ({filteredDirectoryPins.length})</span>
-                <span className="text-[#39FF14]">TAP PIN ON MAP OR BELOW</span>
+              <div className="flex items-center justify-between text-[11px] font-semibold text-[#5F6368]">
+                <span>Campus Directory ({filteredDirectoryPins.length})</span>
+                <span className="text-[#0B57D0]">Tap pin on map or list</span>
               </div>
               {filteredDirectoryPins.map((pin) => {
-                const color = CATEGORY_COLORS[pin.category] ?? '#FF1E2D';
+                const color = CATEGORY_COLORS[pin.category] ?? '#0B57D0';
                 return (
                   <button
                     key={pin.id}
                     type="button"
                     onClick={() => focusPinFromSearch(pin)}
-                    className="flex w-full items-center gap-3 border border-[#282C38] bg-[#15171E] p-2.5 text-left transition hover:border-[#39FF14] cursor-pointer cut-corner-sm"
+                    className="flex w-full items-center gap-3 rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] p-3 text-left transition hover:border-[#0B57D0] hover:bg-[#FFFFFF] cursor-pointer"
                   >
                     <span
-                      className="h-3 w-3 shrink-0 rounded-full border border-[#050507]"
+                      className="h-3 w-3 shrink-0 rounded-full border-2 border-white shadow-xs"
                       style={{ backgroundColor: color }}
                     />
                     <div className="min-w-0 flex-1">
-                      <div className="truncate font-display text-xs font-bold text-[#F8FAFC]">
+                      <div className="truncate font-display text-xs font-bold text-[#111827]">
                         {pin.name}
                       </div>
-                      <div className="truncate font-mono text-[10px] text-[#A1A7B3]">
+                      <div className="truncate font-mono text-[10.5px] text-[#5F6368]">
                         {BUILDINGS[pin.building].shortName} • {pin.roomNumber}
                       </div>
                     </div>
-                    <ChevronRight className="h-4 w-4 shrink-0 text-[#687080]" />
+                    <ChevronRight className="h-4 w-4 shrink-0 text-[#747775]" />
                   </button>
                 );
               })}
@@ -1249,25 +1346,25 @@ export function OutdoorMapView({
       <div className="relative flex-1 h-full min-h-[420px] w-full overflow-hidden">
         <div ref={mapContainerRef} className="h-full w-full" />
 
-        {/* MOBILE TOP COMPACT BAR (< lg only — unobtrusive so map stays tappable) */}
-        <div className="pointer-events-none absolute top-2.5 left-2.5 right-2.5 z-20 flex flex-col gap-1.5 lg:hidden">
-          <div className="pointer-events-auto border border-[#282C38] bg-[#050507]/92 backdrop-blur-md p-2.5 shadow-xl cut-corner-sm space-y-2">
+        {/* MOBILE TOP COMPACT PIXEL SEARCH BAR (< lg) */}
+        <div className="pointer-events-none absolute top-3 left-3 right-3 z-20 flex flex-col gap-2 lg:hidden">
+          <div className="pointer-events-auto rounded-3xl border border-[#E2E8F0] bg-[#FFFFFF]/95 backdrop-blur-md p-2.5 shadow-lg space-y-2">
             <div className="flex items-center gap-2">
               <div className="relative flex-1">
-                <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#FF1E2D]" />
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#0B57D0]" />
                 <input
                   type="text"
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
-                  placeholder="Search BBSUTSD pin, lab, office..."
-                  className="w-full border border-[#282C38] bg-[#15171E] py-1.5 pl-8 pr-7 text-xs text-[#F8FAFC] placeholder-[#687080] outline-none focus:border-[#FF1E2D]"
+                  placeholder="Search BBS-UTECH pin, lab, office..."
+                  className="w-full rounded-full bg-[#EFF3F8] py-2 pl-9 pr-8 text-xs text-[#111827] placeholder-[#747775] outline-none focus:ring-2 focus:ring-[#D3E3FD]"
                 />
                 {searchText && (
                   <button
                     type="button"
                     onClick={() => setSearchText('')}
                     aria-label="Clear search"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-[#A1A7B3]"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#5F6368]"
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
@@ -1276,10 +1373,10 @@ export function OutdoorMapView({
               <button
                 type="button"
                 onClick={onRequestLiveGps}
-                className={`shrink-0 flex items-center gap-1 border px-2 py-1.5 font-mono text-[10px] font-bold ${
+                className={`shrink-0 flex items-center gap-1 rounded-full px-3 py-2 text-[11px] font-semibold ${
                   gpsMode === 'LIVE'
-                    ? 'border-[#39FF14] bg-[#0B2407] text-[#39FF14]'
-                    : 'border-[#282C38] bg-[#15171E] text-[#A1A7B3]'
+                    ? 'bg-[#E6F4EA] text-[#137333]'
+                    : 'bg-[#EFF3F8] text-[#444746]'
                 }`}
               >
                 <Radio className="h-3 w-3" />
@@ -1288,9 +1385,9 @@ export function OutdoorMapView({
             </div>
 
             {/* Compact Start-From Picker */}
-            <div className="flex items-center gap-1.5">
-              <span className="shrink-0 font-mono text-[9.5px] font-bold text-[#39FF14]">
-                FROM:
+            <div className="flex items-center gap-2 px-1">
+              <span className="shrink-0 text-[10.5px] font-bold text-[#0F9D58]">
+                From:
               </span>
               <select
                 aria-label="Starting campus location"
@@ -1299,7 +1396,7 @@ export function OutdoorMapView({
                   setCustomOriginPinId(e.target.value);
                   setActiveStepIndex(0);
                 }}
-                className="min-w-0 flex-1 border border-[#282C38] bg-[#15171E] px-2 py-1 font-mono text-[10px] text-[#F8FAFC] outline-none"
+                className="min-w-0 flex-1 rounded-full bg-[#EFF3F8] px-3 py-1 text-[11px] font-medium text-[#111827] outline-none"
               >
                 <option value="AUTO_GPS">
                   {gpsMode === 'LIVE'
@@ -1315,7 +1412,7 @@ export function OutdoorMapView({
             </div>
           </div>
 
-          {/* Mobile Horizontal Category Chips */}
+          {/* Mobile Horizontal Category Filter Pills */}
           <div className="pointer-events-auto flex items-center gap-1.5 overflow-x-auto pb-0.5">
             {FILTER_TABS.map((tab) => {
               const active = selectedFilter === tab.key;
@@ -1324,10 +1421,10 @@ export function OutdoorMapView({
                   key={tab.key}
                   type="button"
                   onClick={() => setSelectedFilter(tab.key)}
-                  className={`shrink-0 border px-2.5 py-1 font-mono text-[9.5px] font-bold ${
+                  className={`shrink-0 rounded-full px-3 py-1.5 font-display text-[11px] font-semibold shadow-sm ${
                     active
-                      ? 'border-[#FF1E2D] bg-[#FF1E2D] text-white'
-                      : 'border-[#282C38] bg-[#050507]/90 text-[#A1A7B3]'
+                      ? 'bg-[#0B57D0] text-white'
+                      : 'bg-[#FFFFFF]/95 text-[#444746] border border-[#E2E8F0]'
                   }`}
                 >
                   {tab.label}
@@ -1338,20 +1435,20 @@ export function OutdoorMapView({
 
           {/* Mobile Quick Search Dropdown */}
           {searchSuggestions.length > 0 && (
-            <div className="pointer-events-auto max-h-48 overflow-y-auto border border-[#FF1E2D] bg-[#050507]/95 shadow-2xl">
+            <div className="pointer-events-auto max-h-48 overflow-y-auto rounded-3xl border border-[#E2E8F0] bg-[#FFFFFF] shadow-xl">
               {searchSuggestions.map((pin) => (
                 <button
                   key={pin.id}
                   type="button"
                   onClick={() => focusPinFromSearch(pin)}
-                  className="flex w-full items-center gap-2.5 border-b border-[#282C38] px-3 py-2 text-left hover:bg-[#15171E] last:border-b-0"
+                  className="flex w-full items-center gap-2.5 border-b border-[#F1F5F9] px-4 py-2.5 text-left hover:bg-[#EFF3F8] last:border-b-0"
                 >
-                  <MapPin className="h-3.5 w-3.5 shrink-0 text-[#39FF14]" />
+                  <MapPin className="h-3.5 w-3.5 shrink-0 text-[#0B57D0]" />
                   <div className="min-w-0">
-                    <div className="truncate font-display text-xs font-bold text-[#F8FAFC]">
+                    <div className="truncate font-display text-xs font-bold text-[#111827]">
                       {pin.mapLabel || pin.name}
                     </div>
-                    <div className="truncate text-[10px] text-[#A1A7B3]">
+                    <div className="truncate text-[10.5px] text-[#5F6368]">
                       {pin.name} • {BUILDINGS[pin.building].shortName}
                     </div>
                   </div>
@@ -1363,15 +1460,15 @@ export function OutdoorMapView({
 
         {/* Outside Campus Toast Notice */}
         {outsideNotice && (
-          <div className="pointer-events-auto absolute top-3 left-1/2 -translate-x-1/2 z-30 border border-[#FF1E2D] bg-[#050507]/95 px-3 py-2 font-mono text-xs text-[#F8FAFC] shadow-xl">
-            GPS outside BBSUTSD perimeter — map stays centered on campus.
+          <div className="pointer-events-auto absolute top-4 left-1/2 -translate-x-1/2 z-30 rounded-full border border-[#F2B8B5] bg-[#FFFFFF] px-4 py-2 text-xs font-semibold text-[#B3261E] shadow-lg">
+            GPS outside BBS-UTECH perimeter — map centered on campus.
           </div>
         )}
 
-        {/* Right-Edge Floating Tactical Map Controls */}
-        <div className="absolute right-3 top-1/2 z-20 -translate-y-1/2 flex flex-col gap-2">
+        {/* Right-Edge Floating Pixel Map Controls */}
+        <div className="absolute right-3.5 top-1/2 z-20 -translate-y-1/2 flex flex-col gap-2">
           <MapCircleBtn
-            title={isSatellite ? 'Switch to OSM Street View' : 'Switch to Satellite Imagery'}
+            title={isSatellite ? 'Switch to Street Map View' : 'Switch to Satellite Imagery'}
             active={isSatellite}
             onClick={() => setIsSatellite((s) => !s)}
           >
@@ -1395,8 +1492,8 @@ export function OutdoorMapView({
           </MapCircleBtn>
 
           <MapCircleBtn
-            title="Center on BBSUTSD Campus"
-            danger
+            title="Center on BBS-UTECH Campus"
+            primary
             onClick={() =>
               mapRef.current?.setView([BBSUTSD_CENTER.lat, BBSUTSD_CENTER.lng], 17, {
                 animate: true,
@@ -1407,64 +1504,69 @@ export function OutdoorMapView({
           </MapCircleBtn>
         </div>
 
-        {/* Desktop Map Top-Left Route Pill OR Bottom Legend */}
+        {/* Desktop Map Top-Left Floating Route Pill */}
         {focusedPin && activeRoute && (
-          <div className="hidden lg:flex items-center gap-3 absolute top-3 left-3 z-20 border border-[#39FF14] bg-[#050507]/94 backdrop-blur-md px-3.5 py-2 shadow-xl cut-corner-sm">
-            <Footprints className="h-4 w-4 text-[#39FF14]" />
-            <div className="font-mono text-[11px] font-bold text-[#F8FAFC]">
-              <span className="text-[#39FF14]">{effectiveOrigin?.label}</span>
-              <span className="mx-1.5 text-[#FF1E2D]">→</span>
+          <div className="hidden lg:flex items-center gap-2.5 absolute top-3.5 left-3.5 z-20 rounded-full border border-[#DCE2EC] bg-[#FFFFFF]/95 backdrop-blur-md px-4 py-2 shadow-md">
+            <Footprints className="h-4 w-4 text-[#0B57D0]" />
+            <div className="text-xs font-semibold text-[#111827]">
+              <span className="text-[#0F9D58]">{effectiveOrigin?.label}</span>
+              <span className="mx-1.5 text-[#5F6368]">→</span>
               <span>{focusedPin.mapLabel || focusedPin.name}</span>
-              <span className="ml-2 text-[#A1A7B3]">
+              <span className="ml-2 font-mono text-[11px] text-[#0B57D0]">
                 ({formatDistance(activeRoute.totalDistanceMeters)} •{' '}
-                {activeRoute.estimatedMinutes} MIN)
+                {activeRoute.estimatedMinutes} min)
               </span>
             </div>
           </div>
         )}
 
-        <div className="hidden lg:flex absolute bottom-3 left-3 z-20 items-center gap-3.5 border border-[#282C38] bg-[#050507]/95 px-3.5 py-1.5 font-mono text-[10px] font-bold text-[#F8FAFC] cut-corner-sm">
+        <div className="hidden lg:flex absolute bottom-3.5 left-3.5 z-20 items-center gap-3.5 rounded-full border border-[#E2E8F0] bg-[#FFFFFF]/95 px-4 py-1.5 text-[11px] font-semibold text-[#444746] shadow-md">
           <span className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-[#FF1E2D]" /> OLD
+            <span className="h-2.5 w-2.5 rounded-full bg-[#B3261E]" /> Old Complex
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-[#39FF14]" /> NEW / ROUTE
+            <span className="h-2.5 w-2.5 rounded-full bg-[#0F9D58]" /> New Complex
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-[#F8FAFC]" /> ROAD
+            <span className="h-2.5 w-2.5 rounded-full bg-[#0B57D0]" /> Shortest Route
+          </span>
+          <span className="border-l border-[#E2E8F0] pl-3 text-[#0B57D0]">
+            {mapZoom >= LABEL_ZOOM_THRESHOLD ? 'Labels visible' : 'Zoom in for names'}
           </span>
         </div>
 
         {/* =================================================================== */}
-        {/* MOBILE BOTTOM INTERACTIVE SHEET (Pin Info + Turn-by-Turn Tutorial)  */}
+        {/* MOBILE BOTTOM PIXEL SHEET (Pin Info + Turn-by-Turn Tutorial)        */}
         {/* =================================================================== */}
         {focusedPin ? (
-          <div className="lg:hidden absolute bottom-2 left-2 right-2 z-20 border border-[#FF1E2D] bg-[#050507]/96 backdrop-blur-md shadow-2xl cut-corner-sm">
-            {/* Sheet Top Header */}
-            <div className="flex items-center justify-between gap-2 border-b border-[#282C38] px-3 py-2">
+          <div className="lg:hidden absolute bottom-2.5 left-2.5 right-2.5 z-20 rounded-[28px] border border-[#E2E8F0] bg-[#FFFFFF]/97 backdrop-blur-md shadow-2xl">
+            <div className="mx-auto mt-2 h-1 w-9 rounded-full bg-[#CBD5E1]" />
+
+            {/* Sheet Header */}
+            <div className="flex items-center justify-between gap-2 border-b border-[#F1F5F9] px-4 py-2.5">
               <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-1.5 font-mono text-[9.5px] font-bold">
-                  <span className="border border-[#FF1E2D] bg-[#15171E] px-1.5 py-0.5 text-[#FF1E2D]">
-                    {BUILDINGS[focusedPin.building].shortName.toUpperCase()} • {focusedPin.roomNumber}
+                <div className="flex flex-wrap items-center gap-1.5 text-[10.5px] font-semibold">
+                  <span className="rounded-full bg-[#E8F0FE] px-2.5 py-0.5 text-[#0B57D0]">
+                    {BUILDINGS[focusedPin.building].shortName} • {focusedPin.roomNumber}
                   </span>
                   {activeRoute && (
-                    <span className="text-[#39FF14]">
+                    <span className="text-[#137333] font-mono">
                       {formatDistance(activeRoute.totalDistanceMeters)} •{' '}
-                      {activeRoute.estimatedMinutes} MIN
+                      {activeRoute.estimatedMinutes} min
                     </span>
                   )}
                 </div>
-                <h3 className="mt-1 truncate font-display text-sm font-bold text-[#F8FAFC]">
+                <h3 className="mt-1 truncate font-display text-sm font-bold text-[#111827]">
                   {focusedPin.name}
                 </h3>
               </div>
 
-              <div className="flex items-center gap-1 shrink-0">
+              <div className="flex items-center gap-1.5 shrink-0">
                 <button
                   type="button"
                   onClick={() => setMobileSheetExpanded((v) => !v)}
                   aria-label={mobileSheetExpanded ? 'Collapse sheet' : 'Expand sheet'}
-                  className="flex h-8 w-8 items-center justify-center border border-[#282C38] bg-[#15171E] text-[#F8FAFC]"
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-[#EFF3F8] text-[#111827]"
                 >
                   {mobileSheetExpanded ? (
                     <ChevronDown className="h-4 w-4" />
@@ -1476,7 +1578,7 @@ export function OutdoorMapView({
                   type="button"
                   onClick={() => setFocusedPin(null)}
                   aria-label="Close landmark card"
-                  className="flex h-8 w-8 items-center justify-center border border-[#282C38] bg-[#15171E] text-[#A1A7B3]"
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-[#EFF3F8] text-[#5F6368]"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -1484,45 +1586,44 @@ export function OutdoorMapView({
             </div>
 
             {mobileSheetExpanded && (
-              <div className="p-3 space-y-2.5 max-h-[46dvh] overflow-y-auto">
-                {/* Mobile Sub-tabs: DIRECTIONS vs INFO */}
-                <div className="grid grid-cols-2 gap-1.5">
+              <div className="p-3.5 space-y-2.5 max-h-[46dvh] overflow-y-auto">
+                <div className="grid grid-cols-2 gap-1.5 rounded-full bg-[#EFF3F8] p-1">
                   <button
                     type="button"
                     onClick={() => setMobileSheetTab('DIRECTIONS')}
-                    className={`py-1.5 font-mono text-[10px] font-bold border ${
+                    className={`rounded-full py-1.5 font-display text-[11px] font-semibold ${
                       mobileSheetTab === 'DIRECTIONS'
-                        ? 'border-[#39FF14] bg-[#0B2407] text-[#39FF14]'
-                        : 'border-[#282C38] bg-[#15171E] text-[#A1A7B3]'
+                        ? 'bg-[#FFFFFF] text-[#0B57D0] shadow-xs'
+                        : 'text-[#5F6368]'
                     }`}
                   >
-                    DIRECTIONS ({activeRoute?.steps.length ?? 0})
+                    Directions ({activeRoute?.steps.length ?? 0})
                   </button>
                   <button
                     type="button"
                     onClick={() => setMobileSheetTab('INFO')}
-                    className={`py-1.5 font-mono text-[10px] font-bold border ${
+                    className={`rounded-full py-1.5 font-display text-[11px] font-semibold ${
                       mobileSheetTab === 'INFO'
-                        ? 'border-[#FF1E2D] bg-[#26080D] text-[#FF1E2D]'
-                        : 'border-[#282C38] bg-[#15171E] text-[#A1A7B3]'
+                        ? 'bg-[#FFFFFF] text-[#0B57D0] shadow-xs'
+                        : 'text-[#5F6368]'
                     }`}
                   >
-                    LOCATION INFO
+                    Location Info
                   </button>
                 </div>
 
                 {mobileSheetTab === 'DIRECTIONS' && activeRoute ? (
                   <div className="space-y-2">
                     {currentTutorialStep && (
-                      <div className="flex items-center gap-2 border border-[#FF1E2D] bg-[#26080D]/80 p-2">
-                        <div className="flex h-7 w-7 shrink-0 items-center justify-center bg-[#FF1E2D] text-white">
+                      <div className="flex items-center gap-2.5 rounded-2xl bg-[#D3E3FD] p-2.5">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0B57D0] text-white">
                           <TurnGlyph action={currentTutorialStep.action} className="h-4 w-4" />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <div className="font-mono text-[9px] font-bold text-[#FF1E2D]">
-                            STEP {activeStepIndex + 1}/{activeRoute.steps.length}
+                          <div className="text-[10px] font-bold text-[#0B57D0]">
+                            Step {activeStepIndex + 1}/{activeRoute.steps.length}
                           </div>
-                          <div className="text-xs font-semibold text-[#F8FAFC]">
+                          <div className="text-xs font-semibold text-[#041E49]">
                             {currentTutorialStep.instruction}
                           </div>
                         </div>
@@ -1535,7 +1636,7 @@ export function OutdoorMapView({
                               focusStepOnMap(activeRoute.steps[prev], prev);
                             }}
                             aria-label="Previous direction step"
-                            className="flex h-7 w-7 items-center justify-center border border-[#282C38] bg-[#050507] text-white disabled:opacity-35"
+                            className="flex h-7 w-7 items-center justify-center rounded-full bg-[#FFFFFF] text-[#041E49] disabled:opacity-35"
                           >
                             <ChevronLeft className="h-3.5 w-3.5" />
                           </button>
@@ -1550,7 +1651,7 @@ export function OutdoorMapView({
                               focusStepOnMap(activeRoute.steps[next], next);
                             }}
                             aria-label="Next direction step"
-                            className="flex h-7 w-7 items-center justify-center border border-[#282C38] bg-[#050507] text-white disabled:opacity-35"
+                            className="flex h-7 w-7 items-center justify-center rounded-full bg-[#FFFFFF] text-[#041E49] disabled:opacity-35"
                           >
                             <ChevronRight className="h-3.5 w-3.5" />
                           </button>
@@ -1564,13 +1665,13 @@ export function OutdoorMapView({
                           key={step.id}
                           type="button"
                           onClick={() => focusStepOnMap(step, idx)}
-                          className={`flex w-full items-center gap-2 border px-2 py-1.5 text-left text-[11px] ${
+                          className={`flex w-full items-center gap-2 rounded-2xl border px-3 py-2 text-left text-xs ${
                             idx === activeStepIndex
-                              ? 'border-[#39FF14] bg-[#0B2407] text-[#F8FAFC]'
-                              : 'border-[#282C38] bg-[#15171E] text-[#A1A7B3]'
+                              ? 'border-[#0B57D0] bg-[#E8F0FE] text-[#111827] font-semibold'
+                              : 'border-[#E2E8F0] bg-[#F8FAFC] text-[#444746]'
                           }`}
                         >
-                          <span className="font-mono text-[10px] font-bold text-[#39FF14]">
+                          <span className="font-mono text-[10.5px] font-bold text-[#0B57D0]">
                             {idx + 1}.
                           </span>
                           <TurnGlyph action={step.action} className="h-3.5 w-3.5 shrink-0" />
@@ -1579,16 +1680,43 @@ export function OutdoorMapView({
                       ))}
                     </div>
                   </div>
+                ) : mobileSheetTab === 'DIRECTIONS' ? (
+                  <div className="rounded-2xl bg-[#EFF3F8] p-3 text-xs space-y-2">
+                    <div className="font-bold text-[#111827]">
+                      {isAcquiringGps
+                        ? 'Acquiring live GPS location...'
+                        : 'Enable GPS to route from your location'}
+                    </div>
+                    <p className="text-[#5F6368]">
+                      Turn on location access or select a start point in the top bar.
+                    </p>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={onRequestLiveGps}
+                        className="rounded-full bg-[#0B57D0] px-3 py-1.5 font-display text-[11px] font-semibold text-white"
+                      >
+                        Enable GPS
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onSelectPreset(0)}
+                        className="rounded-full bg-[#FFFFFF] border border-[#DCE2EC] px-3 py-1.5 font-display text-[11px] font-semibold text-[#111827]"
+                      >
+                        Gate Demo
+                      </button>
+                    </div>
+                  </div>
                 ) : (
                   <div className="space-y-2 text-xs">
-                    <p className="text-[#A1A7B3]">
-                      <strong className="text-[#F8FAFC]">In-Charge:</strong> {focusedPin.inCharge} •{' '}
+                    <p className="text-[#444746]">
+                      <strong className="text-[#111827]">In-Charge:</strong> {focusedPin.inCharge} •{' '}
                       {focusedPin.timings}
                     </p>
-                    <p className="text-[#A1A7B3]">{focusedPin.description}</p>
-                    <div className="border border-[#282C38] bg-[#15171E] p-2 text-[11px]">
-                      <span className="font-mono font-bold text-[#39FF14]">INDOOR: </span>
-                      <span className="text-[#F8FAFC]">{focusedPin.indoorGuide}</span>
+                    <p className="text-[#5F6368]">{focusedPin.description}</p>
+                    <div className="rounded-2xl bg-[#EFF3F8] p-2.5 text-xs">
+                      <span className="font-bold text-[#0B57D0]">Indoor: </span>
+                      <span className="text-[#111827]">{focusedPin.indoorGuide}</span>
                     </div>
                   </div>
                 )}
@@ -1597,20 +1725,20 @@ export function OutdoorMapView({
                   <button
                     type="button"
                     onClick={() => onOpenPinDetail(focusedPin)}
-                    className="flex flex-1 items-center justify-center gap-1 bg-[#FF1E2D] px-2.5 py-2 font-display text-xs font-bold text-white"
+                    className="flex flex-1 items-center justify-center gap-1 rounded-full bg-[#0B57D0] px-3 py-2 font-display text-xs font-semibold text-white"
                   >
                     <Info className="h-3.5 w-3.5" />
-                    DETAILS
+                    Details
                   </button>
                   {focusedPin.building !== 'CAMPUS_GROUNDS' &&
                     focusedPin.floor !== 'OUTDOOR' && (
                       <button
                         type="button"
                         onClick={() => onOpenIndoorPlan(focusedPin)}
-                        className="flex flex-1 items-center justify-center gap-1 border border-[#F8FAFC] bg-[#0D0E12] px-2.5 py-2 font-display text-xs font-bold text-[#F8FAFC]"
+                        className="flex flex-1 items-center justify-center gap-1 rounded-full bg-[#D3E3FD] px-3 py-2 font-display text-xs font-semibold text-[#041E49]"
                       >
-                        <Layers className="h-3.5 w-3.5 text-[#39FF14]" />
-                        FLOOR
+                        <Layers className="h-3.5 w-3.5" />
+                        Floor
                       </button>
                     )}
                   {(focusedPin.id === 'campus_transport_office' ||
@@ -1618,10 +1746,10 @@ export function OutdoorMapView({
                     <button
                       type="button"
                       onClick={onOpenBusTimings}
-                      className="flex flex-1 items-center justify-center gap-1 bg-[#39FF14] px-2.5 py-2 font-display text-xs font-bold text-[#050507]"
+                      className="flex flex-1 items-center justify-center gap-1 rounded-full bg-[#0F9D58] px-3 py-2 font-display text-xs font-semibold text-white"
                     >
                       <Bus className="h-3.5 w-3.5" />
-                      BUSES
+                      Buses
                     </button>
                   )}
                 </div>
@@ -1629,17 +1757,16 @@ export function OutdoorMapView({
             )}
           </div>
         ) : (
-          <div className="lg:hidden absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 border border-[#282C38] bg-[#050507]/95 px-3 py-1.5 font-mono text-[9.5px] font-bold text-[#F8FAFC] cut-corner-sm">
+          <div className="lg:hidden absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2.5 rounded-full border border-[#E2E8F0] bg-[#FFFFFF]/95 px-3.5 py-1.5 text-[10.5px] font-semibold text-[#444746] shadow-md whitespace-nowrap">
             <span className="flex items-center gap-1">
-              <span className="h-2 w-2 rounded-full bg-[#FF1E2D]" /> OLD
+              <span className="h-2 w-2 rounded-full bg-[#B3261E]" /> Old
             </span>
             <span className="flex items-center gap-1">
-              <span className="h-2 w-2 rounded-full bg-[#39FF14]" /> NEW
+              <span className="h-2 w-2 rounded-full bg-[#0F9D58]" /> New
             </span>
-            <span className="flex items-center gap-1">
-              <span className="h-2 w-2 rounded-full bg-[#F8FAFC]" /> ROAD
+            <span className="text-[#0B57D0]">
+              {mapZoom >= LABEL_ZOOM_THRESHOLD ? 'Tap any pin' : 'Zoom in for labels'}
             </span>
-            <span className="text-[#39FF14]">TAP ANY PIN</span>
           </div>
         )}
       </div>
@@ -1650,13 +1777,13 @@ export function OutdoorMapView({
 function MapCircleBtn({
   title,
   active,
-  danger,
+  primary,
   onClick,
   children,
 }: {
   title: string;
   active?: boolean;
-  danger?: boolean;
+  primary?: boolean;
   onClick: () => void;
   children: React.ReactNode;
 }) {
@@ -1666,12 +1793,12 @@ function MapCircleBtn({
       title={title}
       aria-label={title}
       onClick={onClick}
-      className={`flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full border shadow-lg transition cursor-pointer ${
+      className={`flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full border shadow-md transition cursor-pointer ${
         active
-          ? 'border-[#39FF14] bg-[#39FF14] text-[#050507]'
-          : danger
-          ? 'border-[#FF1E2D] bg-[#050507]/95 text-[#FF1E2D] hover:bg-[#26080D]'
-          : 'border-[#282C38] bg-[#050507]/95 text-[#F8FAFC] hover:border-[#39FF14]'
+          ? 'border-[#0B57D0] bg-[#0B57D0] text-white'
+          : primary
+          ? 'border-[#D3E3FD] bg-[#D3E3FD] text-[#041E49] hover:bg-[#C2D7FC]'
+          : 'border-[#E2E8F0] bg-[#FFFFFF]/95 text-[#111827] hover:bg-[#EFF3F8]'
       }`}
     >
       {children}

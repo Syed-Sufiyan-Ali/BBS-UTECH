@@ -72,13 +72,13 @@ export const FLOORS: Record<FloorKey, FloorMeta> = {
 };
 
 export const CATEGORY_COLORS: Record<PinCategoryKey, string> = {
-  ADMIN: '#FF1E2D',
-  STUDENT_SERVICE: '#39FF14',
-  LAB: '#F8FAFC',
-  LIBRARY: '#FF4D5A',
-  AMENITY: '#A3E635',
-  TRANSPORT_GATE: '#39FF14',
-  ACADEMIC: '#A1A7B3',
+  ADMIN: '#B3261E',
+  STUDENT_SERVICE: '#0B57D0',
+  LAB: '#0F9D58',
+  LIBRARY: '#7C3AED',
+  AMENITY: '#0284C7',
+  TRANSPORT_GATE: '#137333',
+  ACADEMIC: '#334155',
 };
 
 export const PRESET_USER_LOCATIONS: UserLocation[] = [
