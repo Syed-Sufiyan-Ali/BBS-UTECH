@@ -21,7 +21,7 @@ const NAV_ITEMS: { id: AppTab; label: string; shortLabel: string; icon: typeof H
   { id: 'OUTDOOR_MAP', label: 'Campus Map', shortLabel: 'Map', icon: MapIcon },
   { id: 'INDOOR_MAP', label: 'Floor Plans', shortLabel: 'Floors', icon: Layers },
   { id: 'SCHEDULE', label: 'Timetable', shortLabel: 'Schedule', icon: CalendarDays },
-  { id: 'RESOURCES', label: 'Campus Hub & Buses', shortLabel: 'Hub', icon: GraduationCap },
+  { id: 'RESOURCES', label: 'Hub & Buses', shortLabel: 'Buses', icon: GraduationCap },
 ];
 
 export function Navbar({ activeTab, onSelectTab, userLocation }: NavbarProps) {

@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.DirectionsBus
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
@@ -168,6 +169,47 @@ fun ScheduleScreen(
                             fontWeight = FontWeight.SemiBold
                         )
                     }
+                }
+            }
+
+            Surface(
+                color = CampusEmeraldTint,
+                shape = RoundedCornerShape(16.dp),
+                border = BorderStroke(1.dp, CampusEmeraldBorder),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp, bottom = 10.dp)
+                    .clickable { viewModel.openBusTimings() }
+                    .testTag("schedule_open_bus_timetables")
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.DirectionsBus,
+                            contentDescription = null,
+                            tint = CampusEmeraldDark,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Bus 01–05, Hino & Coaster Timetables (7)",
+                            fontFamily = DisplayFontFamily,
+                            fontSize = 12.5.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = CampusEmeraldDark
+                        )
+                    }
+                    Text(
+                        text = "View All",
+                        fontFamily = BodyFontFamily,
+                        fontSize = 11.5.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = PixelBlue
+                    )
                 }
             }
         }

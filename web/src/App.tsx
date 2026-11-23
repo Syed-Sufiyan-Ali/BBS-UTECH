@@ -55,8 +55,8 @@ export function App() {
   const [indoorFloor, setIndoorFloor] = useState<FloorKey>('GROUND');
   const [selectedIndoorPin, setSelectedIndoorPin] = useState<CampusPin | null>(null);
 
-  // Resources / 5-Point Bus state
-  const [resourcesSubTab, setResourcesSubTab] = useState<ResourcesSubTab>('ACADEMIC_HUB');
+  // Resources / 7-Bus Fleet state
+  const [resourcesSubTab, setResourcesSubTab] = useState<ResourcesSubTab>('POINT_BUSES');
   const [selectedBusPoint, setSelectedBusPoint] = useState<number | null>(null);
 
   // Saved timetable preferences
@@ -216,6 +216,7 @@ export function App() {
                   savedSec={savedPref.sec}
                   onSavePreference={(dept, sem, sec) => setSavedPref({ dept, sem, sec })}
                   onLocatePinById={locatePinById}
+                  onOpenBusTimings={() => openBusTimings(null)}
                 />
               )}
 

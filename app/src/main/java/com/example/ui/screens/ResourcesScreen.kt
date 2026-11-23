@@ -158,7 +158,7 @@ fun ResourcesScreen(
         }
 
         // Sub-tabs
-        val tabTitles = listOf("Academic Hub", "Point Buses (7)", "Faculty", "Notices")
+        val tabTitles = listOf("Academic Hub", "Bus & Coaster (7)", "Faculty", "Notices")
         ScrollableTabRow(
             selectedTabIndex = selectedTabIndex,
             containerColor = PureSurface,
@@ -576,7 +576,7 @@ private fun PointBusesView(
                     onClick = { onSelectPoint(null) },
                     label = {
                         Text(
-                            "All 7",
+                            "All 7 Routes",
                             fontFamily = BodyFontFamily,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold
@@ -602,8 +602,8 @@ private fun PointBusesView(
                     val isSelected = selectedPoint == pt
                     val chipText = when {
                         pt <= 5 -> "Bus 0$pt"
-                        pt == 6 -> "Hino"
-                        else -> "Coaster"
+                        pt == 6 -> "Hino (GS-9526)"
+                        else -> "Coaster (GSF-325)"
                     }
                     FilterChip(
                         selected = isSelected,
@@ -680,7 +680,7 @@ private fun PointBusesView(
                 BusPointRouteCard(
                     route = route,
                     highlightQuery = q,
-                    defaultExpanded = filteredRoutes.size == 1 || q.isNotEmpty() || route.pointNumber == 1 || route.pointNumber == 3
+                    defaultExpanded = true
                 )
             }
         }

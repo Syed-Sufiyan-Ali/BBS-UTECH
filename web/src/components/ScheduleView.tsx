@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import {
   Bookmark,
   BookmarkCheck,
+  Bus,
   CalendarDays,
   Clock,
   Layers,
@@ -17,6 +18,7 @@ interface ScheduleViewProps {
   savedSec: string;
   onSavePreference: (dept: string, semester: number, section: string) => void;
   onLocatePinById: (pinId: string) => void;
+  onOpenBusTimings?: () => void;
 }
 
 const DAYS: ('Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday')[] = [
@@ -33,6 +35,7 @@ export function ScheduleView({
   savedSec,
   onSavePreference,
   onLocatePinById,
+  onOpenBusTimings,
 }: ScheduleViewProps) {
   const [selectedDept, setSelectedDept] = useState(savedDept);
   const [selectedSem, setSelectedSem] = useState(savedSem);
@@ -69,22 +72,35 @@ export function ScheduleView({
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={() => onSavePreference(selectedDept, selectedSem, selectedSec)}
-            className={`flex items-center gap-2 rounded-full px-4 py-2 font-display text-xs font-semibold transition cursor-pointer ${
-              isCurrentSaved
-                ? 'bg-[#E6F4EA] text-[#137333] border border-[#CBE6D3]'
-                : 'bg-[#0B57D0] text-white hover:bg-[#0842A0]'
-            }`}
-          >
-            {isCurrentSaved ? (
-              <BookmarkCheck className="h-4 w-4" />
-            ) : (
-              <Bookmark className="h-4 w-4" />
+          <div className="flex flex-wrap items-center gap-2">
+            {onOpenBusTimings && (
+              <button
+                type="button"
+                onClick={onOpenBusTimings}
+                className="flex items-center gap-2 rounded-full border border-[#CBE6D3] bg-[#E6F4EA] px-4 py-2 font-display text-xs font-semibold text-[#137333] transition hover:bg-[#D7EFE0] cursor-pointer"
+              >
+                <Bus className="h-4 w-4" />
+                <span>Bus &amp; Coaster Timetables (7)</span>
+              </button>
             )}
-            <span>{isCurrentSaved ? 'Saved as My Timetable' : 'Save Timetable'}</span>
-          </button>
+
+            <button
+              type="button"
+              onClick={() => onSavePreference(selectedDept, selectedSem, selectedSec)}
+              className={`flex items-center gap-2 rounded-full px-4 py-2 font-display text-xs font-semibold transition cursor-pointer ${
+                isCurrentSaved
+                  ? 'bg-[#E6F4EA] text-[#137333] border border-[#CBE6D3]'
+                  : 'bg-[#0B57D0] text-white hover:bg-[#0842A0]'
+              }`}
+            >
+              {isCurrentSaved ? (
+                <BookmarkCheck className="h-4 w-4" />
+              ) : (
+                <Bookmark className="h-4 w-4" />
+              )}
+              <span>{isCurrentSaved ? 'Saved as My Timetable' : 'Save Timetable'}</span>
+            </button>
+          </div>
         </div>
 
         {/* Department Chips */}

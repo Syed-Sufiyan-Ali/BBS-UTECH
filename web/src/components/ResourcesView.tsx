@@ -38,8 +38,8 @@ interface ResourcesViewProps {
 }
 
 const SUB_TABS: { key: ResourcesSubTab; label: string }[] = [
+  { key: 'POINT_BUSES', label: 'Bus & Coaster (7)' },
   { key: 'ACADEMIC_HUB', label: 'Academic Hub' },
-  { key: 'POINT_BUSES', label: 'Point Buses (7)' },
   { key: 'FACULTY', label: 'Faculty' },
   { key: 'NOTICES', label: 'Notices' },
 ];
@@ -258,13 +258,17 @@ export function ResourcesView({
                       : 'bg-[#EFF3F8] text-[#444746] hover:bg-[#E2E8F0]'
                   }`}
                 >
-                  All 7
+                  All 7 Routes
                 </button>
                 {BUS_POINT_ROUTES.map((route) => {
                   const pt = route.pointNumber;
                   const active = selectedBusPoint === pt;
                   const chipLabel =
-                    pt <= 5 ? `Bus 0${pt}` : pt === 6 ? 'Hino' : 'Coaster';
+                    pt <= 5
+                      ? `Bus 0${pt}`
+                      : pt === 6
+                      ? 'Hino (GS-9526)'
+                      : 'Coaster (GSF-325)';
                   return (
                     <button
                       key={pt}
@@ -301,12 +305,7 @@ export function ResourcesView({
                   key={route.pointNumber}
                   route={route}
                   highlightQuery={busQuery.trim().toLowerCase()}
-                  defaultExpanded={
-                    filteredBusRoutes.length === 1 ||
-                    busQuery.trim().length > 0 ||
-                    route.pointNumber === 1 ||
-                    route.pointNumber === 3
-                  }
+                  defaultExpanded={true}
                 />
               ))}
             </div>
@@ -530,6 +529,10 @@ function BusRouteCard({
 }) {
   const [expanded, setExpanded] = useState(defaultExpanded);
 
+  useEffect(() => {
+    setExpanded(defaultExpanded);
+  }, [defaultExpanded]);
+
   return (
     <div
       className={`rounded-[24px] border bg-[#FFFFFF] p-5 shadow-xs ${
@@ -627,7 +630,7 @@ function BusRouteCard({
             </span>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="grid gap-1.5 md:grid-cols-2">
             {route.stops.map((stop, idx) => {
               const isFirst = idx === 0;
               const isLast = idx === route.stops.length - 1;

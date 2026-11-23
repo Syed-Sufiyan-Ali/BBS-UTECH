@@ -58,9 +58,9 @@ class MainViewModel(
     private val _navTargetPin = MutableStateFlow<CampusPin?>(null)
     val navTargetPin: StateFlow<CampusPin?> = _navTargetPin.asStateFlow()
 
-    // Resources sub-tab & 5-Point Bus Schedule filter state
-    // Tabs: 0 = Academic Hub, 1 = Point Buses (1-5), 2 = Faculty Directory, 3 = Notice Board
-    private val _resourcesTabIndex = MutableStateFlow(0)
+    // Resources sub-tab & 7-Bus Schedule filter state
+    // Tabs: 0 = Academic Hub, 1 = Bus & Coaster (7), 2 = Faculty Directory, 3 = Notice Board
+    private val _resourcesTabIndex = MutableStateFlow(1)
     val resourcesTabIndex: StateFlow<Int> = _resourcesTabIndex.asStateFlow()
 
     private val _selectedBusPointNumber = MutableStateFlow<Int?>(null)
