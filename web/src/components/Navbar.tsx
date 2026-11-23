@@ -1,9 +1,8 @@
 import {
+  Bus,
   CalendarDays,
   Compass,
-  GraduationCap,
   Home,
-  Layers,
   Map as MapIcon,
   Radio,
 } from 'lucide-react';
@@ -19,9 +18,8 @@ interface NavbarProps {
 const NAV_ITEMS: { id: AppTab; label: string; shortLabel: string; icon: typeof Home }[] = [
   { id: 'HOME', label: 'Overview', shortLabel: 'Home', icon: Home },
   { id: 'OUTDOOR_MAP', label: 'Campus Map', shortLabel: 'Map', icon: MapIcon },
-  { id: 'INDOOR_MAP', label: 'Floor Plans', shortLabel: 'Floors', icon: Layers },
   { id: 'SCHEDULE', label: 'Timetable', shortLabel: 'Schedule', icon: CalendarDays },
-  { id: 'RESOURCES', label: 'Hub & Buses', shortLabel: 'Buses', icon: GraduationCap },
+  { id: 'BUSES', label: 'Bus Timetables', shortLabel: 'Buses', icon: Bus },
 ];
 
 export function Navbar({ activeTab, onSelectTab, userLocation }: NavbarProps) {
@@ -105,7 +103,7 @@ export function Navbar({ activeTab, onSelectTab, userLocation }: NavbarProps) {
         className="fixed bottom-0 inset-x-0 z-40 lg:hidden border-t border-[#E2E8F0] bg-[#FFFFFF]/95 backdrop-blur-xl pb-safe"
         aria-label="Mobile Bottom Navigation"
       >
-        <div className="grid grid-cols-5 px-1 py-1.5">
+        <div className="grid grid-cols-4 px-1 py-1.5">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;

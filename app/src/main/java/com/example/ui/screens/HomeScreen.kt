@@ -35,11 +35,9 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Apartment
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DirectionsBus
 import androidx.compose.material.icons.filled.Explore
-import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.NearMe
 import androidx.compose.material.icons.filled.Route
@@ -193,7 +191,7 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.height(8.dp))
 
                         Text(
-                            text = "The unified digital guide for The Benazir Bhutto Shaheed University of Technology & Skill Development, Khairpur Mirs—built for live GPS shortest-path walking routes, floor-by-floor blueprints, class schedules, and 7 city bus & coaster routes.",
+                            text = "The unified digital guide for The Benazir Bhutto Shaheed University of Technology & Skill Development, Khairpur Mirs—built for live GPS shortest-path walking routes, department class schedules, and all 7 official city bus & coaster routes.",
                             fontFamily = BodyFontFamily,
                             fontSize = 13.sp,
                             lineHeight = 19.sp,
@@ -229,23 +227,23 @@ fun HomeScreen(
                             }
 
                             OutlinedButton(
-                                onClick = { viewModel.navigateToScreen(AppScreen.INDOOR_MAP) },
+                                onClick = { viewModel.openBusTimings() },
                                 shape = RoundedCornerShape(50),
                                 border = BorderStroke(1.dp, MistOutline),
                                 modifier = Modifier
                                     .weight(1f)
                                     .height(46.dp)
-                                    .testTag("hero_explore_floors_button")
+                                    .testTag("hero_bus_timetables_button")
                             ) {
                                 Icon(
-                                    Icons.Default.Layers,
+                                    Icons.Default.DirectionsBus,
                                     contentDescription = null,
                                     tint = PixelBlue,
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = "Floor Plans",
+                                    text = "Buses (7)",
                                     fontFamily = DisplayFontFamily,
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.SemiBold,
@@ -372,12 +370,12 @@ fun HomeScreen(
                                                     )
                                                 }
                                                 IconButton(
-                                                    onClick = { viewModel.locatePinIndoor(pin) },
+                                                    onClick = { viewModel.locatePinOutdoor(pin) },
                                                     modifier = Modifier.minimumInteractiveComponentSize()
                                                 ) {
                                                     Icon(
-                                                        imageVector = Icons.Default.Layers,
-                                                        contentDescription = "Locate on floor plan",
+                                                        imageVector = Icons.Default.NearMe,
+                                                        contentDescription = "Locate on campus map",
                                                         tint = PixelBlue
                                                     )
                                                 }
@@ -426,7 +424,7 @@ fun HomeScreen(
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "INSIDE THE PORTAL • SORTED INTO 4 TOOLS",
+                            text = "INSIDE THE PORTAL • SORTED INTO 3 TOOLS",
                             fontFamily = MonoFontFamily,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
@@ -448,22 +446,9 @@ fun HomeScreen(
                     }
 
                     PillarModuleCard(
-                        eyebrow = "02 • ARCHITECTURAL BLUEPRINTS",
-                        title = "Indoor Building Floor Plans",
-                        description = "Room-by-room floor layouts across Ground, 1st & 2nd floors for both Old Admin and New Academic complexes.",
-                        icon = Icons.Default.Layers,
-                        iconBg = CampusCrimsonTint,
-                        iconTint = CampusCrimson,
-                        ctaLabel = "Explore Floor Plans",
-                        testTag = "pillar_floor_plans"
-                    ) {
-                        viewModel.navigateToScreen(AppScreen.INDOOR_MAP)
-                    }
-
-                    PillarModuleCard(
-                        eyebrow = "03 • ACADEMIC TIMETABLE",
+                        eyebrow = "02 • ACADEMIC TIMETABLE",
                         title = "Department Class Schedules",
-                        description = "Structured weekly lecture and lab timetables with instructor names and one-tap room pinpointing.",
+                        description = "Structured weekly lecture and lab timetables with instructor names and one-tap GPS map pinpointing.",
                         icon = Icons.Default.CalendarMonth,
                         iconBg = CampusEmeraldTint,
                         iconTint = CampusEmeraldDark,
@@ -474,13 +459,13 @@ fun HomeScreen(
                     }
 
                     PillarModuleCard(
-                        eyebrow = "04 • TRANSIT & STUDENT HUB",
-                        title = "7-Route City Buses & Notices",
-                        description = "Official morning university bus stops (Bus 01–05, Hino & Coaster) across Hingorja, Sukkur, Chondko, Sobhodero, Thari Mirwah & Khairpur City.",
+                        eyebrow = "03 • CITY TRANSIT FLEET",
+                        title = "Bus & Coaster Timetables (7)",
+                        description = "Official morning university bus stops (Bus 01–05, Hino GS-9526 & Coaster GSF-325) across Hingorja, Sukkur, Chondko, Sobhodero, Thari Mirwah & Khairpur City.",
                         icon = Icons.Default.DirectionsBus,
-                        iconBg = Color(0xFFF3E8FD),
-                        iconTint = Color(0xFF7C3AED),
-                        ctaLabel = "Open Campus Hub",
+                        iconBg = CampusCrimsonTint,
+                        iconTint = CampusCrimson,
+                        ctaLabel = "View Bus Timetables",
                         testTag = "pillar_buses_hub"
                     ) {
                         viewModel.openBusTimings()
@@ -523,11 +508,10 @@ fun HomeScreen(
                         borderColor = CampusCrimson.copy(alpha = 0.35f),
                         badgeBg = CampusCrimsonTint,
                         badgeTint = CampusCrimson,
-                        actionLabel = "Inspect Old Building",
+                        actionLabel = "Locate on Map",
                         testTag = "shortcut_old_building"
                     ) {
-                        viewModel.setIndoorBuilding(Building.OLD_BUILDING)
-                        viewModel.navigateToScreen(AppScreen.INDOOR_MAP)
+                        viewModel.locatePinById("old_g_vc")
                     }
 
                     CampusZoneOverviewCard(
@@ -552,11 +536,10 @@ fun HomeScreen(
                         borderColor = CampusEmeraldBorder,
                         badgeBg = CampusEmeraldTint,
                         badgeTint = CampusEmeraldDark,
-                        actionLabel = "Inspect New Complex",
+                        actionLabel = "Locate on Map",
                         testTag = "shortcut_new_building"
                     ) {
-                        viewModel.setIndoorBuilding(Building.NEW_BUILDING)
-                        viewModel.navigateToScreen(AppScreen.INDOOR_MAP)
+                        viewModel.locatePinById("new_1_library")
                     }
                 }
             }
@@ -593,7 +576,7 @@ fun HomeScreen(
                     Text(
                         text = nextClass?.let {
                             "Next session on file: ${it.subjectTitle} (${it.roomLabel})."
-                        } ?: "Open campus notices or jump straight into live turn-by-turn campus routing.",
+                        } ?: "Inspect all 7 university bus timetables or jump straight into live turn-by-turn campus routing.",
                         fontFamily = BodyFontFamily,
                         fontSize = 12.5.sp,
                         color = SlateGray
@@ -604,23 +587,20 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         OutlinedButton(
-                            onClick = {
-                                viewModel.setResourcesTab(3)
-                                viewModel.navigateToScreen(AppScreen.RESOURCES)
-                            },
+                            onClick = { viewModel.openBusTimings() },
                             shape = RoundedCornerShape(50),
                             border = BorderStroke(1.dp, MistOutline),
                             modifier = Modifier.weight(1f)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Campaign,
+                                imageVector = Icons.Default.DirectionsBus,
                                 contentDescription = null,
                                 tint = PixelBlue,
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "Notices",
+                                text = "Buses (7)",
                                 fontFamily = DisplayFontFamily,
                                 fontSize = 12.5.sp,
                                 fontWeight = FontWeight.SemiBold,
@@ -871,7 +851,7 @@ private fun AnimatedRoutingPreviewCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 TelemetryMetricChip(value = "$pinCount", label = "Campus Pins", valueColor = InkBlack, modifier = Modifier.weight(1f))
-                TelemetryMetricChip(value = "6", label = "Floor Maps", valueColor = PixelBlue, modifier = Modifier.weight(1f))
+                TelemetryMetricChip(value = "5", label = "Departments", valueColor = PixelBlue, modifier = Modifier.weight(1f))
                 TelemetryMetricChip(value = "7", label = "Bus Routes", valueColor = CampusEmeraldDark, modifier = Modifier.weight(1f))
             }
         }

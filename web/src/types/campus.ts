@@ -11,9 +11,7 @@ export type PinCategoryKey =
   | 'AMENITY'
   | 'TRANSPORT_GATE';
 
-export type AppTab = 'HOME' | 'OUTDOOR_MAP' | 'INDOOR_MAP' | 'SCHEDULE' | 'RESOURCES';
-
-export type ResourcesSubTab = 'ACADEMIC_HUB' | 'POINT_BUSES' | 'FACULTY' | 'NOTICES';
+export type AppTab = 'HOME' | 'OUTDOOR_MAP' | 'SCHEDULE' | 'BUSES';
 
 export interface BuildingMeta {
   key: BuildingKey;

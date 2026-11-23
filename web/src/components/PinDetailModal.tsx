@@ -3,7 +3,6 @@ import {
   Bus,
   Clock,
   Footprints,
-  Layers,
   MapPin,
   Navigation,
   Phone,
@@ -18,7 +17,6 @@ interface PinDetailModalProps {
   pin: CampusPin | null;
   userLocation: UserLocation | null;
   onClose: () => void;
-  onNavigateIndoor: (pin: CampusPin) => void;
   onNavigateOutdoor: (pin: CampusPin) => void;
   onOpenBusTimings: () => void;
 }
@@ -27,7 +25,6 @@ export function PinDetailModal({
   pin,
   userLocation,
   onClose,
-  onNavigateIndoor,
   onNavigateOutdoor,
   onOpenBusTimings,
 }: PinDetailModalProps) {
@@ -51,7 +48,6 @@ export function PinDetailModal({
       )
     : null;
 
-  const isIndoorCapable = pin.building !== 'CAMPUS_GROUNDS' && pin.floor !== 'OUTDOOR';
   const isTransportPin =
     pin.id === 'campus_transport_office' || pin.id === 'campus_transport';
 
@@ -186,39 +182,21 @@ export function PinDetailModal({
               className="flex w-full items-center justify-center gap-2 rounded-full bg-[#0F9D58] px-5 py-3 font-display text-sm font-semibold text-white transition hover:bg-[#0B8043] cursor-pointer shadow-xs"
             >
               <Bus className="h-4 w-4" />
-              <span>View Point 1–5 Bus Timings</span>
+              <span>View Bus &amp; Coaster Timings (7 Routes)</span>
             </button>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {isIndoorCapable && (
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  onNavigateIndoor(pin);
-                }}
-                className="flex items-center justify-center gap-2 rounded-full bg-[#0B57D0] px-5 py-3 font-display text-sm font-semibold text-white transition hover:bg-[#0842A0] cursor-pointer shadow-xs"
-              >
-                <Layers className="h-4 w-4" />
-                <span>Open Floor Plan</span>
-              </button>
-            )}
-
-            <button
-              type="button"
-              onClick={() => {
-                onClose();
-                onNavigateOutdoor(pin);
-              }}
-              className={`flex items-center justify-center gap-2 rounded-full bg-[#D3E3FD] px-5 py-3 font-display text-sm font-semibold text-[#041E49] transition hover:bg-[#C2D7FC] cursor-pointer ${
-                !isIndoorCapable ? 'sm:col-span-2' : ''
-              }`}
-            >
-              <MapPin className="h-4 w-4" />
-              <span>Directions on Map</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => {
+              onClose();
+              onNavigateOutdoor(pin);
+            }}
+            className="flex w-full items-center justify-center gap-2 rounded-full bg-[#0B57D0] px-5 py-3 font-display text-sm font-semibold text-white transition hover:bg-[#0842A0] cursor-pointer shadow-xs"
+          >
+            <MapPin className="h-4 w-4" />
+            <span>Directions on Campus Map</span>
+          </button>
         </div>
       </div>
     </div>

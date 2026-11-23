@@ -1312,33 +1312,6 @@ fun OutdoorMapScreen(
                                 fontWeight = FontWeight.SemiBold
                             )
                         }
-
-                        if (activePin.building != Building.CAMPUS_GROUNDS && activePin.floor != FloorLevel.OUTDOOR) {
-                            OutlinedButton(
-                                onClick = { viewModel.locatePinIndoor(activePin) },
-                                border = BorderStroke(1.dp, SoftOutline),
-                                shape = RoundedCornerShape(50),
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(48.dp)
-                                    .testTag("landmark_floor_plan_button")
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Layers,
-                                    contentDescription = null,
-                                    tint = PixelBlue,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(5.dp))
-                                Text(
-                                    text = "Floor Plan",
-                                    fontFamily = BodyFontFamily,
-                                    color = InkBlack,
-                                    fontSize = 12.5.sp,
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                            }
-                        }
                     }
                 }
             }

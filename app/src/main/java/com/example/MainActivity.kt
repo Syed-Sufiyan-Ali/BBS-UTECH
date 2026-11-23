@@ -36,11 +36,10 @@ import com.example.data.repository.CampusRepository
 import com.example.location.LocationHelper
 import com.example.ui.MainViewModel
 import com.example.ui.navigation.AppScreen
+import com.example.ui.screens.BusesScreen
 import com.example.ui.screens.HomeScreen
-import com.example.ui.screens.IndoorMapScreen
 import com.example.ui.screens.OutdoorMapScreen
 import com.example.ui.screens.PinDetailSheet
-import com.example.ui.screens.ResourcesScreen
 import com.example.ui.screens.ScheduleScreen
 import com.example.ui.theme.BodyFontFamily
 import com.example.ui.theme.InkBlack
@@ -126,9 +125,8 @@ fun BBSUTSDApp(viewModel: MainViewModel) {
                                     text = when (screen) {
                                         AppScreen.HOME -> "Home"
                                         AppScreen.OUTDOOR_MAP -> "Map"
-                                        AppScreen.INDOOR_MAP -> "Indoor"
                                         AppScreen.SCHEDULE -> "Classes"
-                                        AppScreen.RESOURCES -> "Hub"
+                                        AppScreen.BUSES -> "Buses"
                                     },
                                     fontFamily = BodyFontFamily,
                                     fontSize = 11.sp,
@@ -160,9 +158,8 @@ fun BBSUTSDApp(viewModel: MainViewModel) {
             when (currentScreen) {
                 AppScreen.HOME -> HomeScreen(viewModel = viewModel)
                 AppScreen.OUTDOOR_MAP -> OutdoorMapScreen(viewModel = viewModel)
-                AppScreen.INDOOR_MAP -> IndoorMapScreen(viewModel = viewModel)
                 AppScreen.SCHEDULE -> ScheduleScreen(viewModel = viewModel)
-                AppScreen.RESOURCES -> ResourcesScreen(viewModel = viewModel)
+                AppScreen.BUSES -> BusesScreen(viewModel = viewModel)
             }
 
             if (selectedPin != null) {
@@ -171,7 +168,6 @@ fun BBSUTSDApp(viewModel: MainViewModel) {
                     userLocation = userLocation,
                     repository = viewModel.repository,
                     onDismiss = { viewModel.selectPin(null) },
-                    onNavigateIndoor = { pin -> viewModel.locatePinIndoor(pin) },
                     onNavigateOutdoor = { pin -> viewModel.locatePinOutdoor(pin) },
                     onOpenBusTimings = { viewModel.openBusTimings() }
                 )

@@ -5,8 +5,8 @@ import {
   Bus,
   CalendarDays,
   Clock,
-  Layers,
   MapPin,
+  Navigation,
   User,
 } from 'lucide-react';
 import { CLASS_SCHEDULES, SCHEDULE_DEPARTMENTS } from '../data/campusData';
@@ -265,8 +265,8 @@ export function ScheduleView({
                     onClick={() => onLocatePinById(item.locationPinId)}
                     className="flex shrink-0 items-center gap-1.5 rounded-full bg-[#0B57D0] px-3.5 py-1.5 font-display text-xs font-semibold text-white transition hover:bg-[#0842A0] cursor-pointer"
                   >
-                    <Layers className="h-3.5 w-3.5" />
-                    <span>Locate</span>
+                    <Navigation className="h-3.5 w-3.5" />
+                    <span>Locate on Map</span>
                   </button>
                 </div>
               </div>

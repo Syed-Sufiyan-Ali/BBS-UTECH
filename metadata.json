@@ -1,6 +1,6 @@
 {
   "name": "BBSUTSD Campus",
-  "description": "Campus navigation, indoor floor plans, class schedules, and academic resources for BBSUTSD Khairpur Mirs.",
+  "description": "Live GPS campus navigation, department class timetables, and 7-route city bus & coaster schedules for BBSUTSD Khairpur Mirs.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

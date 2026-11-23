@@ -21,7 +21,6 @@ import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DirectionsBus
 import androidx.compose.material.icons.filled.DirectionsWalk
-import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.NearMe
 import androidx.compose.material.icons.filled.Person
@@ -80,7 +79,6 @@ fun PinDetailSheet(
     userLocation: UserLocation?,
     repository: CampusRepository,
     onDismiss: () -> Unit,
-    onNavigateIndoor: (CampusPin) -> Unit,
     onNavigateOutdoor: (CampusPin) -> Unit,
     onOpenBusTimings: (() -> Unit)? = null
 ) {
@@ -335,7 +333,7 @@ fun PinDetailSheet(
                     Icon(Icons.Default.DirectionsBus, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "View Point 1–5 Bus Timings",
+                        text = "View Bus & Coaster Timings (7 Routes)",
                         fontFamily = BodyFontFamily,
                         fontSize = 13.5.sp,
                         fontWeight = FontWeight.SemiBold
@@ -344,61 +342,30 @@ fun PinDetailSheet(
                 Spacer(modifier = Modifier.height(10.dp))
             }
 
-            Row(
+            Button(
+                onClick = {
+                    onDismiss()
+                    onNavigateOutdoor(pin)
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = PixelBlue,
+                    contentColor = PureWhite
+                ),
+                shape = RoundedCornerShape(50),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 24.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    .padding(bottom = 24.dp)
+                    .height(48.dp)
+                    .testTag("action_outdoor_compass")
             ) {
-                if (pin.building != Building.CAMPUS_GROUNDS && pin.floor != FloorLevel.OUTDOOR) {
-                    Button(
-                        onClick = {
-                            onDismiss()
-                            onNavigateIndoor(pin)
-                        },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = PixelBlue,
-                            contentColor = PureWhite
-                        ),
-                        shape = RoundedCornerShape(50),
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(48.dp)
-                            .testTag("action_indoor_plan")
-                    ) {
-                        Icon(Icons.Default.Layers, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "Indoor Plan",
-                            fontFamily = BodyFontFamily,
-                            fontSize = 13.5.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-                }
-
-                OutlinedButton(
-                    onClick = {
-                        onDismiss()
-                        onNavigateOutdoor(pin)
-                    },
-                    border = BorderStroke(1.dp, SoftOutline),
-                    shape = RoundedCornerShape(50),
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(48.dp)
-                        .testTag("action_outdoor_compass")
-                ) {
-                    Icon(Icons.Default.LocationOn, contentDescription = null, tint = PixelBlue, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = "Campus Map",
-                        fontFamily = BodyFontFamily,
-                        color = InkBlack,
-                        fontSize = 13.5.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
+                Icon(Icons.Default.LocationOn, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = "Directions on Campus Map",
+                    fontFamily = BodyFontFamily,
+                    fontSize = 13.5.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
             }
         }
     }

@@ -1,21 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
+import { BusesView } from './components/BusesView';
 import { HomeView } from './components/HomeView';
-import { IndoorMapView } from './components/IndoorMapView';
 import { Navbar } from './components/Navbar';
 import { OutdoorMapView } from './components/OutdoorMapView';
 import { PinDetailModal } from './components/PinDetailModal';
-import { ResourcesView } from './components/ResourcesView';
 import { ScheduleView } from './components/ScheduleView';
 import { CAMPUS_PINS, CLASS_SCHEDULES } from './data/campusData';
 import { useGeolocation } from './hooks/useGeolocation';
-import type {
-  AppTab,
-  BuildingKey,
-  CampusPin,
-  FloorKey,
-  ResourcesSubTab,
-} from './types/campus';
+import type { AppTab, CampusPin } from './types/campus';
 import { getCurrentMinutes, getTodayDayName } from './utils/geo';
 
 interface SavedSchedulePref {
@@ -49,17 +42,7 @@ export function App() {
   const [activeTab, setActiveTab] = useState<AppTab>('HOME');
   const [detailPin, setDetailPin] = useState<CampusPin | null>(null);
   const [navTargetPin, setNavTargetPin] = useState<CampusPin | null>(null);
-
-  // Indoor blueprint state
-  const [indoorBuilding, setIndoorBuilding] = useState<BuildingKey>('OLD_BUILDING');
-  const [indoorFloor, setIndoorFloor] = useState<FloorKey>('GROUND');
-  const [selectedIndoorPin, setSelectedIndoorPin] = useState<CampusPin | null>(null);
-
-  // Resources / 7-Bus Fleet state
-  const [resourcesSubTab, setResourcesSubTab] = useState<ResourcesSubTab>('POINT_BUSES');
   const [selectedBusPoint, setSelectedBusPoint] = useState<number | null>(null);
-
-  // Saved timetable preferences
   const [savedPref, setSavedPref] = useState<SavedSchedulePref>(loadSavedPref);
 
   const geo = useGeolocation();
@@ -92,45 +75,18 @@ export function App() {
     setActiveTab('OUTDOOR_MAP');
   }, []);
 
-  const locatePinIndoor = useCallback((pin: CampusPin) => {
-    if (pin.building === 'CAMPUS_GROUNDS' || pin.floor === 'OUTDOOR') {
-      setNavTargetPin(pin);
-      setDetailPin(null);
-      setActiveTab('OUTDOOR_MAP');
-    } else {
-      setIndoorBuilding(pin.building);
-      setIndoorFloor(pin.floor);
-      setSelectedIndoorPin(pin);
-      setDetailPin(null);
-      setActiveTab('INDOOR_MAP');
-    }
-  }, []);
-
   const locatePinById = useCallback(
     (pinId: string) => {
       const pin = CAMPUS_PINS.find((p) => p.id === pinId);
-      if (pin) locatePinIndoor(pin);
+      if (pin) locatePinOutdoor(pin);
     },
-    [locatePinIndoor]
+    [locatePinOutdoor]
   );
 
   const openBusTimings = useCallback((pointNumber: number | null = null) => {
     setDetailPin(null);
     setSelectedBusPoint(pointNumber);
-    setResourcesSubTab('POINT_BUSES');
-    setActiveTab('RESOURCES');
-  }, []);
-
-  const openNotices = useCallback(() => {
-    setResourcesSubTab('NOTICES');
-    setActiveTab('RESOURCES');
-  }, []);
-
-  const openIndoorBuilding = useCallback((bld: BuildingKey) => {
-    setIndoorBuilding(bld);
-    setIndoorFloor('GROUND');
-    setSelectedIndoorPin(null);
-    setActiveTab('INDOOR_MAP');
+    setActiveTab('BUSES');
   }, []);
 
   const clearNavTarget = useCallback(() => {
@@ -159,16 +115,11 @@ export function App() {
                 <HomeView
                   userLocation={geo.currentLocation}
                   nextClass={nextClass}
-                  savedDept={savedPref.dept}
-                  savedSem={savedPref.sem}
-                  savedSec={savedPref.sec}
                   onNavigateTab={setActiveTab}
                   onSelectPin={setDetailPin}
-                  onLocatePinIndoor={locatePinIndoor}
+                  onLocatePinOnMap={locatePinOutdoor}
                   onLocatePinById={locatePinById}
-                  onOpenIndoorBuilding={openIndoorBuilding}
                   onOpenBusTimings={() => openBusTimings(null)}
-                  onOpenNotices={openNotices}
                 />
               )}
 
@@ -185,27 +136,7 @@ export function App() {
                   onRequestLiveGps={geo.requestLiveGps}
                   onSelectPreset={geo.selectPresetLocation}
                   onOpenPinDetail={setDetailPin}
-                  onOpenIndoorPlan={locatePinIndoor}
                   onOpenBusTimings={() => openBusTimings(null)}
-                />
-              )}
-
-              {activeTab === 'INDOOR_MAP' && (
-                <IndoorMapView
-                  building={indoorBuilding}
-                  floor={indoorFloor}
-                  selectedPin={selectedIndoorPin}
-                  onSelectBuilding={(b) => {
-                    setIndoorBuilding(b);
-                    setIndoorFloor('GROUND');
-                    setSelectedIndoorPin(null);
-                  }}
-                  onSelectFloor={(f) => {
-                    setIndoorFloor(f);
-                    setSelectedIndoorPin(null);
-                  }}
-                  onSelectPin={setSelectedIndoorPin}
-                  onOpenPinDetail={setDetailPin}
                 />
               )}
 
@@ -220,11 +151,9 @@ export function App() {
                 />
               )}
 
-              {activeTab === 'RESOURCES' && (
-                <ResourcesView
-                  activeSubTab={resourcesSubTab}
+              {activeTab === 'BUSES' && (
+                <BusesView
                   selectedBusPoint={selectedBusPoint}
-                  onChangeSubTab={setResourcesSubTab}
                   onSelectBusPoint={setSelectedBusPoint}
                   onLocatePinById={locatePinById}
                 />
@@ -237,7 +166,6 @@ export function App() {
           pin={detailPin}
           userLocation={geo.currentLocation}
           onClose={() => setDetailPin(null)}
-          onNavigateIndoor={locatePinIndoor}
           onNavigateOutdoor={locatePinOutdoor}
           onOpenBusTimings={() => openBusTimings(null)}
         />

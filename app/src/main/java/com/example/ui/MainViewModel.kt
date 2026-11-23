@@ -2,15 +2,9 @@ package com.example.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.data.model.AcademicResource
-import com.example.data.model.Building
-import com.example.data.model.CampusNotice
 import com.example.data.model.CampusPin
 import com.example.data.model.ClassScheduleItem
-import com.example.data.model.FacultyMember
-import com.example.data.model.FloorLevel
 import com.example.data.model.PinCategory
-import com.example.data.model.UserLocation
 import com.example.data.repository.CampusRepository
 import com.example.location.LocationHelper
 import com.example.ui.navigation.AppScreen
@@ -41,28 +35,11 @@ class MainViewModel(
     private val _selectedPin = MutableStateFlow<CampusPin?>(null)
     val selectedPin: StateFlow<CampusPin?> = _selectedPin.asStateFlow()
 
-    // Indoor navigation state
-    private val _indoorBuilding = MutableStateFlow(Building.OLD_BUILDING)
-    val indoorBuilding: StateFlow<Building> = _indoorBuilding.asStateFlow()
-
-    private val _indoorFloor = MutableStateFlow(FloorLevel.GROUND)
-    val indoorFloor: StateFlow<FloorLevel> = _indoorFloor.asStateFlow()
-
-    private val _selectedIndoorPin = MutableStateFlow<CampusPin?>(null)
-    val selectedIndoorPin: StateFlow<CampusPin?> = _selectedIndoorPin.asStateFlow()
-
-    private val _showIndoorRoute = MutableStateFlow(true)
-    val showIndoorRoute: StateFlow<Boolean> = _showIndoorRoute.asStateFlow()
-
-    // Target pin for outdoor radar / compass guidance
+    // Target pin for outdoor campus GPS guidance
     private val _navTargetPin = MutableStateFlow<CampusPin?>(null)
     val navTargetPin: StateFlow<CampusPin?> = _navTargetPin.asStateFlow()
 
-    // Resources sub-tab & 7-Bus Schedule filter state
-    // Tabs: 0 = Academic Hub, 1 = Bus & Coaster (7), 2 = Faculty Directory, 3 = Notice Board
-    private val _resourcesTabIndex = MutableStateFlow(1)
-    val resourcesTabIndex: StateFlow<Int> = _resourcesTabIndex.asStateFlow()
-
+    // 7-Route Bus & Coaster filter state
     private val _selectedBusPointNumber = MutableStateFlow<Int?>(null)
     val selectedBusPointNumber: StateFlow<Int?> = _selectedBusPointNumber.asStateFlow()
 
@@ -103,15 +80,6 @@ class MainViewModel(
         result
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), repository.allPins.value)
 
-    // Indoor pins for the active building and floor
-    val indoorFloorPins: StateFlow<List<CampusPin>> = combine(
-        repository.allPins,
-        _indoorBuilding,
-        _indoorFloor
-    ) { pins, building, floor ->
-        pins.filter { it.building == building && it.floor == floor }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
     // Filtered classes
     val filteredClasses: StateFlow<List<ClassScheduleItem>> = combine(
         repository.schedules,
@@ -145,7 +113,6 @@ class MainViewModel(
             it.dayName.equals(today, ignoreCase = true)
         }.sortedBy { it.startMinutes }
 
-        // Find upcoming or ongoing
         todayClasses.find { it.endMinutes >= currentMinutes } ?: todayClasses.firstOrNull()
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
@@ -163,26 +130,6 @@ class MainViewModel(
 
     fun selectPin(pin: CampusPin?) {
         _selectedPin.value = pin
-    }
-
-    fun setIndoorBuilding(building: Building) {
-        _indoorBuilding.value = building
-        // Default to Ground floor when switching buildings
-        _indoorFloor.value = FloorLevel.GROUND
-        _selectedIndoorPin.value = null
-    }
-
-    fun setIndoorFloor(floor: FloorLevel) {
-        _indoorFloor.value = floor
-        _selectedIndoorPin.value = null
-    }
-
-    fun selectIndoorPin(pin: CampusPin?) {
-        _selectedIndoorPin.value = pin
-    }
-
-    fun toggleIndoorRoute() {
-        _showIndoorRoute.value = !_showIndoorRoute.value
     }
 
     fun setNavTarget(pin: CampusPin?) {
@@ -203,23 +150,6 @@ class MainViewModel(
         _selectedSection.value = section
     }
 
-    // Direct routing shortcuts
-    fun locatePinIndoor(pin: CampusPin) {
-        if (pin.building == Building.CAMPUS_GROUNDS || pin.floor == FloorLevel.OUTDOOR) {
-            // Outdoor pin, open Outdoor Map
-            _navTargetPin.value = pin
-            _selectedPin.value = null
-            _currentScreen.value = AppScreen.OUTDOOR_MAP
-        } else {
-            // Indoor pin, open Indoor Map and focus
-            _indoorBuilding.value = pin.building
-            _indoorFloor.value = pin.floor
-            _selectedIndoorPin.value = pin
-            _selectedPin.value = null
-            _currentScreen.value = AppScreen.INDOOR_MAP
-        }
-    }
-
     fun locatePinOutdoor(pin: CampusPin) {
         _navTargetPin.value = pin
         _selectedPin.value = null
@@ -229,12 +159,8 @@ class MainViewModel(
     fun locatePinById(pinId: String) {
         val pin = repository.getPinById(pinId)
         if (pin != null) {
-            locatePinIndoor(pin)
+            locatePinOutdoor(pin)
         }
-    }
-
-    fun setResourcesTab(index: Int) {
-        _resourcesTabIndex.value = index.coerceIn(0, 3)
     }
 
     fun setSelectedBusPoint(pointNumber: Int?) {
@@ -244,8 +170,7 @@ class MainViewModel(
     fun openBusTimings(pointNumber: Int? = null) {
         _selectedPin.value = null
         _selectedBusPointNumber.value = pointNumber
-        _resourcesTabIndex.value = 1
-        _currentScreen.value = AppScreen.RESOURCES
+        _currentScreen.value = AppScreen.BUSES
     }
 
     private fun getTodayDayName(): String {
@@ -255,7 +180,7 @@ class MainViewModel(
             Calendar.WEDNESDAY -> "Wednesday"
             Calendar.THURSDAY -> "Thursday"
             Calendar.FRIDAY -> "Friday"
-            Calendar.SATURDAY -> "Monday" // fallback for weekend viewing
+            Calendar.SATURDAY -> "Monday"
             Calendar.SUNDAY -> "Monday"
             else -> "Monday"
         }

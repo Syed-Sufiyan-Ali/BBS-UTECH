@@ -2,12 +2,10 @@ import { useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   ArrowRight,
-  Building2,
   Bus,
   CalendarDays,
   Compass,
   GraduationCap,
-  Layers,
   Map as MapIcon,
   MapPin,
   Navigation,
@@ -20,10 +18,10 @@ import {
   BUILDINGS,
   CAMPUS_PINS,
   FLOORS,
+  SCHEDULE_DEPARTMENTS,
 } from '../data/campusData';
 import type {
   AppTab,
-  BuildingKey,
   CampusPin,
   ClassScheduleItem,
   UserLocation,
@@ -33,16 +31,11 @@ import { searchPins } from '../utils/geo';
 interface HomeViewProps {
   userLocation: UserLocation | null;
   nextClass: ClassScheduleItem | null;
-  savedDept: string;
-  savedSem: number;
-  savedSec: string;
   onNavigateTab: (tab: AppTab) => void;
   onSelectPin: (pin: CampusPin) => void;
-  onLocatePinIndoor: (pin: CampusPin) => void;
+  onLocatePinOnMap: (pin: CampusPin) => void;
   onLocatePinById: (pinId: string) => void;
-  onOpenIndoorBuilding: (building: BuildingKey) => void;
   onOpenBusTimings: () => void;
-  onOpenNotices: () => void;
 }
 
 const EASE_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1];
@@ -52,10 +45,9 @@ export function HomeView({
   nextClass,
   onNavigateTab,
   onSelectPin,
-  onLocatePinIndoor,
-  onOpenIndoorBuilding,
+  onLocatePinOnMap,
+  onLocatePinById,
   onOpenBusTimings,
-  onOpenNotices,
 }: HomeViewProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -80,26 +72,12 @@ export function HomeView({
       action: () => onNavigateTab('OUTDOOR_MAP'),
     },
     {
-      id: 'floors',
-      eyebrow: '02 • ARCHITECTURAL LAYOUTS',
-      title: 'Indoor Building Blueprints',
-      description:
-        'Inspect room-by-room floor plans across Ground, 1st, and 2nd floors for both the Old Admin Complex and the New Academic & Skill Complex.',
-      tags: ['Old & New Complexes', '36 Mapped Rooms', 'Indoor Guides'],
-      icon: Layers,
-      accentBg: 'bg-[#FCE8E6]',
-      accentText: 'text-[#B3261E]',
-      borderHover: 'hover:border-[#B3261E]/45',
-      cta: 'Explore Floor Plans',
-      action: () => onNavigateTab('INDOOR_MAP'),
-    },
-    {
       id: 'schedule',
-      eyebrow: '03 • ACADEMIC SCHEDULE',
+      eyebrow: '02 • ACADEMIC SCHEDULE',
       title: 'Department Timetables',
       description:
-        'Browse structured weekly lecture and lab timetables across departments with instructor details and instant one-tap links straight to the room.',
-      tags: ['Weekly Timetable', 'Lab Sessions', 'Room Pinpoint'],
+        'Browse structured weekly lecture and lab timetables across departments with instructor details and instant one-tap GPS routing straight to the block.',
+      tags: ['Weekly Timetable', 'Lab Sessions', 'Map Pinpoint'],
       icon: CalendarDays,
       accentBg: 'bg-[#E6F4EA]',
       accentText: 'text-[#137333]',
@@ -108,17 +86,17 @@ export function HomeView({
       action: () => onNavigateTab('SCHEDULE'),
     },
     {
-      id: 'hub',
-      eyebrow: '04 • TRANSIT & STUDENT HUB',
-      title: '7-Route City Buses & Notices',
+      id: 'buses',
+      eyebrow: '03 • CITY TRANSIT FLEET',
+      title: 'Bus & Coaster Timetables',
       description:
-        'Check official morning university bus stops (Bus 01–05, Hino & Coaster) across Khairpur, Hingorja, Sukkur, Chondko, Sobhodero & Thari Mirwah.',
-      tags: ['7 City Bus Routes', 'Freshmen Guide', 'Notices'],
+        'Check all 7 official morning transport routes (Bus 01–05, Hino GS-9526 & Coaster GSF-325) across Khairpur, Hingorja, Sukkur, Chondko, Sobhodero & Thari Mirwah.',
+      tags: ['7 Bus & Coaster Routes', 'Stop Timings', 'Driver Contacts'],
       icon: Bus,
-      accentBg: 'bg-[#F3E8FD]',
-      accentText: 'text-[#7C3AED]',
-      borderHover: 'hover:border-[#7C3AED]/45',
-      cta: 'Open Campus Hub',
+      accentBg: 'bg-[#FCE8E6]',
+      accentText: 'text-[#B3261E]',
+      borderHover: 'hover:border-[#B3261E]/45',
+      cta: 'View Bus Timetables',
       action: () => onOpenBusTimings(),
     },
   ];
@@ -131,8 +109,8 @@ export function HomeView({
         'Executive governance including the Vice Chancellor Secretariat, Registrar, Examinations Branch, Finance, Admissions Directorate, and Engineering Technology labs & workshops.',
       tone: 'border-[#F2B8B5] bg-[#FCE8E6]/45',
       badgeTone: 'bg-[#FCE8E6] text-[#B3261E]',
-      cta: 'Inspect Old Building',
-      onClick: () => onOpenIndoorBuilding('OLD_BUILDING'),
+      cta: 'Locate on Map',
+      onClick: () => onLocatePinById('old_g_vc'),
     },
     {
       badge: 'Central Campus Spine',
@@ -151,8 +129,8 @@ export function HomeView({
         'Modern Computer Science & Artificial Intelligence labs, Skill Development Directorate, Central Digital Library, Medical Unit, Smart Classrooms, Auditorium, and Sports Grounds.',
       tone: 'border-[#CBE6D3] bg-[#E6F4EA]/45',
       badgeTone: 'bg-[#E6F4EA] text-[#137333]',
-      cta: 'Inspect New Building',
-      onClick: () => onOpenIndoorBuilding('NEW_BUILDING'),
+      cta: 'Locate on Map',
+      onClick: () => onLocatePinById('new_1_library'),
     },
   ];
 
@@ -210,8 +188,8 @@ export function HomeView({
                 The Benazir Bhutto Shaheed University of Technology &amp; Skill Development
               </strong>
               —built to help students, faculty, and campus visitors find buildings with live GPS
-              shortest-path walking routes, explore multi-floor blueprints, and check schedules and
-              city bus timings without guesswork.
+              shortest-path walking routes, check department class timetables, and inspect all 7
+              official university bus and coaster routes without guesswork.
             </motion.p>
 
             {/* Primary Pill CTAs */}
@@ -236,11 +214,11 @@ export function HomeView({
                 type="button"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => onNavigateTab('INDOOR_MAP')}
+                onClick={onOpenBusTimings}
                 className="inline-flex items-center gap-2 rounded-full border border-[#DCE2EC] bg-[#FFFFFF] px-5 py-3.5 font-display text-sm font-semibold text-[#111827] shadow-xs transition hover:bg-[#EFF3F8] cursor-pointer"
               >
-                <Layers className="h-4 w-4 text-[#0B57D0]" />
-                <span>Explore Floor Plans</span>
+                <Bus className="h-4 w-4 text-[#0B57D0]" />
+                <span>Bus &amp; Coaster (7)</span>
               </motion.button>
             </motion.div>
 
@@ -256,7 +234,7 @@ export function HomeView({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Quick search: VC Office, CS Labs, Central Library, Point Bus..."
+                placeholder="Quick search: VC Office, CS Labs, Central Library, Transport..."
                 className="w-full rounded-full border border-[#DCE2EC] bg-[#FFFFFF]/95 py-3 pl-11 pr-10 text-xs sm:text-sm text-[#111827] placeholder-[#747775] shadow-xs outline-none transition focus:border-[#0B57D0] focus:ring-2 focus:ring-[#D3E3FD]"
               />
               {searchQuery && (
@@ -310,11 +288,11 @@ export function HomeView({
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                onLocatePinIndoor(pin);
+                                onLocatePinOnMap(pin);
                               }}
-                              className="shrink-0 rounded-full bg-[#EFF3F8] px-3 py-1 text-[11px] font-semibold text-[#0B57D0] hover:bg-[#D3E3FD]"
+                              className="shrink-0 rounded-full bg-[#EFF3F8] px-3 py-1 text-[11px] font-semibold text-[#0B57D0] hover:bg-[#D3E3FD] cursor-pointer"
                             >
-                              Locate
+                              Directions
                             </button>
                           </div>
                         ))}
@@ -358,7 +336,6 @@ export function HomeView({
             {/* Animated SVG Campus Route Topology */}
             <div className="relative my-4 overflow-hidden rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] p-4">
               <svg viewBox="0 0 360 210" className="w-full h-auto" aria-hidden="true">
-                {/* Subtle Grid */}
                 <defs>
                   <pattern id="pixelGrid" width="24" height="24" patternUnits="userSpaceOnUse">
                     <path
@@ -478,8 +455,10 @@ export function HomeView({
                 <div className="text-[10.5px] font-medium text-[#5F6368]">Campus Pins</div>
               </div>
               <div className="rounded-2xl bg-[#F8FAFC] px-2 py-2.5">
-                <div className="font-display text-base font-extrabold text-[#0B57D0]">6</div>
-                <div className="text-[10.5px] font-medium text-[#5F6368]">Floor Maps</div>
+                <div className="font-display text-base font-extrabold text-[#0B57D0]">
+                  {SCHEDULE_DEPARTMENTS.length}
+                </div>
+                <div className="text-[10.5px] font-medium text-[#5F6368]">Departments</div>
               </div>
               <div className="rounded-2xl bg-[#F8FAFC] px-2 py-2.5">
                 <div className="font-display text-base font-extrabold text-[#137333]">7</div>
@@ -491,7 +470,7 @@ export function HomeView({
       </section>
 
       {/* =================================================================== */}
-      {/* 2. SORTED 4-PILLAR PLATFORM OVERVIEW (NO DASHBOARD CLUTTER)         */}
+      {/* 2. SORTED 3-PILLAR PLATFORM OVERVIEW (NO CLUTTER)                   */}
       {/* =================================================================== */}
       <section className="space-y-6">
         <motion.div
@@ -507,16 +486,16 @@ export function HomeView({
               <span>Inside The Website</span>
             </div>
             <h2 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-[#111827]">
-              Sorted into four focused campus tools
+              Sorted into three focused campus tools
             </h2>
           </div>
           <p className="max-w-md text-xs sm:text-sm text-[#5F6368]">
-            Each module lives in its own dedicated view so you can jump straight to what you need
-            without wading through cluttered panels.
+            Each module lives in its own dedicated view so you can jump straight to directions,
+            classes, or bus timetables without clutter.
           </p>
         </motion.div>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 lg:grid-cols-3">
           {modules.map((mod, idx) => {
             const Icon = mod.icon;
             return (
@@ -652,19 +631,19 @@ export function HomeView({
           </div>
           <p className="text-xs sm:text-sm text-[#5F6368]">
             {nextClass
-              ? `Next scheduled session on file: ${nextClass.subjectTitle} (${nextClass.roomLabel}). Open the map or notices anytime.`
-              : 'Jump directly into live campus GPS navigation, campus notices, or the 7 official university bus schedules.'}
+              ? `Next scheduled session on file: ${nextClass.subjectTitle} (${nextClass.roomLabel}). Open the map or bus timings anytime.`
+              : 'Jump directly into live campus GPS navigation or inspect all 7 official university bus & coaster schedules.'}
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5 shrink-0">
           <button
             type="button"
-            onClick={onOpenNotices}
+            onClick={onOpenBusTimings}
             className="inline-flex items-center gap-1.5 rounded-full border border-[#DCE2EC] bg-[#EFF3F8] px-4 py-2.5 font-display text-xs font-semibold text-[#111827] transition hover:bg-[#E2E8F0] cursor-pointer"
           >
-            <Building2 className="h-3.5 w-3.5 text-[#0B57D0]" />
-            <span>Campus Notices</span>
+            <Bus className="h-3.5 w-3.5 text-[#0B57D0]" />
+            <span>Bus Timetables (7)</span>
           </button>
           <button
             type="button"

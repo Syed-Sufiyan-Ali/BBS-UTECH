@@ -83,7 +83,6 @@ interface OutdoorMapViewProps {
   onRequestLiveGps: () => void;
   onSelectPreset: (idx: number) => void;
   onOpenPinDetail: (pin: CampusPin) => void;
-  onOpenIndoorPlan: (pin: CampusPin) => void;
   onOpenBusTimings: () => void;
 }
 
@@ -190,7 +189,6 @@ export function OutdoorMapView({
   onRequestLiveGps,
   onSelectPreset,
   onOpenPinDetail,
-  onOpenIndoorPlan,
   onOpenBusTimings,
 }: OutdoorMapViewProps) {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
@@ -1123,17 +1121,6 @@ export function OutdoorMapView({
                     <Info className="h-3 w-3" />
                     Full Info
                   </button>
-                  {focusedPin.building !== 'CAMPUS_GROUNDS' &&
-                    focusedPin.floor !== 'OUTDOOR' && (
-                      <button
-                        type="button"
-                        onClick={() => onOpenIndoorPlan(focusedPin)}
-                        className="flex items-center gap-1.5 rounded-full bg-[#D3E3FD] px-3 py-1.5 font-display text-[11px] font-semibold text-[#041E49] hover:bg-[#C2D7FC] cursor-pointer"
-                      >
-                        <Layers className="h-3 w-3" />
-                        Floor Plan
-                      </button>
-                    )}
                   {(focusedPin.id === 'campus_transport_office' ||
                     focusedPin.id === 'campus_transport') && (
                     <button
@@ -1142,7 +1129,7 @@ export function OutdoorMapView({
                       className="flex items-center gap-1.5 rounded-full bg-[#0F9D58] px-3 py-1.5 font-display text-[11px] font-semibold text-white hover:bg-[#0B8043] cursor-pointer"
                     >
                       <Bus className="h-3 w-3" />
-                      Point Buses
+                      Bus Timings
                     </button>
                   )}
                 </div>
@@ -1730,17 +1717,6 @@ export function OutdoorMapView({
                     <Info className="h-3.5 w-3.5" />
                     Details
                   </button>
-                  {focusedPin.building !== 'CAMPUS_GROUNDS' &&
-                    focusedPin.floor !== 'OUTDOOR' && (
-                      <button
-                        type="button"
-                        onClick={() => onOpenIndoorPlan(focusedPin)}
-                        className="flex flex-1 items-center justify-center gap-1 rounded-full bg-[#D3E3FD] px-3 py-2 font-display text-xs font-semibold text-[#041E49]"
-                      >
-                        <Layers className="h-3.5 w-3.5" />
-                        Floor
-                      </button>
-                    )}
                   {(focusedPin.id === 'campus_transport_office' ||
                     focusedPin.id === 'campus_transport') && (
                     <button
