@@ -149,7 +149,7 @@ fun ResourcesScreen(
                     color = InkBlack
                 )
                 Text(
-                    text = "5-Point buses, portals, faculty directory & notices",
+                    text = "7-Route bus fleet, portals, faculty directory & notices",
                     fontFamily = BodyFontFamily,
                     fontSize = 12.sp,
                     color = SlateGray
@@ -158,7 +158,7 @@ fun ResourcesScreen(
         }
 
         // Sub-tabs
-        val tabTitles = listOf("Academic Hub", "Point Buses (1–5)", "Faculty", "Notices")
+        val tabTitles = listOf("Academic Hub", "Point Buses (7)", "Faculty", "Notices")
         ScrollableTabRow(
             selectedTabIndex = selectedTabIndex,
             containerColor = PureSurface,
@@ -441,14 +441,14 @@ private fun PointBusesView(
                     }
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(
-                        text = "BBS-UTECH 5-Point Bus Fleet",
+                        text = "BBS-UTECH Official 7-Route Bus Fleet",
                         fontFamily = DisplayFontFamily,
                         color = InkBlack,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "In-Charge: Engr. Sameeullah Khan / Imran Gilal (0304-3482840)",
+                        text = "Points 01–05, Hino (GS-9526) & Coaster (GSF-325) • In-Charge: 0304-3482840",
                         fontFamily = BodyFontFamily,
                         color = SlateGray,
                         fontSize = 12.sp,
@@ -576,7 +576,7 @@ private fun PointBusesView(
                     onClick = { onSelectPoint(null) },
                     label = {
                         Text(
-                            "All 5 Points",
+                            "All 7",
                             fontFamily = BodyFontFamily,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold
@@ -597,14 +597,20 @@ private fun PointBusesView(
                     ),
                     modifier = Modifier.testTag("bus_filter_all")
                 )
-                (1..5).forEach { pt ->
+                busRoutes.forEach { route ->
+                    val pt = route.pointNumber
                     val isSelected = selectedPoint == pt
+                    val chipText = when {
+                        pt <= 5 -> "Bus 0$pt"
+                        pt == 6 -> "Hino"
+                        else -> "Coaster"
+                    }
                     FilterChip(
                         selected = isSelected,
                         onClick = { onSelectPoint(if (isSelected) null else pt) },
                         label = {
                             Text(
-                                "Point $pt",
+                                chipText,
                                 fontFamily = BodyFontFamily,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.SemiBold
@@ -715,8 +721,13 @@ private fun BusPointRouteCard(
                         color = PixelBlue,
                         shape = RoundedCornerShape(50)
                     ) {
+                        val badgeLabel = when {
+                            route.pointNumber <= 5 -> "Bus No. 0${route.pointNumber}"
+                            route.pointNumber == 6 -> "HINO Bus"
+                            else -> "City Coaster"
+                        }
                         Text(
-                            text = "Point 0${route.pointNumber}",
+                            text = badgeLabel,
                             fontFamily = MonoFontFamily,
                             color = PureWhite,
                             fontSize = 11.sp,

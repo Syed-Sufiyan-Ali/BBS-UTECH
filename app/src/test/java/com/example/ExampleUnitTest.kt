@@ -118,27 +118,37 @@ class ExampleUnitTest {
     }
 
     @Test
-    fun testFivePointBusTimetableCompleteness() {
+    fun testSevenBusFleetTimetableCompleteness() {
         val routes = repository.busPointRoutes.value
-        assertEquals("Should have exactly 5 University Point buses", 5, routes.size)
-        assertEquals(listOf(1, 2, 3, 4, 5), routes.map { it.pointNumber })
+        assertEquals("Should have all 7 official university bus & coaster routes", 7, routes.size)
+        assertEquals(listOf(1, 2, 3, 4, 5, 6, 7), routes.map { it.pointNumber })
 
-        val point1 = routes.first { it.pointNumber == 1 }
+        val bus1 = routes.first { it.pointNumber == 1 }
         assertTrue(
-            "Point 1 should serve Gambat & Hingorja",
-            point1.citiesCovered.contains("Gambat") && point1.citiesCovered.contains("Hingorja")
+            "Bus 01 should serve Gambat & Hingorja",
+            bus1.citiesCovered.contains("Gambat") && bus1.citiesCovered.contains("Hingorja")
         )
+        assertEquals(12, bus1.stops.size)
 
-        val point3 = routes.first { it.pointNumber == 3 }
+        val bus2 = routes.first { it.pointNumber == 2 }
+        assertEquals("0300-9319700", bus2.contactPhone)
+        assertEquals(19, bus2.stops.size)
+
+        val bus3 = routes.first { it.pointNumber == 3 }
         assertTrue(
-            "Point 3 should serve Sukkur & Rohri",
-            point3.citiesCovered.contains("Sukkur") && point3.citiesCovered.contains("Rohri")
+            "Bus 03 should serve Sukkur & Rohri",
+            bus3.citiesCovered.contains("Sukkur") && bus3.citiesCovered.contains("Rohri")
         )
+        assertEquals(22, bus3.stops.size)
+
+        val coaster = routes.first { it.pointNumber == 7 }
+        assertTrue(coaster.busNumber.contains("GSF-325"))
+        assertEquals("0301-3974440", coaster.contactPhone)
 
         routes.forEach { route ->
-            assertTrue("Point ${route.pointNumber} should have multiple stops", route.stops.size >= 5)
-            assertTrue("Point ${route.pointNumber} should arrive at campus", route.campusArrivalTime.isNotBlank())
-            assertTrue("Point ${route.pointNumber} should have departure time", route.afternoonDepartureTime.isNotBlank())
+            assertTrue("Bus ${route.pointNumber} should have at least 12 stops", route.stops.size >= 12)
+            assertTrue("Bus ${route.pointNumber} should arrive at campus", route.campusArrivalTime.isNotBlank())
+            assertTrue("Bus ${route.pointNumber} should have departure time", route.afternoonDepartureTime.isNotBlank())
         }
     }
 }

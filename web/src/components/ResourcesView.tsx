@@ -39,7 +39,7 @@ interface ResourcesViewProps {
 
 const SUB_TABS: { key: ResourcesSubTab; label: string }[] = [
   { key: 'ACADEMIC_HUB', label: 'Academic Hub' },
-  { key: 'POINT_BUSES', label: 'Point Buses (1–5)' },
+  { key: 'POINT_BUSES', label: 'Point Buses (7)' },
   { key: 'FACULTY', label: 'Faculty' },
   { key: 'NOTICES', label: 'Notices' },
 ];
@@ -107,7 +107,7 @@ export function ResourcesView({
           BBS-UTECH Campus Hub
         </h1>
         <p className="mt-0.5 text-xs font-semibold text-[#0B57D0]">
-          5-Point Buses • Portals • Faculty Directory • Campus Bulletins
+          7-Route Bus Fleet • Portals • Faculty Directory • Campus Bulletins
         </p>
 
         <div className="mt-4 flex flex-wrap gap-2">
@@ -203,10 +203,10 @@ export function ResourcesView({
                   Transport Office • Next to Boys Hostel
                 </span>
                 <h2 className="mt-2 font-display text-xl font-bold text-[#111827]">
-                  BBS-UTECH 5-Point Bus Fleet
+                  BBS-UTECH Official 7-Route Bus Fleet
                 </h2>
                 <p className="mt-0.5 text-xs text-[#5F6368]">
-                  In-Charge: Engr. Sameeullah Khan / Imran Gilal • Contact: 0304-3482840
+                  Transport Office • Points 01–05, Hino (GS-9526) &amp; Coaster (GSF-325) • In-Charge: 0304-3482840
                 </p>
               </div>
 
@@ -226,15 +226,15 @@ export function ResourcesView({
               </div>
             </div>
 
-            {/* City Search + Point 1-5 Filter Pills */}
-            <div className="mt-5 grid gap-3 lg:grid-cols-[1.2fr_1fr]">
+            {/* City Search + 7-Bus Filter Pills */}
+            <div className="mt-5 grid gap-3 lg:grid-cols-[1.1fr_1.15fr]">
               <div className="relative">
                 <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#0B57D0]" />
                 <input
                   type="text"
                   value={busQuery}
                   onChange={(e) => setBusQuery(e.target.value)}
-                  placeholder="Search city or stop (Sukkur, Gambat, Hingorja, Pir Jo Goth, Rohri...)"
+                  placeholder="Search city or stop (Sukkur, Gambat, Chondko, Sobhodero, Thari Mirwah...)"
                   className="w-full rounded-full border border-[#DCE2EC] bg-[#F8FAFC] py-2.5 pl-10 pr-9 text-xs text-[#111827] placeholder-[#747775] outline-none focus:border-[#0B57D0] focus:bg-[#FFFFFF]"
                 />
                 {busQuery && (
@@ -258,10 +258,13 @@ export function ResourcesView({
                       : 'bg-[#EFF3F8] text-[#444746] hover:bg-[#E2E8F0]'
                   }`}
                 >
-                  All 5
+                  All 7
                 </button>
-                {[1, 2, 3, 4, 5].map((pt) => {
+                {BUS_POINT_ROUTES.map((route) => {
+                  const pt = route.pointNumber;
                   const active = selectedBusPoint === pt;
+                  const chipLabel =
+                    pt <= 5 ? `Bus 0${pt}` : pt === 6 ? 'Hino' : 'Coaster';
                   return (
                     <button
                       key={pt}
@@ -273,7 +276,7 @@ export function ResourcesView({
                           : 'bg-[#EFF3F8] text-[#444746] hover:bg-[#E2E8F0]'
                       }`}
                     >
-                      Point {pt}
+                      {chipLabel}
                     </button>
                   );
                 })}
@@ -539,7 +542,11 @@ function BusRouteCard({
       >
         <div className="flex flex-wrap items-center gap-2">
           <span className="rounded-full bg-[#0B57D0] px-3 py-1 font-mono text-xs font-bold text-white">
-            Point 0{route.pointNumber}
+            {route.pointNumber <= 5
+              ? `Bus No. 0${route.pointNumber}`
+              : route.pointNumber === 6
+              ? 'HINO Bus'
+              : 'City Coaster'}
           </span>
           <span className="rounded-full bg-[#E6F4EA] px-3 py-1 font-mono text-[11px] font-bold text-[#137333]">
             {route.busNumber}

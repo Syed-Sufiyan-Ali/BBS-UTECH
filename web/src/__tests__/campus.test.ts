@@ -42,14 +42,27 @@ describe('BBSUTSD Web Data & Geospatial Logic', () => {
     expect(DIVIDING_ROAD_PATH.length).toBeGreaterThanOrEqual(4);
   });
 
-  it('provides complete 5-Point bus schedules covering Gambat/Hingorja (P1) and Sukkur (P3)', () => {
-    expect(BUS_POINT_ROUTES.map((r) => r.pointNumber)).toEqual([1, 2, 3, 4, 5]);
+  it('provides all 7 official bus schedules (Bus 01-05, Hino, Coaster) with exact stop timings', () => {
+    expect(BUS_POINT_ROUTES.map((r) => r.pointNumber)).toEqual([1, 2, 3, 4, 5, 6, 7]);
     const p1 = BUS_POINT_ROUTES.find((r) => r.pointNumber === 1)!;
+    const p2 = BUS_POINT_ROUTES.find((r) => r.pointNumber === 2)!;
     const p3 = BUS_POINT_ROUTES.find((r) => r.pointNumber === 3)!;
+    const p4 = BUS_POINT_ROUTES.find((r) => r.pointNumber === 4)!;
+    const p5 = BUS_POINT_ROUTES.find((r) => r.pointNumber === 5)!;
+    const hino = BUS_POINT_ROUTES.find((r) => r.pointNumber === 6)!;
+    const coaster = BUS_POINT_ROUTES.find((r) => r.pointNumber === 7)!;
+
     expect(p1.citiesCovered).toContain('Gambat');
     expect(p1.citiesCovered).toContain('Hingorja');
+    expect(p2.contactPhone).toBe('0300-9319700');
+    expect(p2.stops.length).toBe(19);
     expect(p3.citiesCovered).toContain('Sukkur');
-    expect(BUS_POINT_ROUTES.every((r) => r.stops.length >= 8)).toBe(true);
+    expect(p3.stops.length).toBe(22);
+    expect(p4.citiesCovered).toContain('Chondko');
+    expect(p5.citiesCovered).toContain('Sobhodero');
+    expect(hino.busNumber).toContain('GS-9526');
+    expect(coaster.busNumber).toContain('GSF-325');
+    expect(BUS_POINT_ROUTES.every((r) => r.stops.length >= 12)).toBe(true);
   });
 
   it('evaluates inside vs outside campus GPS perimeter accurately', () => {

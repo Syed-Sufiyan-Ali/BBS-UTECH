@@ -110,10 +110,10 @@ export function HomeView({
     {
       id: 'hub',
       eyebrow: '04 • TRANSIT & STUDENT HUB',
-      title: '5-Point City Buses & Notices',
+      title: '7-Route City Buses & Notices',
       description:
-        'Check official morning university bus stops across Khairpur, Gambat, Hingorja, Sukkur, and Kot Diji alongside onboarding guides and announcements.',
-      tags: ['5 City Point Buses', 'Freshmen Guide', 'Notices'],
+        'Check official morning university bus stops (Bus 01–05, Hino & Coaster) across Khairpur, Hingorja, Sukkur, Chondko, Sobhodero & Thari Mirwah.',
+      tags: ['7 City Bus Routes', 'Freshmen Guide', 'Notices'],
       icon: Bus,
       accentBg: 'bg-[#F3E8FD]',
       accentText: 'text-[#7C3AED]',
@@ -482,8 +482,8 @@ export function HomeView({
                 <div className="text-[10.5px] font-medium text-[#5F6368]">Floor Maps</div>
               </div>
               <div className="rounded-2xl bg-[#F8FAFC] px-2 py-2.5">
-                <div className="font-display text-base font-extrabold text-[#137333]">5</div>
-                <div className="text-[10.5px] font-medium text-[#5F6368]">Bus Points</div>
+                <div className="font-display text-base font-extrabold text-[#137333]">7</div>
+                <div className="text-[10.5px] font-medium text-[#5F6368]">Bus Routes</div>
               </div>
             </div>
           </motion.div>
@@ -653,7 +653,7 @@ export function HomeView({
           <p className="text-xs sm:text-sm text-[#5F6368]">
             {nextClass
               ? `Next scheduled session on file: ${nextClass.subjectTitle} (${nextClass.roomLabel}). Open the map or notices anytime.`
-              : 'Jump directly into live campus GPS navigation, campus notices, or 5-Point bus schedules.'}
+              : 'Jump directly into live campus GPS navigation, campus notices, or the 7 official university bus schedules.'}
           </p>
         </div>
 

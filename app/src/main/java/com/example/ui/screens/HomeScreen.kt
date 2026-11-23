@@ -193,7 +193,7 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.height(8.dp))
 
                         Text(
-                            text = "The unified digital guide for The Benazir Bhutto Shaheed University of Technology & Skill Development, Khairpur Mirs—built for live GPS shortest-path walking routes, floor-by-floor blueprints, class schedules, and 5-Point city buses.",
+                            text = "The unified digital guide for The Benazir Bhutto Shaheed University of Technology & Skill Development, Khairpur Mirs—built for live GPS shortest-path walking routes, floor-by-floor blueprints, class schedules, and 7 city bus & coaster routes.",
                             fontFamily = BodyFontFamily,
                             fontSize = 13.sp,
                             lineHeight = 19.sp,
@@ -475,8 +475,8 @@ fun HomeScreen(
 
                     PillarModuleCard(
                         eyebrow = "04 • TRANSIT & STUDENT HUB",
-                        title = "5-Point City Buses & Notices",
-                        description = "Official morning bus stops across Khairpur, Gambat, Hingorja, Sukkur, and Kot Diji plus Freshmen guides.",
+                        title = "7-Route City Buses & Notices",
+                        description = "Official morning university bus stops (Bus 01–05, Hino & Coaster) across Hingorja, Sukkur, Chondko, Sobhodero, Thari Mirwah & Khairpur City.",
                         icon = Icons.Default.DirectionsBus,
                         iconBg = Color(0xFFF3E8FD),
                         iconTint = Color(0xFF7C3AED),
@@ -872,7 +872,7 @@ private fun AnimatedRoutingPreviewCard(
             ) {
                 TelemetryMetricChip(value = "$pinCount", label = "Campus Pins", valueColor = InkBlack, modifier = Modifier.weight(1f))
                 TelemetryMetricChip(value = "6", label = "Floor Maps", valueColor = PixelBlue, modifier = Modifier.weight(1f))
-                TelemetryMetricChip(value = "5", label = "Bus Points", valueColor = CampusEmeraldDark, modifier = Modifier.weight(1f))
+                TelemetryMetricChip(value = "7", label = "Bus Routes", valueColor = CampusEmeraldDark, modifier = Modifier.weight(1f))
             }
         }
     }

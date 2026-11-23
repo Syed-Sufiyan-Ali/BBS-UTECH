@@ -1264,26 +1264,21 @@ class CampusRepository {
             ),
             AcademicResource(
                 id = "res_bus_schedule",
-                title = "University Point Bus Routes & Timings",
+                title = "University Point Bus Routes & Timings (7 Fleet Routes)",
                 category = "Transport",
-                description = "Daily morning pickup & evening departure routes covering Khairpur, Sukkur, Rohri, Gambat & Ranipur.",
+                description = "Daily morning pickup & return routes covering Kotri Kabir, Hingorja, Ahmed Pur, Sukkur, Rohri, Chondko, Sobhodero, Thari Mirwah & Khairpur City.",
                 details = """
-                    Daily Point Bus Timetable:
-                    • Route 1 (Sukkur - Rohri to BBSUTSD):
-                      - Departure from Military Road Sukkur: 07:15 AM
-                      - Rohri Bypass: 07:30 AM
-                      - Arrival at BBSUTSD: 08:05 AM
-                    • Route 2 (Ranipur - Gambat - Kot Diji):
-                      - Departure from Ranipur Bus Stand: 07:10 AM
-                      - Gambat Chowk: 07:25 AM
-                      - Kot Diji Fort Road: 07:45 AM
-                      - Arrival at BBSUTSD: 08:10 AM
-                    • Route 3 (Khairpur City Local):
-                      - Covers Luqman, Mall Road, Station Road, and Civil Hospital every 30 mins between 07:30 AM and 08:20 AM.
-                    • Afternoon Departure: All point buses depart sharply at 04:15 PM from the Campus Bus Terminal (Gate 1).
+                    Daily University Bus Fleet (Arrival: 08:25 AM • Return: 03:30 PM):
+                    • Bus No:01 (GSF-317): Kotri Kabir (06:40 AM) -> Hingorja (07:00 AM) -> Ranipur -> Gambat -> Campus
+                    • Bus No:02 (GSF-321): Ahmed Pur (06:50 AM) -> Pir Goth (07:25 AM) -> Muet Campus -> Civil Hospital -> Campus
+                    • Bus No:03 (GSF-319): Sukkur Bus Stand (06:30 AM) -> Rohri City -> Babrlo -> Thehri -> Campus
+                    • Bus No:04 (GSF-320): Chondko (06:40 AM) -> Sorah Chowk -> Kot Banglo -> Sugar Mill -> Campus
+                    • Bus No:05 (GSF-318): Sobhodero (06:50 AM) -> Ranipur -> Kumb -> Kot Digi -> Mithri -> Campus
+                    • Bus No:HINO (GS-9526): Thari Mirwah (06:30 AM) -> Pir Budharo -> Kumb -> Mithri -> Campus
+                    • Coaster (GSF-325): Sim Nali (07:40 AM) -> Gharhi Pull -> Civic Center -> Luqman -> Campus
                 """.trimIndent(),
                 actionText = "View Routes",
-                tags = listOf("bus", "transport", "point", "route", "sukkur", "gambat", "ranipur", "timings")
+                tags = listOf("bus", "transport", "point", "route", "sukkur", "gambat", "ranipur", "chondko", "timings")
             ),
             AcademicResource(
                 id = "res_past_papers",
@@ -1439,20 +1434,20 @@ class CampusRepository {
         return listOf(
             BusPointRoute(
                 pointNumber = 1,
-                busTitle = "Point 1 — Hingorja / Ranipur / Gambat",
-                busNumber = "Bus No. 01 (GSF-317)",
-                corridorSummary = "Kotri Kabir • Hingorja • Ranipur • Gambat • Khuhra • Tando Masti • Khairpur",
-                citiesCovered = listOf("Kotri Kabir", "Hingorja", "Ranipur", "Gambat", "Khuhra", "Tando Masti", "Khairpur"),
+                busTitle = "Bus No. 01 — Kotri Kabir / Hingorja to BBSUTSD",
+                busNumber = "Bus No:01 (GSF-317)",
+                corridorSummary = "Kotri Kabir • Hingorja • Shah G Machine • Gadiji • Ranipur Bypass • Gambat Bypass • Khuhra • Tando Masti • Shah Hussain • Luqman Phatak",
+                citiesCovered = listOf("Kotri Kabir", "Hingorja", "Gadiji", "Ranipur", "Gambat", "Khuhra", "Tando Masti", "Khairpur"),
                 morningStartTime = "06:40 AM",
                 campusArrivalTime = "08:25 AM",
                 afternoonDepartureTime = "03:30 PM",
-                driverOrIncharge = "Transport Office (Engr. Sameeullah Khan)",
+                driverOrIncharge = "Umair Ali Dasti (Driver)",
                 contactPhone = "0304-3482840",
                 stops = listOf(
-                    BusStopTiming("Kotri Kabir", "Kotri Kabir", "06:40 AM", "Morning Origin"),
-                    BusStopTiming("Hingorja Main Stop", "Hingorja", "07:00 AM"),
-                    BusStopTiming("Shah G Machine", "Hingorja / Sobhodero", "07:05 AM"),
-                    BusStopTiming("Gadiji", "Sobhodero Rd", "07:08 AM"),
+                    BusStopTiming("Kotri Kabir", "Kotri Kabir", "06:40 AM", "S.No 1 • Origin"),
+                    BusStopTiming("Hingorja", "Hingorja", "07:00 AM"),
+                    BusStopTiming("Shah G Machine", "Hingorja Rd", "07:05 AM"),
+                    BusStopTiming("Gadiji", "Gadiji", "07:08 AM"),
                     BusStopTiming("Ranipur Bypass", "Ranipur", "07:20 AM"),
                     BusStopTiming("Gambat Bypass", "Gambat", "07:30 AM"),
                     BusStopTiming("Khuhra Bypass", "Khuhra", "07:33 AM"),
@@ -1460,112 +1455,184 @@ class CampusRepository {
                     BusStopTiming("Shah Hussain Bypass", "Khairpur", "08:00 AM"),
                     BusStopTiming("Luqman Phatak", "Khairpur City", "08:10 AM"),
                     BusStopTiming("Chandia Mor", "Khairpur City", "08:15 AM"),
-                    BusStopTiming("BBSUTSD Campus (Point Parking)", "BBSUTSD Khairpur", "08:25 AM", "Final Campus Arrival")
+                    BusStopTiming("University (BBSUTSD, KHP)", "BBSUTSD Khairpur", "08:25 AM", "Final Campus Arrival")
                 )
             ),
             BusPointRoute(
                 pointNumber = 2,
-                busTitle = "Point 2 — Ahmed Pur / Pir Jo Goth",
-                busNumber = "Bus No. 02 (GSF-321)",
-                corridorSummary = "Ahmed Pur • Pir Jo Goth • Wada Machi • MUET Campus • Khairpur City",
-                citiesCovered = listOf("Ahmed Pur", "Pir Jo Goth", "Wada Machi", "Daud Goth", "Khairpur City"),
+                busTitle = "Bus No. 02 — Ahmed Pur / Khairpur City to BBSUTSD",
+                busNumber = "Bus No:02 (GSF-321)",
+                corridorSummary = "Ahmed Pur • Dhang • Larik Stop • Pir Goth • Wada Machi • Faizaabad • Maryam Cannon • Muet Campus • Luqman Phatak • Civil Hospital",
+                citiesCovered = listOf("Ahmed Pur", "Pir Goth", "Wada Machi", "Faizaabad", "Muet Campus", "Khairpur City"),
                 morningStartTime = "06:50 AM",
                 campusArrivalTime = "08:25 AM",
                 afternoonDepartureTime = "03:30 PM",
                 driverOrIncharge = "Abdullah Maitlo (Driver)",
-                contactPhone = "0307-3726745",
+                contactPhone = "0300-9319700",
                 stops = listOf(
-                    BusStopTiming("Ahmed Pur", "Ahmed Pur", "06:50 AM", "Morning Origin"),
+                    BusStopTiming("Ahmed Pur", "Ahmed Pur", "06:50 AM", "S.No 1 • Origin"),
                     BusStopTiming("Dhang", "Ahmed Pur", "06:55 AM"),
                     BusStopTiming("Larik Stop", "Ahmed Pur", "06:57 AM"),
-                    BusStopTiming("Kanhar Mor", "Pir Jo Goth Rd", "07:00 AM"),
-                    BusStopTiming("Ansari CNG Pump", "Pir Jo Goth Rd", "07:10 AM"),
-                    BusStopTiming("Pir Goth Gate", "Pir Jo Goth", "07:20 AM"),
-                    BusStopTiming("Zahid Hotel / Wada Machi", "Wada Machi", "07:25 AM"),
+                    BusStopTiming("Kanhar Mor", "Pir Goth Rd", "07:05 AM"),
+                    BusStopTiming("Nako", "Pir Goth Rd", "07:10 AM"),
+                    BusStopTiming("Ansari CNG Pump", "Pir Goth Rd", "07:15 AM"),
+                    BusStopTiming("Pir Goth (Zahid Hotel)", "Pir Goth", "07:25 AM"),
+                    BusStopTiming("Rahooja Stop", "Pir Goth Rd", "07:30 AM"),
+                    BusStopTiming("Wada Machi", "Wada Machi", "07:32 AM"),
                     BusStopTiming("Mang Taghar", "Kingri Rd", "07:35 AM"),
                     BusStopTiming("Daud Goth", "Khairpur", "07:40 AM"),
-                    BusStopTiming("MUET Campus Gate", "Khairpur", "08:00 AM"),
-                    BusStopTiming("Gharhi Pull & NBP Main", "Khairpur City", "08:08 AM"),
-                    BusStopTiming("Civic Center & Khaki Shah Pull", "Khairpur City", "08:14 AM"),
-                    BusStopTiming("Luqman Phatak & Chandia Mor", "Khairpur City", "08:20 AM"),
-                    BusStopTiming("BBSUTSD Campus (Point Parking)", "BBSUTSD Khairpur", "08:25 AM", "Final Campus Arrival")
+                    BusStopTiming("Faizaabad", "Khairpur", "07:50 AM"),
+                    BusStopTiming("Maryam Cannon", "Khairpur", "07:55 AM"),
+                    BusStopTiming("National Bank (Main Branch)", "Khairpur City", "08:00 AM"),
+                    BusStopTiming("Gharhi Pull", "Khairpur City", "08:05 AM"),
+                    BusStopTiming("Muet Campus", "Khairpur City", "08:10 AM"),
+                    BusStopTiming("Luqman Phatak", "Khairpur City", "08:15 AM"),
+                    BusStopTiming("Civil Hospital", "Khairpur City", "08:20 AM"),
+                    BusStopTiming("University (BBSUTSD, KHP)", "BBSUTSD Khairpur", "08:25 AM", "Final Campus Arrival (Dated: 20-10-2026)")
                 )
             ),
             BusPointRoute(
                 pointNumber = 3,
-                busTitle = "Point 3 — Sukkur / Rohri / Babarloi",
-                busNumber = "Bus No. 03 (GSF-319)",
-                corridorSummary = "Sukkur Bus Stand • IBA Gate • Ayoub Gate • Rohri • Babarloi • Thehri • Khairpur",
-                citiesCovered = listOf("Sukkur", "Rohri", "Babarloi", "Thehri", "Panjhati", "Khairpur"),
+                busTitle = "Bus No. 03 — Sukkur & Rohri to BBSUTSD",
+                busNumber = "Bus No:03 (GSF-319)",
+                corridorSummary = "Main Bus Stand Sukkur • IBA Gate • Ayoub Gate • Zero Point • Rohri City • Babrlo • Ubhri • Thehri • Panjhati • Bilawal Parak",
+                citiesCovered = listOf("Sukkur", "Rohri", "Babrlo", "Thehri", "Panjhati", "Khairpur"),
                 morningStartTime = "06:30 AM",
                 campusArrivalTime = "08:25 AM",
                 afternoonDepartureTime = "03:30 PM",
-                driverOrIncharge = "Transport Office (Imran Ahmed Gilal)",
+                driverOrIncharge = "Altaf Hussain (Driver)",
                 contactPhone = "0304-3482840",
                 stops = listOf(
-                    BusStopTiming("Main Bus Stand Sukkur", "Sukkur", "06:30 AM", "Morning Origin"),
+                    BusStopTiming("Main Bus Stand Sukkur", "Sukkur", "06:30 AM", "S.No 1 • Origin"),
                     BusStopTiming("IBA Gate", "Sukkur", "06:35 AM"),
                     BusStopTiming("Society Road", "Sukkur", "06:40 AM"),
                     BusStopTiming("Shikarpur Phatak", "Sukkur", "06:45 AM"),
                     BusStopTiming("Ayoub Gate", "Sukkur", "06:50 AM"),
                     BusStopTiming("Shalimar", "Sukkur", "06:55 AM"),
-                    BusStopTiming("Hockey Ground & Zero Point", "Sukkur", "07:04 AM"),
+                    BusStopTiming("Hockey Ground", "Sukkur", "07:03 AM"),
+                    BusStopTiming("Zero Point", "Sukkur", "07:05 AM"),
                     BusStopTiming("City Point", "Sukkur", "07:10 AM"),
                     BusStopTiming("Beri Chock (Rohri)", "Rohri", "07:20 AM"),
                     BusStopTiming("Rohri City", "Rohri", "07:25 AM"),
-                    BusStopTiming("Babarloi Toll Plaza & Bypass", "Babarloi", "07:38 AM"),
-                    BusStopTiming("Ubhri & Karamabad", "Thehri Rd", "07:48 AM"),
-                    BusStopTiming("Thehri Bypass & Phatak", "Thehri", "08:00 AM"),
-                    BusStopTiming("Maryam Cannon & Panjhati", "Khairpur", "08:10 AM"),
-                    BusStopTiming("Bilawal Park & Chandia Mor", "Khairpur City", "08:18 AM"),
-                    BusStopTiming("BBSUTSD Campus (Point Parking)", "BBSUTSD Khairpur", "08:25 AM", "Final Campus Arrival")
+                    BusStopTiming("Babrlo (Toll Plaza)", "Babrlo", "07:35 AM"),
+                    BusStopTiming("Babrlo Bypass", "Babrlo", "07:40 AM"),
+                    BusStopTiming("Ubhri", "Thehri Rd", "07:45 AM"),
+                    BusStopTiming("Karamabad", "Thehri Rd", "07:50 AM"),
+                    BusStopTiming("Thehri Bypass", "Thehri", "07:55 AM"),
+                    BusStopTiming("Thehri Phatak", "Thehri", "08:05 AM"),
+                    BusStopTiming("Maryam Cannon", "Khairpur", "08:08 AM"),
+                    BusStopTiming("Panjhati", "Khairpur", "08:10 AM"),
+                    BusStopTiming("Bilawal Parak", "Khairpur City", "08:15 AM"),
+                    BusStopTiming("Chandia Mor", "Khairpur City", "08:20 AM"),
+                    BusStopTiming("University (BBSUTSD, KHP)", "BBSUTSD Khairpur", "08:25 AM", "Final Campus Arrival")
                 )
             ),
             BusPointRoute(
                 pointNumber = 4,
-                busTitle = "Point 4 — Thari Mirwah / Kumb / Kot Diji",
-                busNumber = "Bus No. 04 (GSF-320)",
-                corridorSummary = "Thari Mirwah • Bachrah • Pir Budhro • Kumb • Kot Diji • Mithri • Khairpur",
-                citiesCovered = listOf("Thari Mirwah", "Kumb", "Kot Diji", "Kot Banglo", "Mithri", "Khairpur"),
+                busTitle = "Bus No. 04 — Chondko to BBSUTSD",
+                busNumber = "Bus No:04 (GSF-320)",
+                corridorSummary = "Chondko • Sorah Chowk • Kot Banglo • Kot Digi (Sugar Mill Chowk) • Jumani Village • Sugar Mill • Naroo Dhoro • Janwari Goth",
+                citiesCovered = listOf("Chondko", "Sorah", "Kot Banglo", "Kot Digi", "Sugar Mill", "Khairpur"),
                 morningStartTime = "06:40 AM",
                 campusArrivalTime = "08:25 AM",
                 afternoonDepartureTime = "03:30 PM",
-                driverOrIncharge = "Transport Office (Imran Ahmed Gilal)",
+                driverOrIncharge = "Ghulam Qadir (Driver)",
                 contactPhone = "0304-3482840",
                 stops = listOf(
-                    BusStopTiming("Thari Mirwah Main Stop", "Thari Mirwah", "06:40 AM", "Morning Origin"),
-                    BusStopTiming("Hindyari & Bagh", "Thari Mirwah Rd", "06:52 AM"),
-                    BusStopTiming("Bachrah & Pir Budhro", "Mirwah Rd", "07:05 AM"),
-                    BusStopTiming("Nangreja Jhango Stop", "Kumb Rd", "07:15 AM"),
-                    BusStopTiming("Kumb City", "Kumb", "07:25 AM"),
-                    BusStopTiming("Arib Solangi", "Kot Diji Rd", "07:35 AM"),
-                    BusStopTiming("Kot Diji Town", "Kot Diji", "07:45 AM"),
-                    BusStopTiming("Kot Banglo", "Kot Diji", "07:55 AM"),
-                    BusStopTiming("Mithri", "Khairpur Rd", "08:05 AM"),
-                    BusStopTiming("Wapda Gate & Burghri Pull", "Khairpur City", "08:15 AM"),
-                    BusStopTiming("BBSUTSD Campus (Point Parking)", "BBSUTSD Khairpur", "08:25 AM", "Final Campus Arrival")
+                    BusStopTiming("Chondko", "Chondko", "06:40 AM", "S.No 1 • Origin"),
+                    BusStopTiming("Sorah Chowk", "Sorah", "07:20 AM"),
+                    BusStopTiming("Kot Banglo", "Kot Diji", "07:35 AM"),
+                    BusStopTiming("Kot Digi (Sugar Mill Chowk)", "Kot Diji", "07:45 AM"),
+                    BusStopTiming("Jumani Village", "Kot Diji Rd", "07:50 AM"),
+                    BusStopTiming("Sugar Mill (Gate)", "Khairpur", "08:00 AM"),
+                    BusStopTiming("Sugar Mill (Chowk)", "Khairpur", "08:05 AM"),
+                    BusStopTiming("Naroo Dhoro", "Khairpur", "08:10 AM"),
+                    BusStopTiming("Sohu Kinasra", "Khairpur", "08:15 AM"),
+                    BusStopTiming("Bakhar Kinasra", "Khairpur", "08:20 AM"),
+                    BusStopTiming("Janwari Goth", "Khairpur", "08:22 AM"),
+                    BusStopTiming("University (BBSUTSD, KHP)", "BBSUTSD Khairpur", "08:25 AM", "Final Campus Arrival")
                 )
             ),
             BusPointRoute(
                 pointNumber = 5,
-                busTitle = "Point 5 — Chondko / Sorah & Khairpur City",
-                busNumber = "Bus No. 05 (Coaster / City Point)",
-                corridorSummary = "Chondko • Sorah Chowk • Nara Gate • Station Road • Luqman • Civil Hospital",
-                citiesCovered = listOf("Chondko", "Sorah", "Nara Gate", "Station Road", "Khairpur City"),
+                busTitle = "Bus No. 05 — Sobhodero / Kumb to BBSUTSD",
+                busNumber = "Bus No:05 (GSF-318)",
+                corridorSummary = "Sobhodero • Ranipur • Rajpar Village • Jhanda Shakh • Kumb • Arab Solangi • Kot Digi • Kot Banglo • Mithri • Wapda Gate • Burghri Pul",
+                citiesCovered = listOf("Sobhodero", "Ranipur", "Kumb", "Kot Digi", "Kot Banglo", "Mithri", "Khairpur"),
                 morningStartTime = "06:50 AM",
                 campusArrivalTime = "08:25 AM",
                 afternoonDepartureTime = "03:30 PM",
-                driverOrIncharge = "Transport Office (Engr. Sameeullah Khan)",
+                driverOrIncharge = "Abdul Ghani (Driver)",
                 contactPhone = "0304-3482840",
                 stops = listOf(
-                    BusStopTiming("Chondko Main Chowk", "Chondko", "06:50 AM", "Morning Origin"),
-                    BusStopTiming("Sorah Chowk", "Sorah", "07:05 AM"),
-                    BusStopTiming("Nara Gate", "Khairpur Rd", "07:25 AM"),
-                    BusStopTiming("Panwari & Mall Road", "Khairpur City", "07:45 AM"),
-                    BusStopTiming("Station Road & Jillani Muhalla", "Khairpur City", "07:58 AM"),
-                    BusStopTiming("Luqman Phatak", "Khairpur City", "08:08 AM"),
-                    BusStopTiming("Civil Hospital / Hami Road", "Khairpur City", "08:18 AM"),
-                    BusStopTiming("BBSUTSD Campus (Point Parking)", "BBSUTSD Khairpur", "08:25 AM", "Final Campus Arrival")
+                    BusStopTiming("Sobhodero", "Sobhodero", "06:50 AM", "S.No 1 • Origin"),
+                    BusStopTiming("Ranipur", "Ranipur", "07:10 AM"),
+                    BusStopTiming("Rajpar Village", "Ranipur Rd", "07:13 AM"),
+                    BusStopTiming("Jhanda Shakh", "Kumb Rd", "07:15 AM"),
+                    BusStopTiming("Kumb", "Kumb", "07:20 AM"),
+                    BusStopTiming("Arab Solangi", "Kot Diji Rd", "07:25 AM"),
+                    BusStopTiming("Kot Digi", "Kot Diji", "07:35 AM"),
+                    BusStopTiming("Kot Banglo", "Kot Diji", "07:40 AM"),
+                    BusStopTiming("Mithri", "Khairpur Rd", "07:55 AM"),
+                    BusStopTiming("Wapda Gate", "Khairpur", "08:10 AM"),
+                    BusStopTiming("Burghri Pul", "Khairpur", "08:15 AM"),
+                    BusStopTiming("Chandia Mor", "Khairpur City", "08:20 AM"),
+                    BusStopTiming("University (BBSUTSD, KHP)", "BBSUTSD Khairpur", "08:25 AM", "Final Campus Arrival")
+                )
+            ),
+            BusPointRoute(
+                pointNumber = 6,
+                busTitle = "HINO Bus — Thari Mirwah to BBSUTSD",
+                busNumber = "Bus No:HINO (GS-9526)",
+                corridorSummary = "Thari Mirwah • Hindyari • Bagh Bachrah • Sui Gas • Pir Budharo • Nangreja • Jhango Stop • Kumb • Kot Banglo • Mithri • Wapda Gate",
+                citiesCovered = listOf("Thari Mirwah", "Bagh Bachrah", "Pir Budharo", "Kumb", "Kot Banglo", "Mithri", "Khairpur"),
+                morningStartTime = "06:30 AM",
+                campusArrivalTime = "08:25 AM",
+                afternoonDepartureTime = "03:30 PM",
+                driverOrIncharge = "Yasir Hussain (Driver)",
+                contactPhone = "0304-3482840",
+                stops = listOf(
+                    BusStopTiming("Thari Mirwah", "Thari Mirwah", "06:30 AM", "S.No 1 • Origin"),
+                    BusStopTiming("Hindyari", "Thari Mirwah Rd", "06:35 AM"),
+                    BusStopTiming("Bagh Bachrah", "Thari Mirwah Rd", "06:45 AM"),
+                    BusStopTiming("Sui Gas", "Mirwah Rd", "06:50 AM"),
+                    BusStopTiming("Pir Budharo", "Mirwah Rd", "07:00 AM"),
+                    BusStopTiming("Nangreja", "Kumb Rd", "07:05 AM"),
+                    BusStopTiming("Jhango Stop", "Kumb Rd", "07:15 AM"),
+                    BusStopTiming("Kumb", "Kumb", "07:25 AM"),
+                    BusStopTiming("Arab Solangi", "Kot Diji Rd", "07:30 AM"),
+                    BusStopTiming("Kot Banglo", "Kot Diji", "07:45 AM"),
+                    BusStopTiming("Mithri", "Khairpur Rd", "07:55 AM"),
+                    BusStopTiming("Wapda Gate", "Khairpur", "08:10 AM"),
+                    BusStopTiming("Burghri Pul", "Khairpur", "08:15 AM"),
+                    BusStopTiming("Chandia Mor", "Khairpur City", "08:20 AM"),
+                    BusStopTiming("University (BBSUTSD, KHP)", "BBSUTSD Khairpur", "08:25 AM", "Final Campus Arrival")
+                )
+            ),
+            BusPointRoute(
+                pointNumber = 7,
+                busTitle = "Coaster — Khairpur City to BBS-UTECH",
+                busNumber = "COASTER (GSF-325)",
+                corridorSummary = "Sim Nali (Luqman) • Sarkhi Mor • Gharhi Pull • Faiz Mehl • National Bank • Civic Center • Khaki Shah Pull • Nim Mor • Civil Hospital",
+                citiesCovered = listOf("Sim Nali", "Gharhi Pull", "Faiz Mehl", "Civic Center", "Luqman", "Khairpur City"),
+                morningStartTime = "07:40 AM",
+                campusArrivalTime = "08:25 AM",
+                afternoonDepartureTime = "03:30 PM",
+                driverOrIncharge = "Mir Muhammad Maitlo (Driver)",
+                contactPhone = "0301-3974440",
+                stops = listOf(
+                    BusStopTiming("Sim Nali (Luqman)", "Khairpur City", "07:40 AM", "S.No 1 • Origin"),
+                    BusStopTiming("Sarkhi Mor", "Khairpur City", "07:45 AM"),
+                    BusStopTiming("Gharhi Pull", "Khairpur City", "07:55 AM"),
+                    BusStopTiming("Faiz Mehl", "Khairpur City", "07:57 AM"),
+                    BusStopTiming("National Bank", "Khairpur City", "08:00 AM"),
+                    BusStopTiming("Civic Center", "Khairpur City", "08:05 AM"),
+                    BusStopTiming("Khaki Shah Pull", "Khairpur City", "08:10 AM"),
+                    BusStopTiming("Nim Mor", "Khairpur City", "08:12 AM"),
+                    BusStopTiming("Luqman Phtak", "Khairpur City", "08:15 AM"),
+                    BusStopTiming("Civil Hospital", "Khairpur City", "08:18 AM"),
+                    BusStopTiming("Chandia Mor", "Khairpur City", "08:20 AM"),
+                    BusStopTiming("University (BBS-UTECH KHP)", "BBSUTSD Khairpur", "08:25 AM", "Final Campus Arrival (Dated: 05-08-2026)")
                 )
             )
         )
