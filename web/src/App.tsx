@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { HomeView } from './components/HomeView';
 import { IndoorMapView } from './components/IndoorMapView';
 import { Navbar } from './components/Navbar';
@@ -137,98 +138,110 @@ export function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#111827]">
-      <Navbar
-        activeTab={activeTab}
-        onSelectTab={setActiveTab}
-        userLocation={geo.currentLocation}
-      />
+    <MotionConfig reducedMotion="user">
+      <div className="min-h-screen bg-[#F8FAFC] text-[#111827]">
+        <Navbar
+          activeTab={activeTab}
+          onSelectTab={setActiveTab}
+          userLocation={geo.currentLocation}
+        />
 
-      <main className="mx-auto max-w-7xl px-3 sm:px-6 pt-4">
-        {activeTab === 'HOME' && (
-          <HomeView
-            userLocation={geo.currentLocation}
-            nextClass={nextClass}
-            savedDept={savedPref.dept}
-            savedSem={savedPref.sem}
-            savedSec={savedPref.sec}
-            onNavigateTab={setActiveTab}
-            onSelectPin={setDetailPin}
-            onLocatePinIndoor={locatePinIndoor}
-            onLocatePinById={locatePinById}
-            onOpenIndoorBuilding={openIndoorBuilding}
-            onOpenBusTimings={() => openBusTimings(null)}
-            onOpenNotices={openNotices}
-          />
-        )}
+        <main className="mx-auto max-w-7xl px-3 sm:px-6 pt-4">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18, ease: 'easeOut' }}
+            >
+              {activeTab === 'HOME' && (
+                <HomeView
+                  userLocation={geo.currentLocation}
+                  nextClass={nextClass}
+                  savedDept={savedPref.dept}
+                  savedSem={savedPref.sem}
+                  savedSec={savedPref.sec}
+                  onNavigateTab={setActiveTab}
+                  onSelectPin={setDetailPin}
+                  onLocatePinIndoor={locatePinIndoor}
+                  onLocatePinById={locatePinById}
+                  onOpenIndoorBuilding={openIndoorBuilding}
+                  onOpenBusTimings={() => openBusTimings(null)}
+                  onOpenNotices={openNotices}
+                />
+              )}
 
-        {activeTab === 'OUTDOOR_MAP' && (
-          <OutdoorMapView
-            userLocation={geo.currentLocation}
-            gpsMode={geo.gpsMode}
-            isAcquiringGps={geo.isAcquiring}
-            presetIndex={geo.presetIndex}
-            presets={geo.presets}
-            gpsError={geo.gpsError}
-            navTargetPin={navTargetPin}
-            onClearNavTarget={clearNavTarget}
-            onRequestLiveGps={geo.requestLiveGps}
-            onSelectPreset={geo.selectPresetLocation}
-            onOpenPinDetail={setDetailPin}
-            onOpenIndoorPlan={locatePinIndoor}
-            onOpenBusTimings={() => openBusTimings(null)}
-          />
-        )}
+              {activeTab === 'OUTDOOR_MAP' && (
+                <OutdoorMapView
+                  userLocation={geo.currentLocation}
+                  gpsMode={geo.gpsMode}
+                  isAcquiringGps={geo.isAcquiring}
+                  presetIndex={geo.presetIndex}
+                  presets={geo.presets}
+                  gpsError={geo.gpsError}
+                  navTargetPin={navTargetPin}
+                  onClearNavTarget={clearNavTarget}
+                  onRequestLiveGps={geo.requestLiveGps}
+                  onSelectPreset={geo.selectPresetLocation}
+                  onOpenPinDetail={setDetailPin}
+                  onOpenIndoorPlan={locatePinIndoor}
+                  onOpenBusTimings={() => openBusTimings(null)}
+                />
+              )}
 
-        {activeTab === 'INDOOR_MAP' && (
-          <IndoorMapView
-            building={indoorBuilding}
-            floor={indoorFloor}
-            selectedPin={selectedIndoorPin}
-            onSelectBuilding={(b) => {
-              setIndoorBuilding(b);
-              setIndoorFloor('GROUND');
-              setSelectedIndoorPin(null);
-            }}
-            onSelectFloor={(f) => {
-              setIndoorFloor(f);
-              setSelectedIndoorPin(null);
-            }}
-            onSelectPin={setSelectedIndoorPin}
-            onOpenPinDetail={setDetailPin}
-          />
-        )}
+              {activeTab === 'INDOOR_MAP' && (
+                <IndoorMapView
+                  building={indoorBuilding}
+                  floor={indoorFloor}
+                  selectedPin={selectedIndoorPin}
+                  onSelectBuilding={(b) => {
+                    setIndoorBuilding(b);
+                    setIndoorFloor('GROUND');
+                    setSelectedIndoorPin(null);
+                  }}
+                  onSelectFloor={(f) => {
+                    setIndoorFloor(f);
+                    setSelectedIndoorPin(null);
+                  }}
+                  onSelectPin={setSelectedIndoorPin}
+                  onOpenPinDetail={setDetailPin}
+                />
+              )}
 
-        {activeTab === 'SCHEDULE' && (
-          <ScheduleView
-            savedDept={savedPref.dept}
-            savedSem={savedPref.sem}
-            savedSec={savedPref.sec}
-            onSavePreference={(dept, sem, sec) => setSavedPref({ dept, sem, sec })}
-            onLocatePinById={locatePinById}
-          />
-        )}
+              {activeTab === 'SCHEDULE' && (
+                <ScheduleView
+                  savedDept={savedPref.dept}
+                  savedSem={savedPref.sem}
+                  savedSec={savedPref.sec}
+                  onSavePreference={(dept, sem, sec) => setSavedPref({ dept, sem, sec })}
+                  onLocatePinById={locatePinById}
+                />
+              )}
 
-        {activeTab === 'RESOURCES' && (
-          <ResourcesView
-            activeSubTab={resourcesSubTab}
-            selectedBusPoint={selectedBusPoint}
-            onChangeSubTab={setResourcesSubTab}
-            onSelectBusPoint={setSelectedBusPoint}
-            onLocatePinById={locatePinById}
-          />
-        )}
-      </main>
+              {activeTab === 'RESOURCES' && (
+                <ResourcesView
+                  activeSubTab={resourcesSubTab}
+                  selectedBusPoint={selectedBusPoint}
+                  onChangeSubTab={setResourcesSubTab}
+                  onSelectBusPoint={setSelectedBusPoint}
+                  onLocatePinById={locatePinById}
+                />
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </main>
 
-      <PinDetailModal
-        pin={detailPin}
-        userLocation={geo.currentLocation}
-        onClose={() => setDetailPin(null)}
-        onNavigateIndoor={locatePinIndoor}
-        onNavigateOutdoor={locatePinOutdoor}
-        onOpenBusTimings={() => openBusTimings(null)}
-      />
-    </div>
+        <PinDetailModal
+          pin={detailPin}
+          userLocation={geo.currentLocation}
+          onClose={() => setDetailPin(null)}
+          onNavigateIndoor={locatePinIndoor}
+          onNavigateOutdoor={locatePinOutdoor}
+          onOpenBusTimings={() => openBusTimings(null)}
+        />
+      </div>
+    </MotionConfig>
   );
 }
 

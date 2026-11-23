@@ -7,6 +7,7 @@ import {
   Map as MapIcon,
   Radio,
 } from 'lucide-react';
+import { motion } from 'motion/react';
 import type { AppTab, UserLocation } from '../types/campus';
 
 interface NavbarProps {
@@ -16,7 +17,7 @@ interface NavbarProps {
 }
 
 const NAV_ITEMS: { id: AppTab; label: string; shortLabel: string; icon: typeof Home }[] = [
-  { id: 'HOME', label: 'At a Glance', shortLabel: 'Home', icon: Home },
+  { id: 'HOME', label: 'Overview', shortLabel: 'Home', icon: Home },
   { id: 'OUTDOOR_MAP', label: 'Campus Map', shortLabel: 'Map', icon: MapIcon },
   { id: 'INDOOR_MAP', label: 'Floor Plans', shortLabel: 'Floors', icon: Layers },
   { id: 'SCHEDULE', label: 'Timetable', shortLabel: 'Schedule', icon: CalendarDays },
@@ -65,14 +66,21 @@ export function Navbar({ activeTab, onSelectTab, userLocation }: NavbarProps) {
                   key={item.id}
                   type="button"
                   onClick={() => onSelectTab(item.id)}
-                  className={`flex items-center gap-2 rounded-full px-4 py-2 font-display text-xs font-semibold transition cursor-pointer ${
+                  className={`relative flex items-center gap-2 rounded-full px-4 py-2 font-display text-xs font-semibold transition-colors cursor-pointer ${
                     isActive
-                      ? 'bg-[#D3E3FD] text-[#041E49] shadow-xs'
-                      : 'text-[#444746] hover:bg-white/70 hover:text-[#111827]'
+                      ? 'text-[#041E49]'
+                      : 'text-[#444746] hover:text-[#111827]'
                   }`}
                 >
-                  <Icon className="h-4 w-4" />
-                  <span>{item.shortLabel}</span>
+                  {isActive && (
+                    <motion.span
+                      layoutId="desktopNavPill"
+                      transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+                      className="absolute inset-0 rounded-full bg-[#D3E3FD] shadow-xs"
+                    />
+                  )}
+                  <Icon className="relative z-10 h-4 w-4" />
+                  <span className="relative z-10">{item.shortLabel}</span>
                 </button>
               );
             })}
@@ -109,13 +117,18 @@ export function Navbar({ activeTab, onSelectTab, userLocation }: NavbarProps) {
                 className="flex flex-col items-center justify-center gap-1 py-1 text-[11px] font-medium transition cursor-pointer"
               >
                 <div
-                  className={`flex h-8 w-14 items-center justify-center rounded-full transition ${
-                    isActive
-                      ? 'bg-[#D3E3FD] text-[#041E49]'
-                      : 'text-[#444746]'
+                  className={`relative flex h-8 w-14 items-center justify-center rounded-full transition-colors ${
+                    isActive ? 'text-[#041E49]' : 'text-[#444746]'
                   }`}
                 >
-                  <Icon className="h-4 w-4" />
+                  {isActive && (
+                    <motion.span
+                      layoutId="mobileNavPill"
+                      transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+                      className="absolute inset-0 rounded-full bg-[#D3E3FD]"
+                    />
+                  )}
+                  <Icon className="relative z-10 h-4 w-4" />
                 </div>
                 <span
                   className={`truncate max-w-full px-1 font-display ${
