@@ -25,14 +25,14 @@ class CampusRepository {
     companion object {
         const val BBSUTSD_LAT = 27.5108
         const val BBSUTSD_LNG = 68.7416
-        const val CAMPUS_RADIUS_METERS = 285.0 // ~60-acre campus span (~242,811 sq m)
+        const val CAMPUS_RADIUS_METERS = 360.0 // Full campus grounds span
 
         val PRESET_USER_LOCATIONS = listOf(
             UserLocation(27.5097, 68.7405, true, "Main Entrance Gate (Hami Road)"),
             UserLocation(27.5111, 68.7409, true, "VC Office & Admin Complex"),
             UserLocation(27.5104, 68.7422, true, "Academic Complex & Central Library"),
             UserLocation(27.5119, 68.7428, true, "Boys Hostel & Transport Office"),
-            UserLocation(27.5102, 68.7414, true, "University Canteen")
+            UserLocation(27.513138, 68.741641, true, "BBSUTSD Central Cafeteria")
         )
     }
 
@@ -567,24 +567,24 @@ class CampusRepository {
             ),
             CampusPin(
                 id = "new_1_smart_class",
-                name = "Smart Lecture Rooms (CR-101 to CR-106)",
-                subTitle = "Academic Classrooms",
+                name = "Smart Class Room (CR-101 to CR-106)",
+                subTitle = "Smart Academic Classrooms",
                 building = Building.NEW_BUILDING,
                 floor = FloorLevel.FIRST,
                 category = PinCategory.ACADEMIC,
                 roomNumber = "NB-110",
-                latitude = 27.51038,
-                longitude = 68.74245,
+                latitude = 27.512277,
+                longitude = 68.742401,
                 indoorX = 0.75f,
                 indoorY = 0.65f,
                 inCharge = "Academic Coordinator",
                 timings = "08:30 AM - 03:30 PM",
                 contact = "info@bbsutsd.edu.pk",
-                description = "Multimedia-equipped lecture rooms for Computing, AI, and Technology classes.",
-                indoorGuide = "1st Floor East Wing of New Building.",
-                outdoorGuide = "New Building 1st Floor East.",
-                tags = listOf("classroom", "cr101", "lecture"),
-                mapLabel = "Smart Classrooms"
+                description = "Multimedia-equipped smart lecture rooms for Computing, AI, and Technology classes.",
+                indoorGuide = "Located along the North-East academic walkway.",
+                outdoorGuide = "North-East wing near Workshops & Hostels junction (27.512277, 68.742401).",
+                tags = listOf("smart", "smart class", "smart classroom", "classroom", "cr101", "lecture"),
+                mapLabel = "Smart Class Room"
             ),
             CampusPin(
                 id = "new_2_auditorium",
@@ -653,24 +653,24 @@ class CampusRepository {
             ),
             CampusPin(
                 id = "campus_cafeteria",
-                name = "University Canteen",
+                name = "BBSUTSD Central Cafeteria",
                 subTitle = "Student Cafeteria, Meals, Tea & Snacks",
                 building = Building.CAMPUS_GROUNDS,
                 floor = FloorLevel.OUTDOOR,
                 category = PinCategory.AMENITY,
                 roomNumber = "CANTEEN",
-                latitude = 27.51022,
-                longitude = 68.74132,
+                latitude = 27.513138,
+                longitude = 68.741641,
                 indoorX = 0.45f,
                 indoorY = 0.75f,
                 inCharge = "Canteen Administration",
                 timings = "08:00 AM - 05:00 PM",
                 contact = "info@bbsutsd.edu.pk",
-                description = "Central campus Canteen serving hot meals, Karak chai, cold drinks, and snacks for students and staff.",
-                indoorGuide = "Outdoor building in the central student quad.",
-                outdoorGuide = "Centrally accessible between the Admin/Old Block and Academic/New Block.",
-                tags = listOf("canteen", "cafeteria", "food", "chai", "tea", "lunch"),
-                mapLabel = "University Canteen"
+                description = "BBSUTSD Central Cafeteria serving hot meals, Karak chai, cold drinks, and snacks for students and staff.",
+                indoorGuide = "Central Cafeteria complex (GP7R+7M2) on the northern campus grounds.",
+                outdoorGuide = "Northern campus cafeteria grounds near the Workshop & Hostel access road (27.513138, 68.741641).",
+                tags = listOf("canteen", "cafeteria", "central cafeteria", "food", "chai", "tea", "lunch"),
+                mapLabel = "Central Cafeteria"
             ),
             CampusPin(
                 id = "campus_mosque",

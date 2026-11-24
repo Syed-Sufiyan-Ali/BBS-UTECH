@@ -199,7 +199,7 @@
   <script>
     // Verified BBSUTSD Khairpur Mirs center (27°30'39"N 68°44'30"E — Hami Road / near Civil Hospital)
     const BBSUTSD_CENTER = { lat: 27.5108, lng: 68.7416 };
-    const CAMPUS_RADIUS_METERS = 285; // ~60-acre campus footprint
+    const CAMPUS_RADIUS_METERS = 360; // Full campus grounds footprint
 
     const RESTRICT_BOUNDS = {
       south: 27.5060,
@@ -541,7 +541,7 @@
                   const coords = el.geometry.map(g => ({ lat: g.lat, lng: g.lon }));
                   const avgLat = coords.reduce((s, p) => s + p.lat, 0) / coords.length;
                   const avgLng = coords.reduce((s, p) => s + p.lng, 0) / coords.length;
-                  if (haversineMeters(avgLat, avgLng, BBSUTSD_CENTER.lat, BBSUTSD_CENTER.lng) <= 340) {
+                  if (haversineMeters(avgLat, avgLng, BBSUTSD_CENTER.lat, BBSUTSD_CENTER.lng) <= 380) {
                     buildings.push({ coords: coords, centerLat: avgLat, centerLng: avgLng });
                   }
                 }
@@ -632,7 +632,9 @@
       ws_elec_bay: { id: 'ws_elec_bay', lat: 27.51162, lng: 68.74208 },
       boys_hostel_gate: { id: 'boys_hostel_gate', lat: 27.51195, lng: 68.74265 },
       transport_office_door: { id: 'transport_office_door', lat: 27.51182, lng: 68.74288 },
-      point_parking_bay: { id: 'point_parking_bay', lat: 27.51162, lng: 68.74295 }
+      point_parking_bay: { id: 'point_parking_bay', lat: 27.51162, lng: 68.74295 },
+      cafeteria_plaza: { id: 'cafeteria_plaza', lat: 27.513138, lng: 68.741641 },
+      smart_class_entry: { id: 'smart_class_entry', lat: 27.512277, lng: 68.742401 }
     };
 
     const EDGE_DEFS = [
@@ -683,13 +685,18 @@
       ['transport_plaza', 'transport_office_door', 'Transport Office Walkway'],
       ['transport_plaza', 'point_parking_bay', 'Point Bus Parking Lane'],
       ['transport_office_door', 'point_parking_bay', 'Bus Bay Steps'],
-      ['sports_track', 'point_parking_bay', 'East Campus Spine']
+      ['sports_track', 'point_parking_bay', 'East Campus Spine'],
+      ['ws_mech_bay', 'cafeteria_plaza', 'Central Cafeteria North Walk'],
+      ['boys_hostel_gate', 'cafeteria_plaza', 'Cafeteria & Hostel Path'],
+      ['ws_split', 'smart_class_entry', 'Smart Classrooms North Walk'],
+      ['hostel_jct', 'smart_class_entry', 'Smart Classrooms Connector'],
+      ['smart_class_entry', 'boys_hostel_gate', 'Smart Classroom-Hostel Path']
     ];
 
     const PIN_TO_NODE = {
       gate_main: 'gate_entry',
       campus_mosque: 'mosque_walk',
-      campus_cafeteria: 'canteen_quad',
+      campus_cafeteria: 'cafeteria_plaza',
       old_g_welfare: 'old_porch',
       old_g_seminar: 'old_porch',
       old_g_vc: 'old_west',
@@ -711,7 +718,7 @@
       new_g_ai_lab: 'new_east',
       new_g_medical: 'new_east',
       new_1_library: 'new_center',
-      new_1_smart_class: 'new_east',
+      new_1_smart_class: 'smart_class_entry',
       new_2_auditorium: 'new_center',
       new_2_automation_lab: 'new_west',
       campus_workshops: 'ws_mech_bay',

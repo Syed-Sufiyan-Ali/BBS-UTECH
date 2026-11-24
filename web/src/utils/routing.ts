@@ -85,6 +85,8 @@ const GRAPH_NODES: Record<string, GraphNode> = {
   boys_hostel_gate: { id: 'boys_hostel_gate', lat: 27.51195, lng: 68.74265, label: 'Boys Hostel Gate' },
   transport_office_door: { id: 'transport_office_door', lat: 27.51182, lng: 68.74288, label: 'Transport Office' },
   point_parking_bay: { id: 'point_parking_bay', lat: 27.51162, lng: 68.74295, label: 'Student Point Parking Bay' },
+  cafeteria_plaza: { id: 'cafeteria_plaza', lat: 27.513138, lng: 68.741641, label: 'BBSUTSD Central Cafeteria' },
+  smart_class_entry: { id: 'smart_class_entry', lat: 27.512277, lng: 68.742401, label: 'Smart Class Room' },
 };
 
 const EDGE_DEFS: [string, string, string][] = [
@@ -145,12 +147,17 @@ const EDGE_DEFS: [string, string, string][] = [
   ['transport_plaza', 'point_parking_bay', 'Point Bus Parking Lane'],
   ['transport_office_door', 'point_parking_bay', 'Bus Bay Steps'],
   ['sports_track', 'point_parking_bay', 'East Campus Spine'],
+  ['ws_mech_bay', 'cafeteria_plaza', 'Central Cafeteria North Walk'],
+  ['boys_hostel_gate', 'cafeteria_plaza', 'Cafeteria & Hostel Path'],
+  ['ws_split', 'smart_class_entry', 'Smart Classrooms North Walk'],
+  ['hostel_jct', 'smart_class_entry', 'Smart Classrooms Connector'],
+  ['smart_class_entry', 'boys_hostel_gate', 'Smart Classroom–Hostel Path'],
 ];
 
 const PIN_TO_NODE: Record<string, string> = {
   gate_main: 'gate_entry',
   campus_mosque: 'mosque_walk',
-  campus_cafeteria: 'canteen_quad',
+  campus_cafeteria: 'cafeteria_plaza',
   old_g_welfare: 'old_porch',
   old_g_seminar: 'old_porch',
   old_g_vc: 'old_west',
@@ -172,7 +179,7 @@ const PIN_TO_NODE: Record<string, string> = {
   new_g_ai_lab: 'new_east',
   new_g_medical: 'new_east',
   new_1_library: 'new_center',
-  new_1_smart_class: 'new_east',
+  new_1_smart_class: 'smart_class_entry',
   new_2_auditorium: 'new_center',
   new_2_automation_lab: 'new_west',
   campus_workshops: 'ws_mech_bay',

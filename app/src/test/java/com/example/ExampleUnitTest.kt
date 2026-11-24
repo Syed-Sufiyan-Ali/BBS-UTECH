@@ -89,7 +89,7 @@ class ExampleUnitTest {
             "Student Welfare Office",
             "Transport Office",
             "Student Point Parking",
-            "University Canteen",
+            "Central Cafeteria",
             "Central Library",
             "Civil Labs (Concrete & Soil)",
             "Civil Workshop",
