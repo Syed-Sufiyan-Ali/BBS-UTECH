@@ -130,7 +130,7 @@ export function HomeView({
       tone: 'border-[#CBE6D3] bg-[#E6F4EA]/45',
       badgeTone: 'bg-[#E6F4EA] text-[#137333]',
       cta: 'Locate on Map',
-      onClick: () => onLocatePinById('new_1_library'),
+      onClick: () => onLocatePinById('new_1_smart_class'),
     },
   ];
 
@@ -234,7 +234,7 @@ export function HomeView({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Quick search: VC Office, CS Labs, Central Library, Transport..."
+                placeholder="Quick search: VC Office, Smart Class, Cafeteria, Points Stop..."
                 className="w-full rounded-full border border-[#DCE2EC] bg-[#FFFFFF]/95 py-3 pl-11 pr-10 text-xs sm:text-sm text-[#111827] placeholder-[#747775] shadow-xs outline-none transition focus:border-[#0B57D0] focus:ring-2 focus:ring-[#D3E3FD]"
               />
               {searchQuery && (
@@ -260,7 +260,7 @@ export function HomeView({
                     {searchResults.length === 0 ? (
                       <div className="p-4 text-xs text-[#5F6368]">
                         No landmark found matching &ldquo;{searchQuery}&rdquo;. Try VC Office,
-                        Library, Civil Lab, or Transport.
+                        Smart Class, Cafeteria, or Points Stop.
                       </div>
                     ) : (
                       <div className="divide-y divide-[#F1F5F9]">

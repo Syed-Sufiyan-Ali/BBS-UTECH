@@ -102,7 +102,13 @@ export function App() {
           userLocation={geo.currentLocation}
         />
 
-        <main className="mx-auto max-w-7xl px-3 sm:px-6 pt-4">
+        <main
+          className={`mx-auto max-w-7xl ${
+            activeTab === 'OUTDOOR_MAP'
+              ? 'px-2 sm:px-6 pt-2 sm:pt-3 pb-[74px] lg:pb-3'
+              : 'px-3 sm:px-6 pt-4'
+          }`}
+        >
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}

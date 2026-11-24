@@ -21,15 +21,15 @@ class ExampleUnitTest {
     @Test
     fun testCampusPinsCompleteness() {
         val pins = repository.allPins.value
-        assertTrue("Campus pins should not be empty", pins.isNotEmpty())
+        assertEquals("Should contain only the 6 manually added campus pins", 6, pins.size)
 
-        val oldBuildingPins = pins.filter { it.building == Building.OLD_BUILDING }
-        val newBuildingPins = pins.filter { it.building == Building.NEW_BUILDING }
-        val groundsPins = pins.filter { it.building == Building.CAMPUS_GROUNDS }
-
-        assertTrue("Old Building should have mapped offices", oldBuildingPins.size >= 8)
-        assertTrue("New Building should have mapped labs and classrooms", newBuildingPins.size >= 7)
-        assertTrue("Campus grounds should have facilities mapped", groundsPins.size >= 4)
+        val ids = pins.map { it.id }.toSet()
+        assertTrue(ids.contains("old_g_vc"))
+        assertTrue(ids.contains("hod_english"))
+        assertTrue(ids.contains("new_1_smart_class"))
+        assertTrue(ids.contains("campus_cafeteria"))
+        assertTrue(ids.contains("campus_transport"))
+        assertTrue(ids.contains("hod_prof_saleem"))
     }
 
     @Test
@@ -38,9 +38,7 @@ class ExampleUnitTest {
         val roomCodes = groundPins.map { it.roomNumber }
 
         assertTrue("VC office should be on ground floor", roomCodes.contains("OB-G01"))
-        assertTrue("Registrar office should be on ground floor", roomCodes.contains("OB-G02"))
-        assertTrue("Exam Branch should be on ground floor", roomCodes.contains("OB-G03"))
-        assertTrue("Finance should be on ground floor", roomCodes.contains("OB-G04"))
+        assertTrue("HOD English office should be on ground floor", roomCodes.contains("ENG-HOD"))
     }
 
     @Test
@@ -51,17 +49,17 @@ class ExampleUnitTest {
         val searchHodEnglish = repository.searchPins("hod english")
         assertTrue("Searching for HOD English should find HOD Dept. of English", searchHodEnglish.any { it.id == "hod_english" })
 
+        val searchSmart = repository.searchPins("smart class")
+        assertTrue("Searching for smart class should find Smart Class Room", searchSmart.any { it.id == "new_1_smart_class" })
+
+        val searchCafeteria = repository.searchPins("cafeteria")
+        assertTrue("Searching for cafeteria should find Central Cafeteria", searchCafeteria.any { it.id == "campus_cafeteria" })
+
         val searchPointsStop = repository.searchPins("points stop")
         assertTrue("Searching for points stop should find Student Point Parking", searchPointsStop.any { it.id == "campus_transport" })
 
         val searchSaleem = repository.searchPins("saleem")
         assertTrue("Searching for Saleem should find HOD Prof. Saleem", searchSaleem.any { it.id == "hod_prof_saleem" })
-
-        val searchExam = repository.searchPins("examination")
-        assertTrue("Searching for examination should find Exam Branch", searchExam.any { it.id == "old_g_exam" })
-
-        val searchLab = repository.searchPins("programming")
-        assertTrue("Searching for programming should find CS Lab 1", searchLab.any { it.id == "new_g_cs_lab1" })
     }
 
     @Test
@@ -95,35 +93,24 @@ class ExampleUnitTest {
         val expectedLabels = listOf(
             "VC Office",
             "HOD Dept. of English",
-            "Director Admissions",
-            "Student Welfare Office",
-            "Transport Office",
-            "Student Point Parking",
-            "HOD Prof. Saleem",
+            "Smart Class Room",
             "Central Cafeteria",
-            "Central Library",
-            "Civil Labs (Concrete & Soil)",
-            "Civil Workshop",
-            "Electrical Labs",
-            "Electrical Workshop",
-            "Mechanical Labs",
-            "Mechanical Workshop",
-            "Electronics Lab",
-            "Electronics Workshop",
-            "CS Labs",
-            "AI Lab",
-            "Robotics & AI Lab",
-            "Physics Lab",
-            "BSRS & English Lab"
+            "Student Point Parking",
+            "HOD Prof. Saleem"
         )
         expectedLabels.forEach { expected ->
             assertTrue("Missing expected BBSUTSD landmark label: $expected", labels.contains(expected))
         }
 
-        repository.schedules.value.forEach { item ->
+        val linkedSchedules = repository.schedules.value.filter { it.locationPinId.isNotBlank() }
+        assertTrue("At least one schedule item should link to a manual pin", linkedSchedules.isNotEmpty())
+        linkedSchedules.forEach { item ->
             assertNotNull("Schedule pin missing: ${item.locationPinId}", repository.getPinById(item.locationPinId))
         }
-        repository.faculty.value.forEach { member ->
+
+        val linkedFaculty = repository.faculty.value.filter { it.officePinId.isNotBlank() }
+        assertTrue("At least one faculty member should link to a manual pin", linkedFaculty.isNotEmpty())
+        linkedFaculty.forEach { member ->
             assertNotNull("Faculty office pin missing: ${member.officePinId}", repository.getPinById(member.officePinId))
         }
     }

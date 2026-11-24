@@ -267,7 +267,7 @@ fun HomeScreen(
                             },
                             placeholder = {
                                 Text(
-                                    "Quick search: VC Office, CS Labs, Library, Bus...",
+                                    "Quick search: VC Office, Smart Class, Cafeteria, Points...",
                                     fontFamily = BodyFontFamily,
                                     fontSize = 12.5.sp,
                                     color = MutedGray,
@@ -539,7 +539,7 @@ fun HomeScreen(
                         actionLabel = "Locate on Map",
                         testTag = "shortcut_new_building"
                     ) {
-                        viewModel.locatePinById("new_1_library")
+                        viewModel.locatePinById("new_1_smart_class")
                     }
                 }
             }

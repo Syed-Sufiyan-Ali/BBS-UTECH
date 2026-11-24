@@ -221,7 +221,7 @@ fun BusesScreen(
 
                             OutlinedButton(
                                 onClick = {
-                                    val transportPin = viewModel.repository.getPinById("campus_transport_office")
+                                    val transportPin = viewModel.repository.getPinById("campus_transport")
                                     if (transportPin != null) {
                                         viewModel.locatePinOutdoor(transportPin)
                                     }

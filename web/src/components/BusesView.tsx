@@ -69,7 +69,7 @@ export function BusesView({
             </div>
             <button
               type="button"
-              onClick={() => onLocatePinById('campus_transport_office')}
+              onClick={() => onLocatePinById('campus_transport')}
               className="flex items-center gap-1.5 rounded-full bg-[#0B57D0] px-4 py-2 font-display text-xs font-semibold text-white hover:bg-[#0842A0] cursor-pointer"
             >
               <MapPin className="h-4 w-4" />

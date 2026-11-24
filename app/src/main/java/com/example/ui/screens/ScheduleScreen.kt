@@ -566,30 +566,47 @@ fun ScheduleScreen(
                                     )
                                 }
 
-                                Surface(
-                                    color = PixelBlueTint,
-                                    shape = RoundedCornerShape(50),
-                                    modifier = Modifier
-                                        .clickable { viewModel.locatePinById(item.locationPinId) }
-                                        .testTag("locate_room_${item.subjectCode}")
-                                ) {
-                                    Row(
-                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                        verticalAlignment = Alignment.CenterVertically
+                                if (viewModel.repository.getPinById(item.locationPinId) != null) {
+                                    Surface(
+                                        color = PixelBlueTint,
+                                        shape = RoundedCornerShape(50),
+                                        modifier = Modifier
+                                            .clickable { viewModel.locatePinById(item.locationPinId) }
+                                            .testTag("locate_room_${item.subjectCode}")
                                     ) {
-                                        Icon(
-                                            imageVector = Icons.Default.NearMe,
-                                            contentDescription = null,
-                                            tint = PixelBlue,
-                                            modifier = Modifier.size(13.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Row(
+                                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.NearMe,
+                                                contentDescription = null,
+                                                tint = PixelBlue,
+                                                modifier = Modifier.size(13.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text(
+                                                text = "Map",
+                                                fontFamily = BodyFontFamily,
+                                                color = PixelBlue,
+                                                fontSize = 11.5.sp,
+                                                fontWeight = FontWeight.SemiBold
+                                            )
+                                        }
+                                    }
+                                } else {
+                                    Surface(
+                                        color = PureSurface,
+                                        shape = RoundedCornerShape(50),
+                                        border = BorderStroke(1.dp, MistOutline)
+                                    ) {
                                         Text(
-                                            text = "Map",
+                                            text = "Pin pending",
                                             fontFamily = BodyFontFamily,
-                                            color = PixelBlue,
-                                            fontSize = 11.5.sp,
-                                            fontWeight = FontWeight.SemiBold
+                                            color = SlateGray,
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
                                         )
                                     }
                                 }

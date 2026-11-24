@@ -60,15 +60,14 @@ import {
   type TurnAction,
 } from '../utils/routing';
 
-type MapFilterTab = 'ALL' | 'OFFICES' | 'LABS_WORKSHOPS' | 'TRANSPORT' | 'AMENITIES';
+type MapFilterTab = 'ALL' | 'OFFICES' | 'CLASSES' | 'FOOD_BUS';
 type MobileSheetTab = 'DIRECTIONS' | 'INFO';
 
 const FILTER_TABS: { key: MapFilterTab; label: string }[] = [
   { key: 'ALL', label: 'All Pins' },
-  { key: 'OFFICES', label: 'VC & Offices' },
-  { key: 'LABS_WORKSHOPS', label: 'Labs & Shops' },
-  { key: 'TRANSPORT', label: 'Point Buses' },
-  { key: 'AMENITIES', label: 'Library & Food' },
+  { key: 'OFFICES', label: 'Offices & HODs' },
+  { key: 'CLASSES', label: 'Classes' },
+  { key: 'FOOD_BUS', label: 'Food & Bus' },
 ];
 
 interface OutdoorMapViewProps {
@@ -97,12 +96,10 @@ function escapeHtml(str: string): string {
 function matchesFilter(pin: CampusPin, filter: MapFilterTab, query: string): boolean {
   if (filter === 'OFFICES') {
     if (pin.category !== 'ADMIN' && pin.category !== 'STUDENT_SERVICE') return false;
-  } else if (filter === 'LABS_WORKSHOPS') {
-    if (pin.category !== 'LAB') return false;
-  } else if (filter === 'TRANSPORT') {
-    if (pin.category !== 'TRANSPORT_GATE') return false;
-  } else if (filter === 'AMENITIES') {
-    if (pin.category !== 'AMENITY' && pin.category !== 'LIBRARY') return false;
+  } else if (filter === 'CLASSES') {
+    if (pin.category !== 'ACADEMIC' && pin.category !== 'LAB' && pin.category !== 'LIBRARY') return false;
+  } else if (filter === 'FOOD_BUS') {
+    if (pin.category !== 'AMENITY' && pin.category !== 'TRANSPORT_GATE') return false;
   }
 
   if (query.trim()) {
@@ -210,6 +207,8 @@ export function OutdoorMapView({
   const [activeStepIndex, setActiveStepIndex] = useState<number>(0);
   const [mobileSheetTab, setMobileSheetTab] = useState<MobileSheetTab>('DIRECTIONS');
   const [mobileSheetExpanded, setMobileSheetExpanded] = useState<boolean>(true);
+  const [showMobileDirectory, setShowMobileDirectory] = useState<boolean>(false);
+  const hasNavTargetOnMountRef = useRef<boolean>(Boolean(navTargetPin));
   const [externalRoute, setExternalRoute] = useState<ComputedRoute | null>(null);
   const [isFetchingExternalRoute, setIsFetchingExternalRoute] = useState(false);
 
@@ -340,10 +339,30 @@ export function OutdoorMapView({
     }
   }, []);
 
+  const fitAllCampusPins = useCallback(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    if (CAMPUS_PINS.length >= 2) {
+      const bounds = L.latLngBounds(
+        CAMPUS_PINS.map((p) => [p.latitude, p.longitude] as [number, number])
+      );
+      if (bounds.isValid()) {
+        map.fitBounds(bounds, { padding: [56, 56], maxZoom: 17, animate: true });
+        return;
+      }
+    }
+    if (CAMPUS_PINS.length === 1) {
+      map.setView([CAMPUS_PINS[0].latitude, CAMPUS_PINS[0].longitude], 17, { animate: true });
+      return;
+    }
+    map.setView([BBSUTSD_CENTER.lat, BBSUTSD_CENTER.lng], 17, { animate: true });
+  }, []);
+
   const handleSelectPin = useCallback((pin: CampusPin) => {
     setFocusedPin(pin);
     setActiveStepIndex(0);
     setMobileSheetExpanded(true);
+    setShowMobileDirectory(false);
     const map = mapRef.current;
     if (map) {
       map.panTo([pin.latitude, pin.longitude], { animate: true });
@@ -417,6 +436,15 @@ export function OutdoorMapView({
     };
     map.on('zoomend', syncZoomLabels);
     syncZoomLabels();
+
+    if (!hasNavTargetOnMountRef.current && CAMPUS_PINS.length >= 2) {
+      const pinBounds = L.latLngBounds(
+        CAMPUS_PINS.map((p) => [p.latitude, p.longitude] as [number, number])
+      );
+      if (pinBounds.isValid()) {
+        map.fitBounds(pinBounds, { padding: [56, 56], maxZoom: 17, animate: false });
+      }
+    }
 
     mapRef.current = map;
     satLayerRef.current = sat;
@@ -860,6 +888,7 @@ export function OutdoorMapView({
   const focusPinFromSearch = (pin: CampusPin) => {
     setSelectedFilter('ALL');
     setSearchText('');
+    setShowMobileDirectory(false);
     handleSelectPin(pin);
     const route = effectiveOrigin
       ? computeCampusRoute(effectiveOrigin.coord, effectiveOrigin.label, pin)
@@ -870,11 +899,11 @@ export function OutdoorMapView({
   const currentTutorialStep = activeRoute?.steps[activeStepIndex] ?? null;
 
   return (
-    <div className="flex flex-col lg:grid lg:grid-cols-[400px_1fr] xl:grid-cols-[420px_1fr] h-[calc(100dvh-136px)] lg:h-[calc(100dvh-96px)] min-h-[560px] w-full overflow-hidden rounded-[28px] border border-[#E2E8F0] bg-[#FFFFFF] shadow-sm">
+    <div className="flex flex-col lg:grid lg:grid-cols-[360px_1fr] xl:grid-cols-[400px_1fr] h-[calc(100dvh-148px)] sm:h-[calc(100dvh-152px)] lg:h-[calc(100dvh-96px)] min-h-[380px] lg:min-h-[480px] w-full overflow-hidden rounded-[28px] border border-[#E2E8F0] bg-[#FFFFFF] shadow-sm">
       {/* =================================================================== */}
       {/* DESKTOP LEFT PIXEL PANEL (Hidden < lg so mobile stays full-screen)  */}
       {/* =================================================================== */}
-      <aside className="hidden lg:flex flex-col h-full overflow-hidden border-r border-[#E2E8F0] bg-[#FFFFFF]">
+      <aside className="hidden lg:flex flex-col h-full min-h-0 overflow-hidden border-r border-[#E2E8F0] bg-[#FFFFFF]">
         {/* Header & Search */}
         <div className="border-b border-[#E2E8F0] p-4 space-y-3 bg-[#F8FAFC]">
           <div className="flex items-center justify-between gap-2">
@@ -932,7 +961,7 @@ export function OutdoorMapView({
               <option value="AUTO_GPS">
                 {gpsMode === 'LIVE'
                   ? 'Live Browser GPS Signal'
-                  : `GPS Preset: ${presets[presetIndex]?.label ?? 'Main Entrance Gate'}`}
+                  : `GPS Preset: ${presets[presetIndex]?.label ?? 'VC Office & HOD Dept. of English'}`}
               </option>
               <optgroup label="── Pick Any Campus Starting Landmark ──">
                 {CAMPUS_PINS.map((pin) => (
@@ -969,7 +998,7 @@ export function OutdoorMapView({
               type="text"
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
-              placeholder="B • Destination (VC, Library, CS Lab, Gate)..."
+              placeholder="B • Destination (VC, Smart Class, Cafeteria, Points...)"
               className="w-full rounded-full border border-[#DCE2EC] bg-[#FFFFFF] py-2.5 pl-10 pr-8 text-xs text-[#111827] placeholder-[#747775] outline-none focus:border-[#0B57D0]"
             />
             {searchText && (
@@ -1017,7 +1046,7 @@ export function OutdoorMapView({
                 onClick={() => onSelectPreset(0)}
                 className="shrink-0 text-[#0B57D0] underline cursor-pointer ml-1"
               >
-                Use Gate Demo
+                Use Preset
               </button>
             </div>
           ) : isAcquiringGps ? (
@@ -1042,7 +1071,7 @@ export function OutdoorMapView({
         </div>
 
         {/* Scrollable Drawer Body */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
           {focusedPin ? (
             <>
               {/* Pin Info Card */}
@@ -1285,7 +1314,7 @@ export function OutdoorMapView({
                       onClick={() => onSelectPreset(0)}
                       className="rounded-full bg-[#FFFFFF] border border-[#DCE2EC] px-3 py-1.5 font-display text-[11px] font-semibold text-[#111827] hover:bg-[#EFF3F8] cursor-pointer"
                     >
-                      Preview from Main Gate
+                      Use Start Preset
                     </button>
                   </div>
                 </div>
@@ -1330,20 +1359,23 @@ export function OutdoorMapView({
       {/* =================================================================== */}
       {/* MAIN MAP VIEWPORT (Mobile + Desktop Right Column)                   */}
       {/* =================================================================== */}
-      <div className="relative flex-1 h-full min-h-[420px] w-full overflow-hidden">
-        <div ref={mapContainerRef} className="h-full w-full" />
+      <div className="relative flex-1 h-full min-h-0 w-full overflow-hidden">
+        <div ref={mapContainerRef} className="relative z-0 isolate h-full w-full" />
 
         {/* MOBILE TOP COMPACT PIXEL SEARCH BAR (< lg) */}
-        <div className="pointer-events-none absolute top-3 left-3 right-3 z-20 flex flex-col gap-2 lg:hidden">
+        <div className="pointer-events-none absolute top-3 left-3 right-3 z-40 flex flex-col gap-2 lg:hidden">
           <div className="pointer-events-auto rounded-3xl border border-[#E2E8F0] bg-[#FFFFFF]/95 backdrop-blur-md p-2.5 shadow-lg space-y-2">
-            <div className="flex items-center gap-2">
-              <div className="relative flex-1">
+            <div className="flex items-center gap-1.5">
+              <div className="relative flex-1 min-w-0">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#0B57D0]" />
                 <input
                   type="text"
                   value={searchText}
-                  onChange={(e) => setSearchText(e.target.value)}
-                  placeholder="Search BBS-UTECH pin, lab, office..."
+                  onChange={(e) => {
+                    setSearchText(e.target.value);
+                    if (e.target.value.trim()) setShowMobileDirectory(false);
+                  }}
+                  placeholder="Search VC, Smart Class, Cafeteria..."
                   className="w-full rounded-full bg-[#EFF3F8] py-2 pl-9 pr-8 text-xs text-[#111827] placeholder-[#747775] outline-none focus:ring-2 focus:ring-[#D3E3FD]"
                 />
                 {searchText && (
@@ -1359,8 +1391,20 @@ export function OutdoorMapView({
               </div>
               <button
                 type="button"
+                onClick={() => setShowMobileDirectory((v) => !v)}
+                className={`shrink-0 flex items-center gap-1 rounded-full px-2.5 py-2 text-[11px] font-semibold cursor-pointer ${
+                  showMobileDirectory
+                    ? 'bg-[#0B57D0] text-white'
+                    : 'bg-[#E8F0FE] text-[#0B57D0]'
+                }`}
+              >
+                <MapPin className="h-3 w-3" />
+                <span>Pins ({filteredDirectoryPins.length})</span>
+              </button>
+              <button
+                type="button"
                 onClick={onRequestLiveGps}
-                className={`shrink-0 flex items-center gap-1 rounded-full px-3 py-2 text-[11px] font-semibold ${
+                className={`shrink-0 flex items-center gap-1 rounded-full px-2.5 py-2 text-[11px] font-semibold cursor-pointer ${
                   gpsMode === 'LIVE'
                     ? 'bg-[#E6F4EA] text-[#137333]'
                     : 'bg-[#EFF3F8] text-[#444746]'
@@ -1388,7 +1432,7 @@ export function OutdoorMapView({
                 <option value="AUTO_GPS">
                   {gpsMode === 'LIVE'
                     ? 'Live GPS Signal'
-                    : `Preset: ${presets[presetIndex]?.label ?? 'Main Gate'}`}
+                    : `Preset: ${presets[presetIndex]?.label ?? 'VC Office'}`}
                 </option>
                 {CAMPUS_PINS.map((pin) => (
                   <option key={pin.id} value={pin.id}>
@@ -1408,7 +1452,7 @@ export function OutdoorMapView({
                   key={tab.key}
                   type="button"
                   onClick={() => setSelectedFilter(tab.key)}
-                  className={`shrink-0 rounded-full px-3 py-1.5 font-display text-[11px] font-semibold shadow-sm ${
+                  className={`shrink-0 rounded-full px-3 py-1.5 font-display text-[11px] font-semibold shadow-sm cursor-pointer ${
                     active
                       ? 'bg-[#0B57D0] text-white'
                       : 'bg-[#FFFFFF]/95 text-[#444746] border border-[#E2E8F0]'
@@ -1428,7 +1472,7 @@ export function OutdoorMapView({
                   key={pin.id}
                   type="button"
                   onClick={() => focusPinFromSearch(pin)}
-                  className="flex w-full items-center gap-2.5 border-b border-[#F1F5F9] px-4 py-2.5 text-left hover:bg-[#EFF3F8] last:border-b-0"
+                  className="flex w-full items-center gap-2.5 border-b border-[#F1F5F9] px-4 py-2.5 text-left hover:bg-[#EFF3F8] last:border-b-0 cursor-pointer"
                 >
                   <MapPin className="h-3.5 w-3.5 shrink-0 text-[#0B57D0]" />
                   <div className="min-w-0">
@@ -1443,31 +1487,91 @@ export function OutdoorMapView({
               ))}
             </div>
           )}
+
+          {/* Mobile Quick Pins List Drawer */}
+          {showMobileDirectory && searchSuggestions.length === 0 && (
+            <div className="pointer-events-auto max-h-[36dvh] overflow-y-auto rounded-3xl border border-[#E2E8F0] bg-[#FFFFFF] p-2 shadow-xl">
+              <div className="flex items-center justify-between px-2.5 py-1.5 text-[11px] font-bold text-[#5F6368]">
+                <span>Campus Pins ({filteredDirectoryPins.length})</span>
+                <button
+                  type="button"
+                  onClick={() => setShowMobileDirectory(false)}
+                  className="text-[#0B57D0] font-semibold cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
+              {filteredDirectoryPins.length === 0 ? (
+                <div className="px-3 py-4 text-center text-xs text-[#5F6368]">
+                  No pins match this filter.
+                </div>
+              ) : (
+                filteredDirectoryPins.map((pin) => {
+                  const color = CATEGORY_COLORS[pin.category] ?? '#0B57D0';
+                  return (
+                    <button
+                      key={pin.id}
+                      type="button"
+                      onClick={() => focusPinFromSearch(pin)}
+                      className="flex w-full items-center gap-2.5 rounded-2xl px-3 py-2.5 text-left hover:bg-[#EFF3F8] cursor-pointer"
+                    >
+                      <span
+                        className="h-3 w-3 shrink-0 rounded-full border-2 border-white shadow-xs"
+                        style={{ backgroundColor: color }}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate font-display text-xs font-bold text-[#111827]">
+                          {pin.name}
+                        </div>
+                        <div className="truncate text-[10.5px] text-[#5F6368]">
+                          {BUILDINGS[pin.building].shortName} • {pin.roomNumber}
+                        </div>
+                      </div>
+                      <ChevronRight className="h-4 w-4 shrink-0 text-[#747775]" />
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          )}
         </div>
 
         {/* Outside Campus Toast Notice */}
         {outsideNotice && (
-          <div className="pointer-events-auto absolute top-4 left-1/2 -translate-x-1/2 z-30 rounded-full border border-[#F2B8B5] bg-[#FFFFFF] px-4 py-2 text-xs font-semibold text-[#B3261E] shadow-lg">
+          <div className="pointer-events-auto absolute top-4 left-1/2 -translate-x-1/2 z-40 rounded-full border border-[#F2B8B5] bg-[#FFFFFF] px-4 py-2 text-xs font-semibold text-[#B3261E] shadow-lg">
             GPS outside BBS-UTECH perimeter — map centered on campus.
           </div>
         )}
 
-        {/* Right-Edge Floating Pixel Map Controls */}
-        <div className="absolute right-3.5 top-1/2 z-20 -translate-y-1/2 flex flex-col gap-2">
+        {/* Right-Edge Floating Pixel Map Controls (Zoom +/- always visible & unobstructed) */}
+        <div className="absolute right-3 top-[148px] sm:top-[152px] lg:top-4 z-30 flex flex-col items-center gap-2">
+          <div className="flex flex-col overflow-hidden rounded-2xl border border-[#DCE2EC] bg-[#FFFFFF]/97 shadow-lg divide-y divide-[#E2E8F0]">
+            <button
+              type="button"
+              title="Zoom In"
+              aria-label="Zoom In"
+              onClick={() => mapRef.current?.zoomIn()}
+              className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center text-[#111827] hover:bg-[#EFF3F8] active:bg-[#D3E3FD] cursor-pointer"
+            >
+              <ZoomIn className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              title="Zoom Out"
+              aria-label="Zoom Out"
+              onClick={() => mapRef.current?.zoomOut()}
+              className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center text-[#111827] hover:bg-[#EFF3F8] active:bg-[#D3E3FD] cursor-pointer"
+            >
+              <ZoomOut className="h-4 w-4" />
+            </button>
+          </div>
+
           <MapCircleBtn
             title={isSatellite ? 'Switch to Street Map View' : 'Switch to Satellite Imagery'}
             active={isSatellite}
             onClick={() => setIsSatellite((s) => !s)}
           >
             {isSatellite ? <Layers className="h-4 w-4" /> : <MapIcon className="h-4 w-4" />}
-          </MapCircleBtn>
-
-          <MapCircleBtn title="Zoom In" onClick={() => mapRef.current?.zoomIn()}>
-            <ZoomIn className="h-4 w-4" />
-          </MapCircleBtn>
-
-          <MapCircleBtn title="Zoom Out" onClick={() => mapRef.current?.zoomOut()}>
-            <ZoomOut className="h-4 w-4" />
           </MapCircleBtn>
 
           <MapCircleBtn
@@ -1479,13 +1583,9 @@ export function OutdoorMapView({
           </MapCircleBtn>
 
           <MapCircleBtn
-            title="Center on BBS-UTECH Campus"
+            title="Fit All Campus Pins"
             primary
-            onClick={() =>
-              mapRef.current?.setView([BBSUTSD_CENTER.lat, BBSUTSD_CENTER.lng], 17, {
-                animate: true,
-              })
-            }
+            onClick={fitAllCampusPins}
           >
             <Crosshair className="h-4 w-4" />
           </MapCircleBtn>
@@ -1493,7 +1593,7 @@ export function OutdoorMapView({
 
         {/* Desktop Map Top-Left Floating Route Pill */}
         {focusedPin && activeRoute && (
-          <div className="hidden lg:flex items-center gap-2.5 absolute top-3.5 left-3.5 z-20 rounded-full border border-[#DCE2EC] bg-[#FFFFFF]/95 backdrop-blur-md px-4 py-2 shadow-md">
+          <div className="hidden lg:flex items-center gap-2.5 absolute top-3.5 left-3.5 z-30 rounded-full border border-[#DCE2EC] bg-[#FFFFFF]/95 backdrop-blur-md px-4 py-2 shadow-md">
             <Footprints className="h-4 w-4 text-[#0B57D0]" />
             <div className="text-xs font-semibold text-[#111827]">
               <span className="text-[#0F9D58]">{effectiveOrigin?.label}</span>
@@ -1507,7 +1607,7 @@ export function OutdoorMapView({
           </div>
         )}
 
-        <div className="hidden lg:flex absolute bottom-3.5 left-3.5 z-20 items-center gap-3.5 rounded-full border border-[#E2E8F0] bg-[#FFFFFF]/95 px-4 py-1.5 text-[11px] font-semibold text-[#444746] shadow-md">
+        <div className="hidden lg:flex absolute bottom-3.5 left-3.5 z-30 items-center gap-3.5 rounded-full border border-[#E2E8F0] bg-[#FFFFFF]/95 px-4 py-1.5 text-[11px] font-semibold text-[#444746] shadow-md">
           <span className="flex items-center gap-1.5">
             <span className="h-2.5 w-2.5 rounded-full bg-[#B3261E]" /> Old Complex
           </span>
@@ -1526,7 +1626,7 @@ export function OutdoorMapView({
         {/* MOBILE BOTTOM PIXEL SHEET (Pin Info + Turn-by-Turn Tutorial)        */}
         {/* =================================================================== */}
         {focusedPin ? (
-          <div className="lg:hidden absolute bottom-2.5 left-2.5 right-2.5 z-20 rounded-[28px] border border-[#E2E8F0] bg-[#FFFFFF]/97 backdrop-blur-md shadow-2xl">
+          <div className="lg:hidden absolute bottom-2.5 left-2.5 right-2.5 z-30 rounded-[28px] border border-[#E2E8F0] bg-[#FFFFFF]/97 backdrop-blur-md shadow-2xl">
             <div className="mx-auto mt-2 h-1 w-9 rounded-full bg-[#CBD5E1]" />
 
             {/* Sheet Header */}
@@ -1573,7 +1673,7 @@ export function OutdoorMapView({
             </div>
 
             {mobileSheetExpanded && (
-              <div className="p-3.5 space-y-2.5 max-h-[46dvh] overflow-y-auto">
+              <div className="p-3.5 space-y-2.5 max-h-[34dvh] overflow-y-auto">
                 <div className="grid grid-cols-2 gap-1.5 rounded-full bg-[#EFF3F8] p-1">
                   <button
                     type="button"
@@ -1690,7 +1790,7 @@ export function OutdoorMapView({
                         onClick={() => onSelectPreset(0)}
                         className="rounded-full bg-[#FFFFFF] border border-[#DCE2EC] px-3 py-1.5 font-display text-[11px] font-semibold text-[#111827]"
                       >
-                        Gate Demo
+                        Use Preset
                       </button>
                     </div>
                   </div>
@@ -1733,7 +1833,7 @@ export function OutdoorMapView({
             )}
           </div>
         ) : (
-          <div className="lg:hidden absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2.5 rounded-full border border-[#E2E8F0] bg-[#FFFFFF]/95 px-3.5 py-1.5 text-[10.5px] font-semibold text-[#444746] shadow-md whitespace-nowrap">
+          <div className="lg:hidden absolute bottom-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2.5 rounded-full border border-[#E2E8F0] bg-[#FFFFFF]/95 px-3.5 py-1.5 text-[10.5px] font-semibold text-[#444746] shadow-md whitespace-nowrap">
             <span className="flex items-center gap-1">
               <span className="h-2 w-2 rounded-full bg-[#B3261E]" /> Old
             </span>

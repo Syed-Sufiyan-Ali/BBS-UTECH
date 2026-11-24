@@ -9,7 +9,7 @@ import {
   Navigation,
   User,
 } from 'lucide-react';
-import { CLASS_SCHEDULES, SCHEDULE_DEPARTMENTS } from '../data/campusData';
+import { CAMPUS_PINS, CLASS_SCHEDULES, SCHEDULE_DEPARTMENTS } from '../data/campusData';
 import { getCurrentMinutes, getTodayDayName } from '../utils/geo';
 
 interface ScheduleViewProps {
@@ -260,14 +260,20 @@ export function ScheduleView({
                     <MapPin className="h-4 w-4 shrink-0 text-[#0B57D0]" />
                     {item.roomLabel}
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => onLocatePinById(item.locationPinId)}
-                    className="flex shrink-0 items-center gap-1.5 rounded-full bg-[#0B57D0] px-3.5 py-1.5 font-display text-xs font-semibold text-white transition hover:bg-[#0842A0] cursor-pointer"
-                  >
-                    <Navigation className="h-3.5 w-3.5" />
-                    <span>Locate on Map</span>
-                  </button>
+                  {CAMPUS_PINS.some((p) => p.id === item.locationPinId) ? (
+                    <button
+                      type="button"
+                      onClick={() => onLocatePinById(item.locationPinId)}
+                      className="flex shrink-0 items-center gap-1.5 rounded-full bg-[#0B57D0] px-3.5 py-1.5 font-display text-xs font-semibold text-white transition hover:bg-[#0842A0] cursor-pointer"
+                    >
+                      <Navigation className="h-3.5 w-3.5" />
+                      <span>Locate on Map</span>
+                    </button>
+                  ) : (
+                    <span className="shrink-0 rounded-full bg-[#FFFFFF] border border-[#DCE2EC] px-3 py-1 text-[11px] font-medium text-[#5F6368]">
+                      Pin pending
+                    </span>
+                  )}
                 </div>
               </div>
             );

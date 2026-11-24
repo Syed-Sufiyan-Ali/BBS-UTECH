@@ -165,44 +165,12 @@ const EDGE_DEFS: [string, string, string][] = [
 ];
 
 const PIN_TO_NODE: Record<string, string> = {
-  gate_main: 'gate_entry',
-  campus_mosque: 'mosque_walk',
-  campus_cafeteria: 'cafeteria_plaza',
-  old_g_welfare: 'old_porch',
-  old_g_seminar: 'old_porch',
   old_g_vc: 'vc_english_block',
   hod_english: 'vc_english_block',
-  old_g_registrar: 'old_center',
-  old_g_exam: 'old_center',
-  old_g_finance: 'old_east',
-  old_g_admissions: 'old_east',
-  old_1_civil: 'old_north',
-  old_1_electrical: 'old_north',
-  old_1_mechanical: 'old_north',
-  old_1_electronics: 'old_east',
-  old_2_basic_sciences: 'old_west',
-  old_2_physics: 'old_north',
-  old_2_lt1: 'old_west',
-  old_2_lt2: 'old_center',
-  new_g_reception: 'new_porch',
-  new_g_skill_dir: 'new_west',
-  new_g_cs_lab1: 'new_west',
-  new_g_ai_lab: 'new_east',
-  new_g_medical: 'new_east',
-  new_1_library: 'new_center',
   new_1_smart_class: 'smart_class_entry',
-  new_2_auditorium: 'new_center',
-  new_2_automation_lab: 'new_west',
-  campus_workshops: 'ws_mech_bay',
-  ws_civil: 'ws_civil_bay',
-  ws_electrical: 'ws_elec_bay',
-  ws_electronics: 'ws_elec_bay',
-  hostel_boys: 'boys_hostel_gate',
-  campus_transport_office: 'transport_office_door',
+  campus_cafeteria: 'cafeteria_plaza',
   campus_transport: 'points_stop_east',
   hod_prof_saleem: 'points_stop_east',
-  hostel_girls: 'girls_hostel_walk',
-  campus_sports: 'sports_track',
 };
 
 function projectPointOntoSegment(
@@ -623,10 +591,11 @@ export async function fetchOsrmRoadRoute(
   origin: LatLng,
   destinationPin: CampusPin
 ): Promise<ComputedRoute | null> {
-  const gatePin = CAMPUS_PINS.find((p) => p.id === 'gate_main');
-  if (!gatePin) return null;
+  const gateCoord = CAMPUS_PINS.find((p) => p.id === 'gate_main');
+  const gateLat = gateCoord?.latitude ?? 27.50965;
+  const gateLng = gateCoord?.longitude ?? 68.7405;
 
-  const url = `https://router.project-osrm.org/route/v1/foot/${origin.lng},${origin.lat};${gatePin.longitude},${gatePin.latitude}?overview=full&geometries=geojson&steps=true`;
+  const url = `https://router.project-osrm.org/route/v1/foot/${origin.lng},${origin.lat};${gateLng},${gateLat}?overview=full&geometries=geojson&steps=true`;
   try {
     const controller = new AbortController();
     const timer = window.setTimeout(() => controller.abort(), 5000);
@@ -702,7 +671,7 @@ export async function fetchOsrmRoadRoute(
     }
 
     const campusPart = computeCampusRoute(
-      { lat: gatePin.latitude, lng: gatePin.longitude },
+      { lat: gateLat, lng: gateLng },
       'Main Entrance Gate',
       destinationPin
     );
