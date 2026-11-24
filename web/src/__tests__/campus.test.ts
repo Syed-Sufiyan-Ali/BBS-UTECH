@@ -18,8 +18,8 @@ import {
 import { classifyTurnDelta, computeCampusRoute } from '../utils/routing';
 
 describe('BBSUTSD Web Data & Geospatial Logic', () => {
-  it('contains only the 6 manually added BBSUTSD landmark pins', () => {
-    expect(CAMPUS_PINS.length).toBe(6);
+  it('contains only the 9 manually added BBSUTSD landmark pins', () => {
+    expect(CAMPUS_PINS.length).toBe(9);
     const ids = new Set(CAMPUS_PINS.map((p) => p.id));
     expect(ids.has('old_g_vc')).toBe(true);
     expect(ids.has('hod_english')).toBe(true);
@@ -27,6 +27,9 @@ describe('BBSUTSD Web Data & Geospatial Logic', () => {
     expect(ids.has('campus_cafeteria')).toBe(true);
     expect(ids.has('campus_transport')).toBe(true);
     expect(ids.has('hod_prof_saleem')).toBe(true);
+    expect(ids.has('central_library')).toBe(true);
+    expect(ids.has('new_building_mosque')).toBe(true);
+    expect(ids.has('gate_main')).toBe(true);
   });
 
   it('includes Old Complex, New Complex, and Dividing Road overlays', () => {
@@ -75,6 +78,9 @@ describe('BBSUTSD Web Data & Geospatial Logic', () => {
     expect(searchPins(CAMPUS_PINS, 'cafeteria').some((p) => p.id === 'campus_cafeteria')).toBe(true);
     expect(searchPins(CAMPUS_PINS, 'points stop').some((p) => p.id === 'campus_transport')).toBe(true);
     expect(searchPins(CAMPUS_PINS, 'saleem').some((p) => p.id === 'hod_prof_saleem')).toBe(true);
+    expect(searchPins(CAMPUS_PINS, 'central library').some((p) => p.id === 'central_library')).toBe(true);
+    expect(searchPins(CAMPUS_PINS, 'mosque').some((p) => p.id === 'new_building_mosque')).toBe(true);
+    expect(searchPins(CAMPUS_PINS, 'main gate').some((p) => p.id === 'gate_main')).toBe(true);
   });
 
   it('computes walking distance and valid non-empty schedule/faculty pin references', () => {
@@ -107,11 +113,22 @@ describe('BBSUTSD Web Data & Geospatial Logic', () => {
     const pointsStop = CAMPUS_PINS.find((p) => p.id === 'campus_transport')!;
     const smartClass = CAMPUS_PINS.find((p) => p.id === 'new_1_smart_class')!;
     const profSaleem = CAMPUS_PINS.find((p) => p.id === 'hod_prof_saleem')!;
+    const library = CAMPUS_PINS.find((p) => p.id === 'central_library')!;
+    const mosque = CAMPUS_PINS.find((p) => p.id === 'new_building_mosque')!;
+    const mainGates = CAMPUS_PINS.find((p) => p.id === 'gate_main')!;
 
     expect(vc.latitude).toBeCloseTo(27.511706, 5);
     expect(vc.longitude).toBeCloseTo(68.742824, 5);
-    expect(pointsStop.latitude).toBeCloseTo(27.5105, 5);
-    expect(pointsStop.longitude).toBeCloseTo(68.7448, 5);
+    expect(pointsStop.latitude).toBeCloseTo(27.511694, 5);
+    expect(pointsStop.longitude).toBeCloseTo(68.742806, 5);
+    expect(profSaleem.latitude).toBeCloseTo(27.5109, 5);
+    expect(profSaleem.longitude).toBeCloseTo(68.7445, 5);
+    expect(library.latitude).toBeCloseTo(27.512831, 5);
+    expect(library.longitude).toBeCloseTo(68.742349, 5);
+    expect(mosque.latitude).toBeCloseTo(27.5105, 5);
+    expect(mosque.longitude).toBeCloseTo(68.7448, 5);
+    expect(mainGates.latitude).toBeCloseTo(27.510977, 5);
+    expect(mainGates.longitude).toBeCloseTo(68.74388, 5);
 
     const vcToCafeteria = computeCampusRoute(
       { lat: vc.latitude, lng: vc.longitude },
@@ -123,21 +140,21 @@ describe('BBSUTSD Web Data & Geospatial Logic', () => {
     expect(vcToCafeteria.steps[vcToCafeteria.steps.length - 1].action).toBe('ARRIVE');
     expect(vcToCafeteria.totalDistanceMeters).toBeGreaterThan(100);
 
-    const vcToPoints = computeCampusRoute(
-      { lat: vc.latitude, lng: vc.longitude },
-      'VC Office',
-      pointsStop
+    const gatesToLibrary = computeCampusRoute(
+      { lat: mainGates.latitude, lng: mainGates.longitude },
+      'Main Gates',
+      library
     );
-    expect(vcToPoints.polyline.length).toBeGreaterThan(2);
-    expect(vcToPoints.totalDistanceMeters).toBeGreaterThan(180);
+    expect(gatesToLibrary.polyline.length).toBeGreaterThan(2);
+    expect(gatesToLibrary.totalDistanceMeters).toBeGreaterThan(150);
 
-    const smartToSaleem = computeCampusRoute(
+    const smartToMosque = computeCampusRoute(
       { lat: smartClass.latitude, lng: smartClass.longitude },
       'Smart Class Room',
-      profSaleem
+      mosque
     );
-    expect(smartToSaleem.polyline.length).toBeGreaterThan(2);
-    expect(smartToSaleem.steps.some((s) => /turn|keep|head/i.test(s.instruction))).toBe(true);
+    expect(smartToMosque.polyline.length).toBeGreaterThan(2);
+    expect(smartToMosque.steps.some((s) => /turn|keep|head/i.test(s.instruction))).toBe(true);
   });
 
   it('uses edge-projection to find the shortest possible walkable path without backwards detours from live user coordinates', () => {

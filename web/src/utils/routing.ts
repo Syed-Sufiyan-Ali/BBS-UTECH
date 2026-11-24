@@ -86,9 +86,13 @@ const GRAPH_NODES: Record<string, GraphNode> = {
   transport_office_door: { id: 'transport_office_door', lat: 27.51182, lng: 68.74288, label: 'Transport Office' },
   point_parking_bay: { id: 'point_parking_bay', lat: 27.51162, lng: 68.74295, label: 'Student Point Parking Bay' },
   cafeteria_plaza: { id: 'cafeteria_plaza', lat: 27.513138, lng: 68.741641, label: 'BBSUTSD Central Cafeteria' },
+  central_library_entry: { id: 'central_library_entry', lat: 27.512831, lng: 68.742349, label: 'Central Library' },
   smart_class_entry: { id: 'smart_class_entry', lat: 27.512277, lng: 68.742401, label: 'Smart Class Room' },
   vc_english_block: { id: 'vc_english_block', lat: 27.511706, lng: 68.742824, label: 'VC Office & HOD English Wing' },
-  points_stop_east: { id: 'points_stop_east', lat: 27.5105, lng: 68.7448, label: 'Student Points Stop & HOD Saleem Wing' },
+  points_stop_node: { id: 'points_stop_node', lat: 27.511694, lng: 68.742806, label: 'Points Stop Terminal' },
+  main_gates_entry: { id: 'main_gates_entry', lat: 27.510977, lng: 68.74388, label: 'Main Gates (Old & New Buildings)' },
+  dr_saleem_office_node: { id: 'dr_saleem_office_node', lat: 27.5109, lng: 68.7445, label: 'Dr. Saleem HOD Office' },
+  mosque_new_bldg: { id: 'mosque_new_bldg', lat: 27.5105, lng: 68.7448, label: 'New Building Mosque' },
 };
 
 const EDGE_DEFS: [string, string, string][] = [
@@ -158,10 +162,20 @@ const EDGE_DEFS: [string, string, string][] = [
   ['transport_plaza', 'vc_english_block', 'VC Office & English Wing Walk'],
   ['point_parking_bay', 'vc_english_block', 'VC & HOD English East Path'],
   ['smart_class_entry', 'vc_english_block', 'Smart Class–VC Office Path'],
-  ['new_east', 'points_stop_east', 'New Complex–East Points Walkway'],
-  ['sports_track', 'points_stop_east', 'East Points Stop Approach Road'],
-  ['girls_hostel_walk', 'points_stop_east', 'East Campus Points Road'],
-  ['point_parking_bay', 'points_stop_east', 'Transport Terminal–Points Stop Link'],
+  ['cafeteria_plaza', 'central_library_entry', 'Cafeteria–Central Library Walkway'],
+  ['smart_class_entry', 'central_library_entry', 'Smart Class–Central Library Path'],
+  ['boys_hostel_gate', 'central_library_entry', 'Hostel–Central Library Lane'],
+  ['vc_english_block', 'points_stop_node', 'VC Office–Points Stop Path'],
+  ['transport_plaza', 'points_stop_node', 'Points Stop Terminal Walk'],
+  ['point_parking_bay', 'points_stop_node', 'Points Stop Bay Access'],
+  ['girls_hostel_walk', 'main_gates_entry', 'Main Gates Approach Road'],
+  ['point_parking_bay', 'main_gates_entry', 'Points Bay–Main Gates Road'],
+  ['sports_track', 'main_gates_entry', 'Sports Ground–Main Gates Path'],
+  ['main_gates_entry', 'dr_saleem_office_node', 'Main Gates–Dr. Saleem Office Walk'],
+  ['girls_hostel_walk', 'dr_saleem_office_node', 'East Wing HOD Office Path'],
+  ['dr_saleem_office_node', 'mosque_new_bldg', 'Dr. Saleem Office–New Building Mosque Walk'],
+  ['main_gates_entry', 'mosque_new_bldg', 'Main Gates–New Building Mosque Road'],
+  ['new_east', 'mosque_new_bldg', 'New Complex–New Building Mosque Path'],
 ];
 
 const PIN_TO_NODE: Record<string, string> = {
@@ -169,8 +183,11 @@ const PIN_TO_NODE: Record<string, string> = {
   hod_english: 'vc_english_block',
   new_1_smart_class: 'smart_class_entry',
   campus_cafeteria: 'cafeteria_plaza',
-  campus_transport: 'points_stop_east',
-  hod_prof_saleem: 'points_stop_east',
+  campus_transport: 'points_stop_node',
+  hod_prof_saleem: 'dr_saleem_office_node',
+  central_library: 'central_library_entry',
+  new_building_mosque: 'mosque_new_bldg',
+  gate_main: 'main_gates_entry',
 };
 
 function projectPointOntoSegment(
@@ -592,8 +609,8 @@ export async function fetchOsrmRoadRoute(
   destinationPin: CampusPin
 ): Promise<ComputedRoute | null> {
   const gateCoord = CAMPUS_PINS.find((p) => p.id === 'gate_main');
-  const gateLat = gateCoord?.latitude ?? 27.50965;
-  const gateLng = gateCoord?.longitude ?? 68.7405;
+  const gateLat = gateCoord?.latitude ?? 27.510977;
+  const gateLng = gateCoord?.longitude ?? 68.74388;
 
   const url = `https://router.project-osrm.org/route/v1/foot/${origin.lng},${origin.lat};${gateLng},${gateLat}?overview=full&geometries=geojson&steps=true`;
   try {

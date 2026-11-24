@@ -66,8 +66,8 @@ type MobileSheetTab = 'DIRECTIONS' | 'INFO';
 const FILTER_TABS: { key: MapFilterTab; label: string }[] = [
   { key: 'ALL', label: 'All Pins' },
   { key: 'OFFICES', label: 'Offices & HODs' },
-  { key: 'CLASSES', label: 'Classes' },
-  { key: 'FOOD_BUS', label: 'Food & Bus' },
+  { key: 'CLASSES', label: 'Classes & Lib' },
+  { key: 'FOOD_BUS', label: 'Gates, Mosque & Bus' },
 ];
 
 interface OutdoorMapViewProps {
@@ -134,7 +134,7 @@ const LABEL_ZOOM_THRESHOLD = 18;
 
 function getCategoryPinSvg(pin: CampusPin): string {
   const id = pin.id;
-  if (id === 'campus_mosque') {
+  if (id === 'campus_mosque' || id === 'new_building_mosque') {
     return '<svg viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>';
   }
   if (id === 'campus_cafeteria') {
@@ -998,7 +998,7 @@ export function OutdoorMapView({
               type="text"
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
-              placeholder="B • Destination (VC, Smart Class, Cafeteria, Points...)"
+              placeholder="B • Destination (Library, Main Gates, Mosque, Points, VC...)"
               className="w-full rounded-full border border-[#DCE2EC] bg-[#FFFFFF] py-2.5 pl-10 pr-8 text-xs text-[#111827] placeholder-[#747775] outline-none focus:border-[#0B57D0]"
             />
             {searchText && (
@@ -1375,7 +1375,7 @@ export function OutdoorMapView({
                     setSearchText(e.target.value);
                     if (e.target.value.trim()) setShowMobileDirectory(false);
                   }}
-                  placeholder="Search VC, Smart Class, Cafeteria..."
+                  placeholder="Search Library, Main Gates, Mosque, VC..."
                   className="w-full rounded-full bg-[#EFF3F8] py-2 pl-9 pr-8 text-xs text-[#111827] placeholder-[#747775] outline-none focus:ring-2 focus:ring-[#D3E3FD]"
                 />
                 {searchText && (

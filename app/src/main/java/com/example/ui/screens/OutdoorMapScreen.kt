@@ -132,8 +132,8 @@ import kotlin.math.roundToInt
 private enum class MapFilterTab(val key: String, val label: String) {
     ALL("ALL", "All Pins"),
     OFFICES("OFFICES", "Offices & HODs"),
-    CLASSES("CLASSES", "Classes"),
-    FOOD_BUS("FOOD_BUS", "Food & Bus")
+    CLASSES("CLASSES", "Classes & Lib"),
+    FOOD_BUS("FOOD_BUS", "Gates, Mosque & Bus")
 }
 
 private data class AndroidRouteStep(
@@ -638,7 +638,7 @@ fun OutdoorMapScreen(
                             Box(modifier = Modifier.weight(1f)) {
                                 if (searchText.isEmpty()) {
                                     Text(
-                                        text = "Search VC, Smart Class, Cafeteria, Points...",
+                                        text = "Search Library, Main Gates, Mosque, VC...",
                                         fontFamily = BodyFontFamily,
                                         color = MutedGray,
                                         fontSize = 13.sp,
