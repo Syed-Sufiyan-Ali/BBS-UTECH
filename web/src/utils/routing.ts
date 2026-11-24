@@ -92,6 +92,9 @@ const GRAPH_NODES: Record<string, GraphNode> = {
   main_gates_entry: { id: 'main_gates_entry', lat: 27.510977, lng: 68.74388, label: 'Main Gates (Old & New Buildings)' },
   dr_saleem_office_node: { id: 'dr_saleem_office_node', lat: 27.5109, lng: 68.7445, label: 'Dr. Saleem HOD Office' },
   mosque_new_bldg: { id: 'mosque_new_bldg', lat: 27.5105, lng: 68.7448, label: 'New Building Mosque' },
+  electronics_lab_node: { id: 'electronics_lab_node', lat: 27.5108, lng: 68.7447, label: 'Electronics Lab' },
+  computer_lab_1_node: { id: 'computer_lab_1_node', lat: 27.5109, lng: 68.7445, label: 'Computer Lab 1 (2F)' },
+  atm_kiosk: { id: 'atm_kiosk', lat: 27.513132, lng: 68.741812, label: 'Campus ATM' },
 };
 
 const EDGE_DEFS: [string, string, string][] = [
@@ -154,6 +157,9 @@ const EDGE_DEFS: [string, string, string][] = [
   ['sports_track', 'point_parking_bay', 'East Campus Spine'],
   ['ws_mech_bay', 'cafeteria_plaza', 'Central Cafeteria North Walk'],
   ['boys_hostel_gate', 'cafeteria_plaza', 'Cafeteria & Hostel Path'],
+  ['cafeteria_plaza', 'atm_kiosk', 'Cafeteria–ATM Walkway'],
+  ['atm_kiosk', 'central_library_entry', 'ATM–Central Library Walkway'],
+  ['boys_hostel_gate', 'atm_kiosk', 'Hostel–ATM Path'],
   ['ws_split', 'smart_class_entry', 'Smart Classrooms North Walk'],
   ['hostel_jct', 'smart_class_entry', 'Smart Classrooms Connector'],
   ['smart_class_entry', 'boys_hostel_gate', 'Smart Classroom–Hostel Path'],
@@ -172,6 +178,12 @@ const EDGE_DEFS: [string, string, string][] = [
   ['dr_saleem_office_node', 'mosque_new_bldg', 'Dr. Saleem Office–New Building Mosque Walk'],
   ['main_gates_entry', 'mosque_new_bldg', 'Main Gates–New Building Mosque Road'],
   ['new_east', 'mosque_new_bldg', 'New Complex–New Building Mosque Path'],
+  ['dr_saleem_office_node', 'electronics_lab_node', 'New Building East Wing Walk'],
+  ['main_gates_entry', 'electronics_lab_node', 'Main Gates–Electronics Lab Path'],
+  ['electronics_lab_node', 'mosque_new_bldg', 'Electronics Lab–New Building Mosque Walk'],
+  ['dr_saleem_office_node', 'computer_lab_1_node', 'New Building 2nd Floor Stairwell'],
+  ['electronics_lab_node', 'computer_lab_1_node', 'Stairway to Computer Lab 1 (2nd Floor)'],
+  ['main_gates_entry', 'computer_lab_1_node', 'Main Gates–Computer Lab 1 Access'],
 ];
 
 const PIN_TO_NODE: Record<string, string> = {
@@ -182,6 +194,9 @@ const PIN_TO_NODE: Record<string, string> = {
   central_library: 'central_library_entry',
   new_building_mosque: 'mosque_new_bldg',
   gate_main: 'main_gates_entry',
+  electronics_lab: 'electronics_lab_node',
+  computer_lab_1: 'computer_lab_1_node',
+  campus_atm: 'atm_kiosk',
 };
 
 function projectPointOntoSegment(

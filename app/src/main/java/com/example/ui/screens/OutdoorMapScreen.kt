@@ -132,7 +132,7 @@ import kotlin.math.roundToInt
 private enum class MapFilterTab(val key: String, val label: String) {
     ALL("ALL", "All Pins"),
     OFFICES("OFFICES", "Offices & HODs"),
-    CLASSES("CLASSES", "Classes & Lib"),
+    CLASSES("CLASSES", "Classes, Labs & Lib"),
     FOOD_BUS("FOOD_BUS", "Gates, Mosque & Bus")
 }
 

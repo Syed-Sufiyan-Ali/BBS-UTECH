@@ -21,7 +21,7 @@ class ExampleUnitTest {
     @Test
     fun testCampusPinsCompleteness() {
         val pins = repository.allPins.value
-        assertEquals("Should contain only the 7 manually added campus pins", 7, pins.size)
+        assertEquals("Should contain only the 10 manually added campus pins", 10, pins.size)
 
         val ids = pins.map { it.id }.toSet()
         assertTrue(!ids.contains("old_g_vc"))
@@ -33,6 +33,9 @@ class ExampleUnitTest {
         assertTrue(ids.contains("central_library"))
         assertTrue(ids.contains("new_building_mosque"))
         assertTrue(ids.contains("gate_main"))
+        assertTrue(ids.contains("electronics_lab"))
+        assertTrue(ids.contains("computer_lab_1"))
+        assertTrue(ids.contains("campus_atm"))
 
         val pointsStop = repository.getPinById("campus_transport")!!
         assertEquals(27.511694, pointsStop.latitude, 0.0001)
@@ -53,6 +56,19 @@ class ExampleUnitTest {
         val gates = repository.getPinById("gate_main")!!
         assertEquals(27.510977, gates.latitude, 0.0001)
         assertEquals(68.743880, gates.longitude, 0.0001)
+
+        val electronicsLab = repository.getPinById("electronics_lab")!!
+        assertEquals(27.510800, electronicsLab.latitude, 0.0001)
+        assertEquals(68.744700, electronicsLab.longitude, 0.0001)
+
+        val computerLab1 = repository.getPinById("computer_lab_1")!!
+        assertEquals(27.510900, computerLab1.latitude, 0.0001)
+        assertEquals(68.744500, computerLab1.longitude, 0.0001)
+        assertEquals(FloorLevel.SECOND, computerLab1.floor)
+
+        val atm = repository.getPinById("campus_atm")!!
+        assertEquals(27.513132, atm.latitude, 0.0001)
+        assertEquals(68.741812, atm.longitude, 0.0001)
     }
 
     @Test
@@ -86,6 +102,15 @@ class ExampleUnitTest {
 
         val searchGates = repository.searchPins("main gates")
         assertTrue("Searching for main gates should find Main Gates", searchGates.any { it.id == "gate_main" })
+
+        val searchElectronics = repository.searchPins("electronics lab")
+        assertTrue("Searching for electronics lab should find Electronics Lab", searchElectronics.any { it.id == "electronics_lab" })
+
+        val searchComputerLab = repository.searchPins("computer lab 1")
+        assertTrue("Searching for computer lab 1 should find Computer Lab 1", searchComputerLab.any { it.id == "computer_lab_1" })
+
+        val searchAtm = repository.searchPins("atm")
+        assertTrue("Searching for atm should find Campus ATM", searchAtm.any { it.id == "campus_atm" })
     }
 
     @Test
@@ -123,7 +148,10 @@ class ExampleUnitTest {
             "Dr. Saleem HOD Office",
             "Central Library",
             "New Building Mosque",
-            "Main Gates"
+            "Main Gates",
+            "Electronics Lab",
+            "Computer Lab 1 (2F)",
+            "ATM"
         )
         expectedLabels.forEach { expected ->
             assertTrue("Missing expected BBSUTSD landmark label: $expected", labels.contains(expected))

@@ -18,8 +18,8 @@ import {
 import { classifyTurnDelta, computeCampusRoute } from '../utils/routing';
 
 describe('BBSUTSD Web Data & Geospatial Logic', () => {
-  it('contains only the 7 manually added BBSUTSD landmark pins', () => {
-    expect(CAMPUS_PINS.length).toBe(7);
+  it('contains only the 10 manually added BBSUTSD landmark pins', () => {
+    expect(CAMPUS_PINS.length).toBe(10);
     const ids = new Set(CAMPUS_PINS.map((p) => p.id));
     expect(ids.has('old_g_vc')).toBe(false);
     expect(ids.has('hod_english')).toBe(false);
@@ -30,6 +30,9 @@ describe('BBSUTSD Web Data & Geospatial Logic', () => {
     expect(ids.has('central_library')).toBe(true);
     expect(ids.has('new_building_mosque')).toBe(true);
     expect(ids.has('gate_main')).toBe(true);
+    expect(ids.has('electronics_lab')).toBe(true);
+    expect(ids.has('computer_lab_1')).toBe(true);
+    expect(ids.has('campus_atm')).toBe(true);
   });
 
   it('includes Old Complex, New Complex, and Dividing Road overlays', () => {
@@ -79,6 +82,9 @@ describe('BBSUTSD Web Data & Geospatial Logic', () => {
     expect(searchPins(CAMPUS_PINS, 'central library').some((p) => p.id === 'central_library')).toBe(true);
     expect(searchPins(CAMPUS_PINS, 'mosque').some((p) => p.id === 'new_building_mosque')).toBe(true);
     expect(searchPins(CAMPUS_PINS, 'main gate').some((p) => p.id === 'gate_main')).toBe(true);
+    expect(searchPins(CAMPUS_PINS, 'electronics lab').some((p) => p.id === 'electronics_lab')).toBe(true);
+    expect(searchPins(CAMPUS_PINS, 'computer lab 1').some((p) => p.id === 'computer_lab_1')).toBe(true);
+    expect(searchPins(CAMPUS_PINS, 'atm').some((p) => p.id === 'campus_atm')).toBe(true);
   });
 
   it('computes walking distance and valid non-empty schedule/faculty pin references', () => {
@@ -113,6 +119,9 @@ describe('BBSUTSD Web Data & Geospatial Logic', () => {
     const library = CAMPUS_PINS.find((p) => p.id === 'central_library')!;
     const mosque = CAMPUS_PINS.find((p) => p.id === 'new_building_mosque')!;
     const mainGates = CAMPUS_PINS.find((p) => p.id === 'gate_main')!;
+    const electronicsLab = CAMPUS_PINS.find((p) => p.id === 'electronics_lab')!;
+    const computerLab1 = CAMPUS_PINS.find((p) => p.id === 'computer_lab_1')!;
+    const atm = CAMPUS_PINS.find((p) => p.id === 'campus_atm')!;
 
     expect(pointsStop.latitude).toBeCloseTo(27.511694, 5);
     expect(pointsStop.longitude).toBeCloseTo(68.742806, 5);
@@ -124,6 +133,13 @@ describe('BBSUTSD Web Data & Geospatial Logic', () => {
     expect(mosque.longitude).toBeCloseTo(68.7448, 5);
     expect(mainGates.latitude).toBeCloseTo(27.510977, 5);
     expect(mainGates.longitude).toBeCloseTo(68.74388, 5);
+    expect(electronicsLab.latitude).toBeCloseTo(27.5108, 5);
+    expect(electronicsLab.longitude).toBeCloseTo(68.7447, 5);
+    expect(computerLab1.latitude).toBeCloseTo(27.5109, 5);
+    expect(computerLab1.longitude).toBeCloseTo(68.7445, 5);
+    expect(computerLab1.floor).toBe('SECOND');
+    expect(atm.latitude).toBeCloseTo(27.513132, 5);
+    expect(atm.longitude).toBeCloseTo(68.741812, 5);
 
     const pointsToCafeteria = computeCampusRoute(
       { lat: pointsStop.latitude, lng: pointsStop.longitude },
@@ -150,6 +166,14 @@ describe('BBSUTSD Web Data & Geospatial Logic', () => {
     );
     expect(smartToMosque.polyline.length).toBeGreaterThan(2);
     expect(smartToMosque.steps.some((s) => /turn|keep|head/i.test(s.instruction))).toBe(true);
+
+    const atmToComputerLab = computeCampusRoute(
+      { lat: atm.latitude, lng: atm.longitude },
+      'Campus ATM',
+      computerLab1
+    );
+    expect(atmToComputerLab.polyline.length).toBeGreaterThan(2);
+    expect(atmToComputerLab.totalDistanceMeters).toBeGreaterThan(200);
   });
 
   it('uses edge-projection to find the shortest possible walkable path without backwards detours from live user coordinates', () => {

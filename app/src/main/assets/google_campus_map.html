@@ -637,7 +637,10 @@
       points_stop_node: { id: 'points_stop_node', lat: 27.511694, lng: 68.742806 },
       main_gates_entry: { id: 'main_gates_entry', lat: 27.510977, lng: 68.743880 },
       dr_saleem_office_node: { id: 'dr_saleem_office_node', lat: 27.510900, lng: 68.744500 },
-      mosque_new_bldg: { id: 'mosque_new_bldg', lat: 27.510500, lng: 68.744800 }
+      mosque_new_bldg: { id: 'mosque_new_bldg', lat: 27.510500, lng: 68.744800 },
+      electronics_lab_node: { id: 'electronics_lab_node', lat: 27.510800, lng: 68.744700 },
+      computer_lab_1_node: { id: 'computer_lab_1_node', lat: 27.510900, lng: 68.744500 },
+      atm_kiosk: { id: 'atm_kiosk', lat: 27.513132, lng: 68.741812 }
     };
 
     const EDGE_DEFS = [
@@ -708,7 +711,16 @@
       ['girls_hostel_walk', 'dr_saleem_office_node', 'East Wing HOD Office Path'],
       ['dr_saleem_office_node', 'mosque_new_bldg', 'Dr. Saleem Office-New Building Mosque Walk'],
       ['main_gates_entry', 'mosque_new_bldg', 'Main Gates-New Building Mosque Road'],
-      ['new_east', 'mosque_new_bldg', 'New Complex-New Building Mosque Path']
+      ['new_east', 'mosque_new_bldg', 'New Complex-New Building Mosque Path'],
+      ['cafeteria_plaza', 'atm_kiosk', 'Cafeteria-ATM Walkway'],
+      ['atm_kiosk', 'central_library_entry', 'ATM-Central Library Walkway'],
+      ['boys_hostel_gate', 'atm_kiosk', 'Hostel-ATM Path'],
+      ['dr_saleem_office_node', 'electronics_lab_node', 'New Building East Wing Walk'],
+      ['main_gates_entry', 'electronics_lab_node', 'Main Gates-Electronics Lab Path'],
+      ['electronics_lab_node', 'mosque_new_bldg', 'Electronics Lab-New Building Mosque Walk'],
+      ['dr_saleem_office_node', 'computer_lab_1_node', 'New Building 2nd Floor Stairwell'],
+      ['electronics_lab_node', 'computer_lab_1_node', 'Stairway to Computer Lab 1 (2nd Floor)'],
+      ['main_gates_entry', 'computer_lab_1_node', 'Main Gates-Computer Lab 1 Access']
     ];
 
     const PIN_TO_NODE = {
@@ -718,7 +730,10 @@
       hod_prof_saleem: 'dr_saleem_office_node',
       central_library: 'central_library_entry',
       new_building_mosque: 'mosque_new_bldg',
-      gate_main: 'main_gates_entry'
+      gate_main: 'main_gates_entry',
+      electronics_lab: 'electronics_lab_node',
+      computer_lab_1: 'computer_lab_1_node',
+      campus_atm: 'atm_kiosk'
     };
 
     function calculateBearingDeg(lat1, lon1, lat2, lon2) {
@@ -1185,6 +1200,7 @@
       const id = pin.id || '';
       if (id === 'campus_mosque' || id === 'new_building_mosque') return '<svg viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>';
       if (id === 'campus_cafeteria') return '<svg viewBox="0 0 24 24"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/></svg>';
+      if (id === 'campus_atm') return '<svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg>';
       if (id === 'campus_sports') return '<svg viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>';
       if (id.startsWith('hostel_')) return '<svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>';
       if (id === 'gate_main') return '<svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V9a7 7 0 0 1 14 0v12"/><path d="M9 21v-6a3 3 0 0 1 6 0v6"/></svg>';
