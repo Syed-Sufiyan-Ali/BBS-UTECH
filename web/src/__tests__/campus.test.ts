@@ -21,12 +21,14 @@ describe('BBSUTSD Web Data & Geospatial Logic', () => {
   it('contains all essential BBSUTSD landmark pins including VC Office, labs, workshops, transport & canteen', () => {
     const ids = new Set(CAMPUS_PINS.map((p) => p.id));
     expect(ids.has('old_g_vc')).toBe(true);
+    expect(ids.has('hod_english')).toBe(true);
     expect(ids.has('old_g_admissions')).toBe(true);
     expect(ids.has('old_g_welfare')).toBe(true);
     expect(ids.has('campus_cafeteria')).toBe(true);
     expect(ids.has('new_1_library')).toBe(true);
     expect(ids.has('campus_transport_office')).toBe(true);
     expect(ids.has('campus_transport')).toBe(true);
+    expect(ids.has('hod_prof_saleem')).toBe(true);
     expect(ids.has('campus_workshops')).toBe(true);
     expect(ids.has('ws_civil')).toBe(true);
     expect(ids.has('ws_electrical')).toBe(true);
@@ -77,6 +79,9 @@ describe('BBSUTSD Web Data & Geospatial Logic', () => {
 
   it('searchPins finds landmarks by alias, room number, and department', () => {
     expect(searchPins(CAMPUS_PINS, 'vc office').some((p) => p.id === 'old_g_vc')).toBe(true);
+    expect(searchPins(CAMPUS_PINS, 'hod english').some((p) => p.id === 'hod_english')).toBe(true);
+    expect(searchPins(CAMPUS_PINS, 'points stop').some((p) => p.id === 'campus_transport')).toBe(true);
+    expect(searchPins(CAMPUS_PINS, 'saleem').some((p) => p.id === 'hod_prof_saleem')).toBe(true);
     expect(
       searchPins(CAMPUS_PINS, 'transport').some((p) => p.id === 'campus_transport_office')
     ).toBe(true);
@@ -116,16 +121,28 @@ describe('BBSUTSD Web Data & Geospatial Logic', () => {
     expect(route.steps[route.steps.length - 1].action).toBe('ARRIVE');
     expect(route.totalDistanceMeters).toBeGreaterThan(100);
 
-    // Arbitrary origin (VC Office -> Transport Office, NOT anchored to Main Gate)
+    // Arbitrary origin (VC Office -> Central Library, NOT anchored to Main Gate)
     const vc = CAMPUS_PINS.find((p) => p.id === 'old_g_vc')!;
-    const transport = CAMPUS_PINS.find((p) => p.id === 'campus_transport_office')!;
-    const vcToTransport = computeCampusRoute(
+    expect(vc.latitude).toBeCloseTo(27.511706, 5);
+    expect(vc.longitude).toBeCloseTo(68.742824, 5);
+    const vcToLibrary = computeCampusRoute(
       { lat: vc.latitude, lng: vc.longitude },
       'VC Office',
-      transport
+      lib
     );
-    expect(vcToTransport.polyline.length).toBeGreaterThan(2);
-    expect(vcToTransport.steps.some((s) => /turn|keep|head/i.test(s.instruction))).toBe(true);
+    expect(vcToLibrary.polyline.length).toBeGreaterThan(2);
+    expect(vcToLibrary.steps.some((s) => /turn|keep|head/i.test(s.instruction))).toBe(true);
+
+    const pointsStop = CAMPUS_PINS.find((p) => p.id === 'campus_transport')!;
+    expect(pointsStop.latitude).toBeCloseTo(27.5105, 5);
+    expect(pointsStop.longitude).toBeCloseTo(68.7448, 5);
+    const gateToPoints = computeCampusRoute(
+      { lat: gate.latitude, lng: gate.longitude },
+      'Main Gate',
+      pointsStop
+    );
+    expect(gateToPoints.polyline.length).toBeGreaterThan(2);
+    expect(gateToPoints.totalDistanceMeters).toBeGreaterThan(350);
   });
 
   it('uses edge-projection to find the shortest possible walkable path without backwards detours from live user coordinates', () => {

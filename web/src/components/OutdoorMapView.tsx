@@ -477,7 +477,7 @@ export function OutdoorMapView({
                   avgLng,
                   BBSUTSD_CENTER.lat,
                   BBSUTSD_CENTER.lng
-                ) <= 340
+                ) <= 380
               ) {
                 blds.push({ coords, centerLat: avgLat, centerLng: avgLng });
               }

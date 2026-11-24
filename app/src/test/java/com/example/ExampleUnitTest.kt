@@ -48,6 +48,15 @@ class ExampleUnitTest {
         val searchVc = repository.searchPins("vc")
         assertTrue("Searching for VC should find VC Secretariat", searchVc.any { it.id == "old_g_vc" })
 
+        val searchHodEnglish = repository.searchPins("hod english")
+        assertTrue("Searching for HOD English should find HOD Dept. of English", searchHodEnglish.any { it.id == "hod_english" })
+
+        val searchPointsStop = repository.searchPins("points stop")
+        assertTrue("Searching for points stop should find Student Point Parking", searchPointsStop.any { it.id == "campus_transport" })
+
+        val searchSaleem = repository.searchPins("saleem")
+        assertTrue("Searching for Saleem should find HOD Prof. Saleem", searchSaleem.any { it.id == "hod_prof_saleem" })
+
         val searchExam = repository.searchPins("examination")
         assertTrue("Searching for examination should find Exam Branch", searchExam.any { it.id == "old_g_exam" })
 
@@ -85,10 +94,12 @@ class ExampleUnitTest {
 
         val expectedLabels = listOf(
             "VC Office",
+            "HOD Dept. of English",
             "Director Admissions",
             "Student Welfare Office",
             "Transport Office",
             "Student Point Parking",
+            "HOD Prof. Saleem",
             "Central Cafeteria",
             "Central Library",
             "Civil Labs (Concrete & Soil)",

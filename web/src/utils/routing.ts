@@ -87,6 +87,8 @@ const GRAPH_NODES: Record<string, GraphNode> = {
   point_parking_bay: { id: 'point_parking_bay', lat: 27.51162, lng: 68.74295, label: 'Student Point Parking Bay' },
   cafeteria_plaza: { id: 'cafeteria_plaza', lat: 27.513138, lng: 68.741641, label: 'BBSUTSD Central Cafeteria' },
   smart_class_entry: { id: 'smart_class_entry', lat: 27.512277, lng: 68.742401, label: 'Smart Class Room' },
+  vc_english_block: { id: 'vc_english_block', lat: 27.511706, lng: 68.742824, label: 'VC Office & HOD English Wing' },
+  points_stop_east: { id: 'points_stop_east', lat: 27.5105, lng: 68.7448, label: 'Student Points Stop & HOD Saleem Wing' },
 };
 
 const EDGE_DEFS: [string, string, string][] = [
@@ -152,6 +154,14 @@ const EDGE_DEFS: [string, string, string][] = [
   ['ws_split', 'smart_class_entry', 'Smart Classrooms North Walk'],
   ['hostel_jct', 'smart_class_entry', 'Smart Classrooms Connector'],
   ['smart_class_entry', 'boys_hostel_gate', 'Smart Classroom–Hostel Path'],
+  ['hostel_jct', 'vc_english_block', 'VC Office & Admin Access Walk'],
+  ['transport_plaza', 'vc_english_block', 'VC Office & English Wing Walk'],
+  ['point_parking_bay', 'vc_english_block', 'VC & HOD English East Path'],
+  ['smart_class_entry', 'vc_english_block', 'Smart Class–VC Office Path'],
+  ['new_east', 'points_stop_east', 'New Complex–East Points Walkway'],
+  ['sports_track', 'points_stop_east', 'East Points Stop Approach Road'],
+  ['girls_hostel_walk', 'points_stop_east', 'East Campus Points Road'],
+  ['point_parking_bay', 'points_stop_east', 'Transport Terminal–Points Stop Link'],
 ];
 
 const PIN_TO_NODE: Record<string, string> = {
@@ -160,7 +170,8 @@ const PIN_TO_NODE: Record<string, string> = {
   campus_cafeteria: 'cafeteria_plaza',
   old_g_welfare: 'old_porch',
   old_g_seminar: 'old_porch',
-  old_g_vc: 'old_west',
+  old_g_vc: 'vc_english_block',
+  hod_english: 'vc_english_block',
   old_g_registrar: 'old_center',
   old_g_exam: 'old_center',
   old_g_finance: 'old_east',
@@ -188,7 +199,8 @@ const PIN_TO_NODE: Record<string, string> = {
   ws_electronics: 'ws_elec_bay',
   hostel_boys: 'boys_hostel_gate',
   campus_transport_office: 'transport_office_door',
-  campus_transport: 'point_parking_bay',
+  campus_transport: 'points_stop_east',
+  hod_prof_saleem: 'points_stop_east',
   hostel_girls: 'girls_hostel_walk',
   campus_sports: 'sports_track',
 };
