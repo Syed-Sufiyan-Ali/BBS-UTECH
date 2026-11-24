@@ -128,52 +128,6 @@ export const PRESET_USER_LOCATIONS: UserLocation[] = [
 
 export const CAMPUS_PINS: CampusPin[] = [
   {
-    id: 'old_g_vc',
-    name: 'Vice Chancellor Secretariat (VC Office)',
-    subTitle: 'Executive Office of the Vice Chancellor',
-    building: 'OLD_BUILDING',
-    floor: 'GROUND',
-    category: 'ADMIN',
-    roomNumber: 'OB-G01',
-    latitude: 27.511706,
-    longitude: 68.742824,
-    indoorX: 0.22,
-    indoorY: 0.25,
-    inCharge: 'Prof. (Meritorious) Dr. Rasool Bux Mahar (Vice Chancellor)',
-    timings: '08:30 AM - 03:30 PM (Mon - Fri)',
-    contact: '+92-243-9280168 | vc@bbsutsd.edu.pk',
-    description:
-      'Executive secretariat of The Benazir Bhutto Shaheed University of Technology & Skill Development (BBSUTSD). Oversees university governance and academic affairs.',
-    indoorGuide:
-      'Located in the North-East Executive & Academic Wing alongside the HOD Dept. of English office (27.511706, 68.742824).',
-    outdoorGuide: 'North-East Executive Wing near the Transport & Hostel access road (27.511706, 68.742824).',
-    tags: ['vc', 'vs', 'vice chancellor', 'executive', 'admin', 'secretariat'],
-    mapLabel: 'VC Office',
-  },
-  {
-    id: 'hod_english',
-    name: 'HOD Office — Dept. of English',
-    subTitle: 'Head of Department of English',
-    building: 'OLD_BUILDING',
-    floor: 'GROUND',
-    category: 'ADMIN',
-    roomNumber: 'ENG-HOD',
-    latitude: 27.511676,
-    longitude: 68.742794,
-    indoorX: 0.28,
-    indoorY: 0.28,
-    inCharge: 'Head of Department (Dept. of English)',
-    timings: '08:30 AM - 03:30 PM (Mon - Fri)',
-    contact: 'info@bbsutsd.edu.pk',
-    description:
-      'Office of the Head of Department (HOD) for the Department of English, sharing the North-East Executive & Academic building with the Vice Chancellor Secretariat.',
-    indoorGuide:
-      'Situated in the same wing as the Vice Chancellor Secretariat (27.511706, 68.742824).',
-    outdoorGuide: 'North-East Executive & English Wing alongside the VC Office (27.511706, 68.742824).',
-    tags: ['hod', 'hod english', 'hod of dept of english', 'english', 'dept of english', 'department of english', 'chairperson', 'bs english'],
-    mapLabel: 'HOD Dept. of English',
-  },
-  {
     id: 'new_1_smart_class',
     name: 'Smart Class Room (CR-101 to CR-106)',
     subTitle: 'Smart Academic Classrooms',

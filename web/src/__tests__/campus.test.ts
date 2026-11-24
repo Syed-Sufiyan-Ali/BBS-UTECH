@@ -18,11 +18,11 @@ import {
 import { classifyTurnDelta, computeCampusRoute } from '../utils/routing';
 
 describe('BBSUTSD Web Data & Geospatial Logic', () => {
-  it('contains only the 9 manually added BBSUTSD landmark pins', () => {
-    expect(CAMPUS_PINS.length).toBe(9);
+  it('contains only the 7 manually added BBSUTSD landmark pins', () => {
+    expect(CAMPUS_PINS.length).toBe(7);
     const ids = new Set(CAMPUS_PINS.map((p) => p.id));
-    expect(ids.has('old_g_vc')).toBe(true);
-    expect(ids.has('hod_english')).toBe(true);
+    expect(ids.has('old_g_vc')).toBe(false);
+    expect(ids.has('hod_english')).toBe(false);
     expect(ids.has('new_1_smart_class')).toBe(true);
     expect(ids.has('campus_cafeteria')).toBe(true);
     expect(ids.has('campus_transport')).toBe(true);
@@ -72,8 +72,6 @@ describe('BBSUTSD Web Data & Geospatial Logic', () => {
   });
 
   it('searchPins finds manual landmarks by alias, room number, and department', () => {
-    expect(searchPins(CAMPUS_PINS, 'vc office').some((p) => p.id === 'old_g_vc')).toBe(true);
-    expect(searchPins(CAMPUS_PINS, 'hod english').some((p) => p.id === 'hod_english')).toBe(true);
     expect(searchPins(CAMPUS_PINS, 'smart class').some((p) => p.id === 'new_1_smart_class')).toBe(true);
     expect(searchPins(CAMPUS_PINS, 'cafeteria').some((p) => p.id === 'campus_cafeteria')).toBe(true);
     expect(searchPins(CAMPUS_PINS, 'points stop').some((p) => p.id === 'campus_transport')).toBe(true);
@@ -108,7 +106,6 @@ describe('BBSUTSD Web Data & Geospatial Logic', () => {
   });
 
   it('computes multi-segment walkable campus routes between manual landmarks', () => {
-    const vc = CAMPUS_PINS.find((p) => p.id === 'old_g_vc')!;
     const cafeteria = CAMPUS_PINS.find((p) => p.id === 'campus_cafeteria')!;
     const pointsStop = CAMPUS_PINS.find((p) => p.id === 'campus_transport')!;
     const smartClass = CAMPUS_PINS.find((p) => p.id === 'new_1_smart_class')!;
@@ -117,8 +114,6 @@ describe('BBSUTSD Web Data & Geospatial Logic', () => {
     const mosque = CAMPUS_PINS.find((p) => p.id === 'new_building_mosque')!;
     const mainGates = CAMPUS_PINS.find((p) => p.id === 'gate_main')!;
 
-    expect(vc.latitude).toBeCloseTo(27.511706, 5);
-    expect(vc.longitude).toBeCloseTo(68.742824, 5);
     expect(pointsStop.latitude).toBeCloseTo(27.511694, 5);
     expect(pointsStop.longitude).toBeCloseTo(68.742806, 5);
     expect(profSaleem.latitude).toBeCloseTo(27.5109, 5);
@@ -130,15 +125,15 @@ describe('BBSUTSD Web Data & Geospatial Logic', () => {
     expect(mainGates.latitude).toBeCloseTo(27.510977, 5);
     expect(mainGates.longitude).toBeCloseTo(68.74388, 5);
 
-    const vcToCafeteria = computeCampusRoute(
-      { lat: vc.latitude, lng: vc.longitude },
-      'VC Office',
+    const pointsToCafeteria = computeCampusRoute(
+      { lat: pointsStop.latitude, lng: pointsStop.longitude },
+      'Points Stop',
       cafeteria
     );
-    expect(vcToCafeteria.polyline.length).toBeGreaterThan(2);
-    expect(vcToCafeteria.steps[0].action).toBe('START');
-    expect(vcToCafeteria.steps[vcToCafeteria.steps.length - 1].action).toBe('ARRIVE');
-    expect(vcToCafeteria.totalDistanceMeters).toBeGreaterThan(100);
+    expect(pointsToCafeteria.polyline.length).toBeGreaterThan(2);
+    expect(pointsToCafeteria.steps[0].action).toBe('START');
+    expect(pointsToCafeteria.steps[pointsToCafeteria.steps.length - 1].action).toBe('ARRIVE');
+    expect(pointsToCafeteria.totalDistanceMeters).toBeGreaterThan(100);
 
     const gatesToLibrary = computeCampusRoute(
       { lat: mainGates.latitude, lng: mainGates.longitude },
@@ -177,15 +172,15 @@ describe('BBSUTSD Web Data & Geospatial Logic', () => {
   });
 
   it('routes directly for very short intra-courtyard distances without artificial node detours', () => {
-    const vc = CAMPUS_PINS.find((p) => p.id === 'old_g_vc')!;
-    const nearbyUser = { lat: vc.latitude - 0.00012, lng: vc.longitude + 0.00008 };
+    const library = CAMPUS_PINS.find((p) => p.id === 'central_library')!;
+    const nearbyUser = { lat: library.latitude - 0.00012, lng: library.longitude + 0.00008 };
     const directMeters = calculateDistanceMeters(
       nearbyUser.lat,
       nearbyUser.lng,
-      vc.latitude,
-      vc.longitude
+      library.latitude,
+      library.longitude
     );
-    const route = computeCampusRoute(nearbyUser, 'Your Live Location', vc);
+    const route = computeCampusRoute(nearbyUser, 'Your Live Location', library);
     expect(route.totalDistanceMeters).toBeLessThanOrEqual(Math.ceil(directMeters) + 2);
   });
 });

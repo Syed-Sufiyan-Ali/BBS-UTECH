@@ -110,7 +110,7 @@ export function HomeView({
       tone: 'border-[#F2B8B5] bg-[#FCE8E6]/45',
       badgeTone: 'bg-[#FCE8E6] text-[#B3261E]',
       cta: 'Locate on Map',
-      onClick: () => onLocatePinById('old_g_vc'),
+      onClick: () => onLocatePinById('gate_main'),
     },
     {
       badge: 'Central Campus Spine',
@@ -234,7 +234,7 @@ export function HomeView({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Quick search: VC Office, Smart Class, Cafeteria, Points Stop..."
+                placeholder="Quick search: Central Library, Main Gates, Mosque, Smart Class..."
                 className="w-full rounded-full border border-[#DCE2EC] bg-[#FFFFFF]/95 py-3 pl-11 pr-10 text-xs sm:text-sm text-[#111827] placeholder-[#747775] shadow-xs outline-none transition focus:border-[#0B57D0] focus:ring-2 focus:ring-[#D3E3FD]"
               />
               {searchQuery && (
@@ -259,8 +259,8 @@ export function HomeView({
                   >
                     {searchResults.length === 0 ? (
                       <div className="p-4 text-xs text-[#5F6368]">
-                        No landmark found matching &ldquo;{searchQuery}&rdquo;. Try VC Office,
-                        Smart Class, Cafeteria, or Points Stop.
+                        No landmark found matching &ldquo;{searchQuery}&rdquo;. Try Central Library,
+                        Main Gates, Mosque, or Points Stop.
                       </div>
                     ) : (
                       <div className="divide-y divide-[#F1F5F9]">

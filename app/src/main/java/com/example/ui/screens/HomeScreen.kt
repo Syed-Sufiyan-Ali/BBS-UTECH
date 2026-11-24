@@ -267,7 +267,7 @@ fun HomeScreen(
                             },
                             placeholder = {
                                 Text(
-                                    "Quick search: VC Office, Smart Class, Cafeteria, Points...",
+                                    "Quick search: Central Library, Main Gates, Mosque, Points...",
                                     fontFamily = BodyFontFamily,
                                     fontSize = 12.5.sp,
                                     color = MutedGray,
@@ -511,7 +511,7 @@ fun HomeScreen(
                         actionLabel = "Locate on Map",
                         testTag = "shortcut_old_building"
                     ) {
-                        viewModel.locatePinById("old_g_vc")
+                        viewModel.locatePinById("gate_main")
                     }
 
                     CampusZoneOverviewCard(

@@ -638,7 +638,7 @@ fun OutdoorMapScreen(
                             Box(modifier = Modifier.weight(1f)) {
                                 if (searchText.isEmpty()) {
                                     Text(
-                                        text = "Search Library, Main Gates, Mosque, VC...",
+                                        text = "Search Library, Main Gates, Mosque, Points...",
                                         fontFamily = BodyFontFamily,
                                         color = MutedGray,
                                         fontSize = 13.sp,

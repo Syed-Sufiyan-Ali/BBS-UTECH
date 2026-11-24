@@ -21,11 +21,11 @@ class ExampleUnitTest {
     @Test
     fun testCampusPinsCompleteness() {
         val pins = repository.allPins.value
-        assertEquals("Should contain only the 9 manually added campus pins", 9, pins.size)
+        assertEquals("Should contain only the 7 manually added campus pins", 7, pins.size)
 
         val ids = pins.map { it.id }.toSet()
-        assertTrue(ids.contains("old_g_vc"))
-        assertTrue(ids.contains("hod_english"))
+        assertTrue(!ids.contains("old_g_vc"))
+        assertTrue(!ids.contains("hod_english"))
         assertTrue(ids.contains("new_1_smart_class"))
         assertTrue(ids.contains("campus_cafeteria"))
         assertTrue(ids.contains("campus_transport"))
@@ -56,22 +56,16 @@ class ExampleUnitTest {
     }
 
     @Test
-    fun testOldBuildingGroundFloorOffices() {
-        val groundPins = repository.getPinsForBuildingAndFloor(Building.OLD_BUILDING, FloorLevel.GROUND)
-        val roomCodes = groundPins.map { it.roomNumber }
+    fun testNewBuildingFirstFloorClassrooms() {
+        val firstFloorPins = repository.getPinsForBuildingAndFloor(Building.NEW_BUILDING, FloorLevel.FIRST)
+        val roomCodes = firstFloorPins.map { it.roomNumber }
 
-        assertTrue("VC office should be on ground floor", roomCodes.contains("OB-G01"))
-        assertTrue("HOD English office should be on ground floor", roomCodes.contains("ENG-HOD"))
+        assertTrue("Smart Class Room should be on New Building 1st floor", roomCodes.contains("NB-110"))
+        assertTrue("Central Library should be on New Building 1st floor", roomCodes.contains("CENTRAL-LIB"))
     }
 
     @Test
     fun testSearchFunctionality() {
-        val searchVc = repository.searchPins("vc")
-        assertTrue("Searching for VC should find VC Secretariat", searchVc.any { it.id == "old_g_vc" })
-
-        val searchHodEnglish = repository.searchPins("hod english")
-        assertTrue("Searching for HOD English should find HOD Dept. of English", searchHodEnglish.any { it.id == "hod_english" })
-
         val searchSmart = repository.searchPins("smart class")
         assertTrue("Searching for smart class should find Smart Class Room", searchSmart.any { it.id == "new_1_smart_class" })
 
@@ -123,8 +117,6 @@ class ExampleUnitTest {
         val labels = pins.map { it.mapLabel }
 
         val expectedLabels = listOf(
-            "VC Office",
-            "HOD Dept. of English",
             "Smart Class Room",
             "Central Cafeteria",
             "Points Stop",

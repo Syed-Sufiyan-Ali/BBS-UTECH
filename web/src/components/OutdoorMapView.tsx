@@ -961,7 +961,7 @@ export function OutdoorMapView({
               <option value="AUTO_GPS">
                 {gpsMode === 'LIVE'
                   ? 'Live Browser GPS Signal'
-                  : `GPS Preset: ${presets[presetIndex]?.label ?? 'VC Office & HOD Dept. of English'}`}
+                  : `GPS Preset: ${presets[presetIndex]?.label ?? 'Main Gates (Old & New Buildings)'}`}
               </option>
               <optgroup label="── Pick Any Campus Starting Landmark ──">
                 {CAMPUS_PINS.map((pin) => (
@@ -998,7 +998,7 @@ export function OutdoorMapView({
               type="text"
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
-              placeholder="B • Destination (Library, Main Gates, Mosque, Points, VC...)"
+              placeholder="B • Destination (Library, Main Gates, Mosque, Points...)"
               className="w-full rounded-full border border-[#DCE2EC] bg-[#FFFFFF] py-2.5 pl-10 pr-8 text-xs text-[#111827] placeholder-[#747775] outline-none focus:border-[#0B57D0]"
             />
             {searchText && (
@@ -1375,7 +1375,7 @@ export function OutdoorMapView({
                     setSearchText(e.target.value);
                     if (e.target.value.trim()) setShowMobileDirectory(false);
                   }}
-                  placeholder="Search Library, Main Gates, Mosque, VC..."
+                  placeholder="Search Library, Main Gates, Mosque, Points..."
                   className="w-full rounded-full bg-[#EFF3F8] py-2 pl-9 pr-8 text-xs text-[#111827] placeholder-[#747775] outline-none focus:ring-2 focus:ring-[#D3E3FD]"
                 />
                 {searchText && (
@@ -1432,7 +1432,7 @@ export function OutdoorMapView({
                 <option value="AUTO_GPS">
                   {gpsMode === 'LIVE'
                     ? 'Live GPS Signal'
-                    : `Preset: ${presets[presetIndex]?.label ?? 'VC Office'}`}
+                    : `Preset: ${presets[presetIndex]?.label ?? 'Main Gates'}`}
                 </option>
                 {CAMPUS_PINS.map((pin) => (
                   <option key={pin.id} value={pin.id}>
