@@ -139,13 +139,13 @@ export function HomeView({
       {/* =================================================================== */}
       {/* 1. HERO SECTION: CLEAN EDITORIAL LANDING + ANIMATED CAMPUS PREVIEW   */}
       {/* =================================================================== */}
-      <section className="relative overflow-hidden rounded-[32px] border border-[#E2E8F0] bg-gradient-to-br from-[#FFFFFF] via-[#F8FAFC] to-[#EEF4FF] p-6 sm:p-10 lg:p-12 shadow-[0_4px_24px_rgba(15,23,42,0.04)]">
-        {/* Soft Pixel Ambient Aura */}
+      <section className="relative overflow-hidden rounded-[32px] border border-[#E6DDD0] bg-gradient-to-br from-[#FFFFFF] via-[#FAF7F2] to-[#F6ECE0] p-6 sm:p-10 lg:p-12 shadow-[0_14px_38px_-10px_rgba(74,44,21,0.12)]">
+        {/* Soft Warm Almond & Emerald Ambient Aura */}
         <motion.div
           aria-hidden="true"
-          animate={{ scale: [1, 1.08, 1], opacity: [0.4, 0.65, 0.4] }}
+          animate={{ scale: [1, 1.08, 1], opacity: [0.45, 0.7, 0.45] }}
           transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
-          className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-[#D3E3FD]/60 blur-3xl"
+          className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-[#DFCBB4]/50 blur-3xl"
         />
         <motion.div
           aria-hidden="true"
@@ -161,9 +161,9 @@ export function HomeView({
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45, ease: EASE_OUT }}
-              className="inline-flex items-center gap-2 rounded-full border border-[#D3E3FD] bg-[#FFFFFF]/90 px-3.5 py-1.5 text-xs font-semibold text-[#0B57D0] shadow-xs"
+              className="inline-flex items-center gap-2 rounded-full border border-[#DFCBB4] bg-[#FFFFFF]/95 px-3.5 py-1.5 text-xs font-semibold text-[#7C4D2B] shadow-[0_3px_10px_-2px_rgba(74,44,21,0.1)]"
             >
-              <Sparkles className="h-3.5 w-3.5" />
+              <Sparkles className="h-3.5 w-3.5 text-[#A66B3F]" />
               <span>BBS-UTECH Khairpur Mirs • Official Smart Campus Companion</span>
             </motion.div>
 
@@ -171,20 +171,20 @@ export function HomeView({
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, delay: 0.08, ease: EASE_OUT }}
-              className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight text-[#111827] leading-[1.12]"
+              className="font-display text-3xl sm:text-5xl font-extrabold tracking-tight text-[#1F1812] leading-[1.12]"
             >
               Navigate every lab, hall, and bus route at{' '}
-              <span className="text-[#0B57D0]">BBS-UTECH</span>.
+              <span className="text-[#7C4D2B]">BBS-UTECH</span>.
             </motion.h1>
 
             <motion.p
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, delay: 0.16, ease: EASE_OUT }}
-              className="max-w-xl text-sm sm:text-base leading-relaxed text-[#444746]"
+              className="max-w-xl text-sm sm:text-base leading-relaxed text-[#5C5147]"
             >
               This platform is the unified digital guide for{' '}
-              <strong className="font-semibold text-[#111827]">
+              <strong className="font-semibold text-[#1F1812]">
                 The Benazir Bhutto Shaheed University of Technology &amp; Skill Development
               </strong>
               —built to help students, faculty, and campus visitors find buildings with live GPS
@@ -201,10 +201,10 @@ export function HomeView({
             >
               <motion.button
                 type="button"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={{ y: -2, scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
                 onClick={() => onNavigateTab('OUTDOOR_MAP')}
-                className="inline-flex items-center gap-2 rounded-full bg-[#0B57D0] px-6 py-3.5 font-display text-sm font-semibold text-white shadow-sm transition hover:bg-[#0842A0] cursor-pointer"
+                className="nutty-btn-primary inline-flex items-center gap-2 rounded-full bg-[#0B57D0] px-6 py-3.5 font-display text-sm font-semibold text-white hover:bg-[#0842A0] cursor-pointer"
               >
                 <Navigation className="h-4 w-4" />
                 <span>Launch Campus Map</span>
@@ -212,12 +212,12 @@ export function HomeView({
 
               <motion.button
                 type="button"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={{ y: -2, scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
                 onClick={onOpenBusTimings}
-                className="inline-flex items-center gap-2 rounded-full border border-[#DCE2EC] bg-[#FFFFFF] px-5 py-3.5 font-display text-sm font-semibold text-[#111827] shadow-xs transition hover:bg-[#EFF3F8] cursor-pointer"
+                className="nutty-btn inline-flex items-center gap-2 rounded-full border border-[#DFCBB4] bg-[#FFFFFF] px-5 py-3.5 font-display text-sm font-semibold text-[#1F1812] hover:bg-[#F6ECE0] hover:border-[#A66B3F] cursor-pointer"
               >
-                <Bus className="h-4 w-4 text-[#0B57D0]" />
+                <Bus className="h-4 w-4 text-[#7C4D2B]" />
                 <span>Bus &amp; Coaster (7)</span>
               </motion.button>
             </motion.div>
@@ -229,20 +229,20 @@ export function HomeView({
               transition={{ duration: 0.55, delay: 0.32, ease: EASE_OUT }}
               className="relative max-w-xl"
             >
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#0B57D0]" />
+              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7C4D2B]" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Quick search: Central Library, Main Gates, Mosque, Smart Class..."
-                className="w-full rounded-full border border-[#DCE2EC] bg-[#FFFFFF]/95 py-3 pl-11 pr-10 text-xs sm:text-sm text-[#111827] placeholder-[#747775] shadow-xs outline-none transition focus:border-[#0B57D0] focus:ring-2 focus:ring-[#D3E3FD]"
+                placeholder="Quick search: Central Library, Labs, ATM, Mosque..."
+                className="w-full rounded-full border border-[#DFCBB4] bg-[#FFFFFF]/95 py-3 pl-11 pr-10 text-xs sm:text-sm text-[#1F1812] placeholder-[#7D7166] shadow-[0_4px_14px_-3px_rgba(74,44,21,0.1)] outline-none transition focus:border-[#7C4D2B] focus:ring-2 focus:ring-[#F6ECE0]"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
                   aria-label="Clear search"
-                  className="absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-[#EFF3F8] text-[#444746] hover:bg-[#E2E8F0] cursor-pointer"
+                  className="nutty-chip absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full bg-[#F6ECE0] text-[#7C4D2B] hover:bg-[#EAE1D4] cursor-pointer"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
@@ -316,19 +316,19 @@ export function HomeView({
               if (e.key === 'Enter' || e.key === ' ') onNavigateTab('OUTDOOR_MAP');
             }}
             aria-label="Open interactive live campus map"
-            className="group relative rounded-[28px] border border-[#DCE2EC] bg-[#FFFFFF] p-5 shadow-md transition hover:border-[#0B57D0]/60 hover:shadow-lg cursor-pointer"
+            className="nutty-card nutty-card-interactive group relative rounded-[28px] border border-[#DFCBB4] bg-[#FFFFFF] p-5 cursor-pointer"
           >
-            <div className="flex items-center justify-between gap-2 pb-4 border-b border-[#F1F5F9]">
+            <div className="flex items-center justify-between gap-2 pb-4 border-b border-[#F3EDE4]">
               <div className="flex items-center gap-2">
                 <span className="relative flex h-2.5 w-2.5">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#0F9D58] opacity-75" />
                   <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#0F9D58]" />
                 </span>
-                <span className="font-display text-xs font-bold text-[#111827]">
+                <span className="font-display text-xs font-bold text-[#1F1812]">
                   Live Campus Routing Preview
                 </span>
               </div>
-              <span className="rounded-full bg-[#EFF3F8] px-2.5 py-0.5 font-mono text-[10px] font-semibold text-[#0B57D0]">
+              <span className="rounded-full border border-[#DFCBB4] bg-[#F6ECE0] px-2.5 py-0.5 font-mono text-[10px] font-semibold text-[#7C4D2B]">
                 {userLocation ? 'GPS Ready' : '27.51°N 68.74°E'}
               </span>
             </div>
@@ -509,40 +509,40 @@ export function HomeView({
                 transition={{ duration: 0.45, delay: idx * 0.08, ease: EASE_OUT }}
                 whileHover={{ y: -4 }}
                 whileTap={{ scale: 0.99 }}
-                className={`group flex flex-col justify-between rounded-[28px] border border-[#E2E8F0] bg-[#FFFFFF] p-6 text-left shadow-xs transition hover:shadow-md cursor-pointer ${mod.borderHover}`}
+                className={`nutty-card nutty-card-interactive group flex flex-col justify-between rounded-[28px] border border-[#E6DDD0] bg-[#FFFFFF] p-6 text-left cursor-pointer ${mod.borderHover}`}
               >
                 <div>
                   <div className="flex items-center justify-between gap-3">
                     <div
-                      className={`flex h-12 w-12 items-center justify-center rounded-2xl ${mod.accentBg} ${mod.accentText}`}
+                      className={`flex h-12 w-12 items-center justify-center rounded-2xl shadow-xs transition-transform duration-200 group-hover:scale-105 ${mod.accentBg} ${mod.accentText}`}
                     >
                       <Icon className="h-6 w-6" />
                     </div>
-                    <span className="font-mono text-[10.5px] font-bold tracking-wide text-[#5F6368]">
+                    <span className="font-mono text-[10.5px] font-bold tracking-wide text-[#7D7166]">
                       {mod.eyebrow}
                     </span>
                   </div>
 
-                  <h3 className="mt-5 font-display text-xl font-bold text-[#111827] group-hover:text-[#0B57D0] transition-colors">
+                  <h3 className="mt-5 font-display text-xl font-bold text-[#1F1812] group-hover:text-[#7C4D2B] transition-colors">
                     {mod.title}
                   </h3>
-                  <p className="mt-2 text-xs sm:text-sm leading-relaxed text-[#444746]">
+                  <p className="mt-2 text-xs sm:text-sm leading-relaxed text-[#5C5147]">
                     {mod.description}
                   </p>
                 </div>
 
-                <div className="mt-6 flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-[#F1F5F9]">
+                <div className="mt-6 flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-[#F3EDE4]">
                   <div className="flex flex-wrap gap-1.5">
                     {mod.tags.map((tag) => (
                       <span
                         key={tag}
-                        className="rounded-full bg-[#EFF3F8] px-2.5 py-1 text-[10.5px] font-semibold text-[#444746]"
+                        className="rounded-full border border-[#E6DDD0] bg-[#FAF7F2] px-2.5 py-1 text-[10.5px] font-semibold text-[#5C5147]"
                       >
                         {tag}
                       </span>
                     ))}
                   </div>
-                  <span className="inline-flex items-center gap-1 font-display text-xs font-bold text-[#0B57D0]">
+                  <span className="inline-flex items-center gap-1 font-display text-xs font-bold text-[#7C4D2B]">
                     {mod.cta}
                     <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
                   </span>
@@ -585,7 +585,7 @@ export function HomeView({
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.25 }}
               transition={{ duration: 0.45, delay: idx * 0.08, ease: EASE_OUT }}
-              className={`flex flex-col justify-between rounded-[26px] border p-6 ${zone.tone}`}
+              className={`nutty-card nutty-card-interactive flex flex-col justify-between rounded-[26px] border p-6 ${zone.tone}`}
             >
               <div>
                 <span
@@ -593,10 +593,10 @@ export function HomeView({
                 >
                   {zone.badge}
                 </span>
-                <h3 className="mt-4 font-display text-lg font-bold text-[#111827]">
+                <h3 className="mt-4 font-display text-lg font-bold text-[#1F1812]">
                   {zone.title}
                 </h3>
-                <p className="mt-2 text-xs sm:text-sm leading-relaxed text-[#444746]">
+                <p className="mt-2 text-xs sm:text-sm leading-relaxed text-[#5C5147]">
                   {zone.summary}
                 </p>
               </div>
@@ -604,10 +604,10 @@ export function HomeView({
               <button
                 type="button"
                 onClick={zone.onClick}
-                className="mt-5 inline-flex items-center gap-1.5 self-start rounded-full bg-[#FFFFFF] px-4 py-2 font-display text-xs font-semibold text-[#111827] shadow-xs transition hover:bg-[#EFF3F8] cursor-pointer"
+                className="nutty-btn mt-5 inline-flex items-center gap-1.5 self-start rounded-full border border-[#DFCBB4] bg-[#FFFFFF] px-4 py-2 font-display text-xs font-semibold text-[#1F1812] hover:bg-[#F6ECE0] cursor-pointer"
               >
                 <span>{zone.cta}</span>
-                <ArrowRight className="h-3.5 w-3.5 text-[#0B57D0]" />
+                <ArrowRight className="h-3.5 w-3.5 text-[#7C4D2B]" />
               </button>
             </motion.div>
           ))}
@@ -622,14 +622,14 @@ export function HomeView({
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.5, ease: EASE_OUT }}
-        className="flex flex-col gap-4 rounded-[28px] border border-[#DCE2EC] bg-[#FFFFFF] p-6 sm:p-8 sm:flex-row sm:items-center sm:justify-between shadow-xs"
+        className="nutty-card flex flex-col gap-4 rounded-[28px] border border-[#DFCBB4] bg-gradient-to-r from-[#FFFFFF] via-[#FAF7F2] to-[#F6ECE0] p-6 sm:p-8 sm:flex-row sm:items-center sm:justify-between"
       >
         <div className="space-y-1">
-          <div className="flex items-center gap-2 font-display text-lg font-bold text-[#111827]">
-            <Compass className="h-5 w-5 text-[#0B57D0]" />
+          <div className="flex items-center gap-2 font-display text-lg font-bold text-[#1F1812]">
+            <Compass className="h-5 w-5 text-[#7C4D2B]" />
             <span>Need directions right now?</span>
           </div>
-          <p className="text-xs sm:text-sm text-[#5F6368]">
+          <p className="text-xs sm:text-sm text-[#5C5147]">
             {nextClass
               ? `Next scheduled session on file: ${nextClass.subjectTitle} (${nextClass.roomLabel}). Open the map or bus timings anytime.`
               : 'Jump directly into live campus GPS navigation or inspect all 7 official university bus & coaster schedules.'}
@@ -640,15 +640,15 @@ export function HomeView({
           <button
             type="button"
             onClick={onOpenBusTimings}
-            className="inline-flex items-center gap-1.5 rounded-full border border-[#DCE2EC] bg-[#EFF3F8] px-4 py-2.5 font-display text-xs font-semibold text-[#111827] transition hover:bg-[#E2E8F0] cursor-pointer"
+            className="nutty-btn inline-flex items-center gap-1.5 rounded-full border border-[#DFCBB4] bg-[#FFFFFF] px-4 py-2.5 font-display text-xs font-semibold text-[#1F1812] hover:bg-[#F6ECE0] cursor-pointer"
           >
-            <Bus className="h-3.5 w-3.5 text-[#0B57D0]" />
+            <Bus className="h-3.5 w-3.5 text-[#7C4D2B]" />
             <span>Bus Timetables (7)</span>
           </button>
           <button
             type="button"
             onClick={() => onNavigateTab('OUTDOOR_MAP')}
-            className="inline-flex items-center gap-1.5 rounded-full bg-[#0B57D0] px-5 py-2.5 font-display text-xs font-semibold text-white transition hover:bg-[#0842A0] cursor-pointer"
+            className="nutty-btn-primary inline-flex items-center gap-1.5 rounded-full bg-[#0B57D0] px-5 py-2.5 font-display text-xs font-semibold text-white hover:bg-[#0842A0] cursor-pointer"
           >
             <MapPin className="h-3.5 w-3.5" />
             <span>Start Navigation</span>

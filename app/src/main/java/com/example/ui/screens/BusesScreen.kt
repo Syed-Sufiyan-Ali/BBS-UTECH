@@ -66,20 +66,22 @@ import com.example.ui.theme.CampusEmeraldBorder
 import com.example.ui.theme.CampusEmeraldDark
 import com.example.ui.theme.CampusEmeraldTint
 import com.example.ui.theme.DisplayFontFamily
+import com.example.ui.theme.HazelnutBorder
 import com.example.ui.theme.InkBlack
 import com.example.ui.theme.MistOutline
 import com.example.ui.theme.MonoFontFamily
 import com.example.ui.theme.MutedGray
-import com.example.ui.theme.OnPixelBlueContainer
 import com.example.ui.theme.PixelBlue
-import com.example.ui.theme.PixelBlueContainer
-import com.example.ui.theme.PixelBlueTint
 import com.example.ui.theme.PorcelainCanvas
 import com.example.ui.theme.PureSurface
 import com.example.ui.theme.PureWhite
+import com.example.ui.theme.RoastedWalnut
 import com.example.ui.theme.SlateGray
-import com.example.ui.theme.SoftOutline
+import com.example.ui.theme.ToastedCreamTint
 import com.example.ui.theme.TonalMist
+import com.example.ui.theme.nuttyButtonElevation
+import com.example.ui.theme.warmShadow
+import androidx.compose.material3.ButtonDefaults
 
 @Composable
 fun BusesScreen(
@@ -150,18 +152,23 @@ fun BusesScreen(
                 Card(
                     colors = CardDefaults.cardColors(containerColor = PureSurface),
                     shape = RoundedCornerShape(24.dp),
-                    border = BorderStroke(1.dp, MistOutline),
+                    border = BorderStroke(1.dp, HazelnutBorder),
+                    elevation = CardDefaults.cardElevation(
+                        defaultElevation = 4.dp,
+                        hoveredElevation = 7.dp
+                    ),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Surface(
-                            color = PixelBlueTint,
-                            shape = RoundedCornerShape(50)
+                            color = ToastedCreamTint,
+                            shape = RoundedCornerShape(50),
+                            border = BorderStroke(1.dp, HazelnutBorder)
                         ) {
                             Text(
                                 text = "Transport Office • Next to Boys Hostel",
                                 fontFamily = BodyFontFamily,
-                                color = PixelBlue,
+                                color = RoastedWalnut,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
@@ -226,7 +233,12 @@ fun BusesScreen(
                                         viewModel.locatePinOutdoor(transportPin)
                                     }
                                 },
-                                border = BorderStroke(1.dp, SoftOutline),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    containerColor = PureSurface,
+                                    contentColor = InkBlack
+                                ),
+                                elevation = nuttyButtonElevation(),
+                                border = BorderStroke(1.dp, HazelnutBorder),
                                 shape = RoundedCornerShape(50),
                                 contentPadding = PaddingValues(horizontal = 14.dp, vertical = 0.dp),
                                 modifier = Modifier
@@ -236,7 +248,7 @@ fun BusesScreen(
                                 Icon(
                                     imageVector = Icons.Default.LocationOn,
                                     contentDescription = "Locate Transport Office",
-                                    tint = PixelBlue,
+                                    tint = RoastedWalnut,
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
@@ -319,16 +331,18 @@ fun BusesScreen(
                         colors = FilterChipDefaults.filterChipColors(
                             containerColor = PureSurface,
                             labelColor = SlateGray,
-                            selectedContainerColor = PixelBlue,
+                            selectedContainerColor = RoastedWalnut,
                             selectedLabelColor = PureWhite
                         ),
                         border = FilterChipDefaults.filterChipBorder(
                             enabled = true,
                             selected = selectedBusPoint == null,
-                            borderColor = MistOutline,
-                            selectedBorderColor = PixelBlue
+                            borderColor = HazelnutBorder,
+                            selectedBorderColor = RoastedWalnut
                         ),
-                        modifier = Modifier.testTag("bus_filter_all")
+                        modifier = Modifier
+                            .warmShadow(elevation = 3.dp, shape = RoundedCornerShape(50))
+                            .testTag("bus_filter_all")
                     )
                     busRoutes.forEach { route ->
                         val pt = route.pointNumber
@@ -353,16 +367,18 @@ fun BusesScreen(
                             colors = FilterChipDefaults.filterChipColors(
                                 containerColor = PureSurface,
                                 labelColor = SlateGray,
-                                selectedContainerColor = PixelBlueContainer,
-                                selectedLabelColor = OnPixelBlueContainer
+                                selectedContainerColor = ToastedCreamTint,
+                                selectedLabelColor = RoastedWalnut
                             ),
                             border = FilterChipDefaults.filterChipBorder(
                                 enabled = true,
                                 selected = isSelected,
-                                borderColor = MistOutline,
-                                selectedBorderColor = PixelBlueContainer
+                                borderColor = HazelnutBorder,
+                                selectedBorderColor = RoastedWalnut
                             ),
-                            modifier = Modifier.testTag("bus_filter_point_$pt")
+                            modifier = Modifier
+                                .warmShadow(elevation = 3.dp, shape = RoundedCornerShape(50))
+                                .testTag("bus_filter_point_$pt")
                         )
                     }
                 }
@@ -434,7 +450,11 @@ private fun BusPointRouteCard(
     Card(
         colors = CardDefaults.cardColors(containerColor = PureSurface),
         shape = RoundedCornerShape(24.dp),
-        border = BorderStroke(1.dp, if (expanded) PixelBlue.copy(alpha = 0.45f) else MistOutline),
+        border = BorderStroke(1.dp, if (expanded) RoastedWalnut.copy(alpha = 0.45f) else HazelnutBorder),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 4.dp,
+            hoveredElevation = 7.dp
+        ),
         modifier = Modifier
             .fillMaxWidth()
             .testTag("bus_point_card_${route.pointNumber}")

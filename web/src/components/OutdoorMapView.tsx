@@ -59,6 +59,11 @@ import {
   type RouteStep,
   type TurnAction,
 } from '../utils/routing';
+import {
+  computeCircleOffsets,
+  findClusterKeyForPin,
+  groupOverlappingPins,
+} from '../utils/spiderfy';
 
 type MapFilterTab = 'ALL' | 'OFFICES' | 'CLASSES' | 'FOOD_BUS';
 type MobileSheetTab = 'DIRECTIONS' | 'INFO';
@@ -206,6 +211,7 @@ export function OutdoorMapView({
   const [selectedFilter, setSelectedFilter] = useState<MapFilterTab>('ALL');
   const [searchText, setSearchText] = useState('');
   const [focusedPin, setFocusedPin] = useState<CampusPin | null>(null);
+  const [expandedClusterKey, setExpandedClusterKey] = useState<string | null>(null);
   const [customOriginPinId, setCustomOriginPinId] = useState<string>('AUTO_GPS');
   const [activeStepIndex, setActiveStepIndex] = useState<number>(0);
   const [mobileSheetTab, setMobileSheetTab] = useState<MobileSheetTab>('DIRECTIONS');
@@ -363,6 +369,9 @@ export function OutdoorMapView({
 
   const handleSelectPin = useCallback((pin: CampusPin) => {
     setFocusedPin(pin);
+    const clusters = groupOverlappingPins(CAMPUS_PINS);
+    const clusterKey = findClusterKeyForPin(clusters, pin.id);
+    setExpandedClusterKey(clusterKey);
     setActiveStepIndex(0);
     setMobileSheetExpanded(true);
     setShowMobileDirectory(false);
@@ -430,6 +439,7 @@ export function OutdoorMapView({
 
     map.on('click', () => {
       setFocusedPin(null);
+      setExpandedClusterKey(null);
     });
 
     const syncZoomLabels = () => {
@@ -678,21 +688,30 @@ export function OutdoorMapView({
     addBadge(27.51018, 68.7422, 'New Building Complex', 'zone-badge-new');
   }, [osmBoundary, osmBuildings, osmRoads]);
 
-  // 4. Render Labeled Campus Pill Pins
+  // 4. Render Labeled Campus Pill Pins + Spiderfy Dispersion for Overlapping Pins
   useEffect(() => {
     const group = markersLayerGroupRef.current;
-    if (!group) return;
+    const map = mapRef.current;
+    if (!group || !map) return;
     group.clearLayers();
 
     const visiblePins = CAMPUS_PINS.filter((p) =>
       matchesFilter(p, selectedFilter, searchText)
     );
+    const clusters = groupOverlappingPins(visiblePins);
 
-    visiblePins.forEach((pin) => {
+    const attachSinglePin = (
+      pin: CampusPin,
+      lat: number,
+      lng: number,
+      isSpiderLeg: boolean,
+      legIndex: number
+    ) => {
       const color = CATEGORY_COLORS[pin.category] ?? '#0B57D0';
       const isSelected = focusedPin?.id === pin.id;
       const isOrigin = customOriginPinId === pin.id;
-      const html = `<div class="campus-pin${isSelected ? ' is-selected' : ''}${isOrigin ? ' is-origin' : ''}" role="button" tabindex="0" aria-label="${escapeHtml(pin.name)}" style="--pin-color:${color}">
+      const animDelay = isSpiderLeg ? ` style="--pin-color:${color};animation-delay:${legIndex * 45}ms"` : ` style="--pin-color:${color}"`;
+      const html = `<div class="campus-pin${isSelected ? ' is-selected' : ''}${isOrigin ? ' is-origin' : ''}${isSpiderLeg ? ' is-spider-leg' : ''}" role="button" tabindex="0" aria-label="${escapeHtml(pin.name)}"${animDelay}>
         <div class="campus-pin-label">${isOrigin ? 'Start: ' : ''}${escapeHtml(pin.mapLabel || pin.name)}</div>
         <div class="campus-pin-icon">${getCategoryPinSvg(pin)}</div>
       </div>`;
@@ -704,10 +723,10 @@ export function OutdoorMapView({
         iconAnchor: [0, 0],
       });
 
-      const marker = L.marker([pin.latitude, pin.longitude], {
+      const marker = L.marker([lat, lng], {
         icon,
         interactive: false,
-        zIndexOffset: isSelected ? 900 : isOrigin ? 800 : 200,
+        zIndexOffset: isSelected ? 960 : isSpiderLeg ? 890 : isOrigin ? 800 : 200,
       }).addTo(group);
 
       const containerEl = marker.getElement();
@@ -729,8 +748,136 @@ export function OutdoorMapView({
           });
         }
       }
+    };
+
+    clusters.forEach((cluster) => {
+      if (cluster.pins.length === 1) {
+        const pin = cluster.pins[0];
+        attachSinglePin(pin, pin.latitude, pin.longitude, false, 0);
+        return;
+      }
+
+      const isExpanded = expandedClusterKey === cluster.key;
+      if (!isExpanded) {
+        const count = cluster.pins.length;
+        const containsFocused = cluster.pins.some((p) => p.id === focusedPin?.id);
+        const containsOrigin = cluster.pins.some((p) => p.id === customOriginPinId);
+        const previewNames = cluster.pins.map((p) => p.mapLabel || p.name).join(' • ');
+        const hubHtml = `<div class="campus-pin campus-spider-hub${containsFocused ? ' is-selected' : ''}${containsOrigin ? ' is-origin' : ''}" role="button" tabindex="0" aria-label="${count} overlapping locations: ${escapeHtml(previewNames)}. Tap to expand." style="--pin-color:#7C4D2B">
+          <div class="campus-pin-label">${count} Overlapping • Tap to spread</div>
+          <div class="campus-pin-icon"><svg viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 12 12 17 22 12"/><polyline points="2 17 12 22 22 17"/></svg></div>
+          <span class="campus-spider-count">${count}</span>
+        </div>`;
+
+        const hubIcon = L.divIcon({
+          className: 'campus-leaflet-icon',
+          html: hubHtml,
+          iconSize: [0, 0],
+          iconAnchor: [0, 0],
+        });
+
+        const hubMarker = L.marker([cluster.anchor.lat, cluster.anchor.lng], {
+          icon: hubIcon,
+          interactive: false,
+          zIndexOffset: containsFocused ? 900 : 350,
+        }).addTo(group);
+
+        const el = hubMarker.getElement();
+        if (el) {
+          L.DomEvent.disableClickPropagation(el);
+          const hubEl = el.querySelector('.campus-pin') as HTMLElement | null;
+          const expandCluster = (ev: Event) => {
+            ev.preventDefault();
+            ev.stopPropagation();
+            setExpandedClusterKey(cluster.key);
+            map.panTo([cluster.anchor.lat, cluster.anchor.lng], { animate: true });
+          };
+          if (hubEl) {
+            hubEl.addEventListener('click', expandCluster);
+            hubEl.addEventListener('keydown', (ev) => {
+              if (ev.key === 'Enter' || ev.key === ' ') expandCluster(ev);
+            });
+          }
+        }
+        return;
+      }
+
+      // Spiderfied: fan overlapping pins out in a neat circle around anchor in pixel space
+      const anchorPt = map.latLngToLayerPoint([cluster.anchor.lat, cluster.anchor.lng]);
+      const offsets = computeCircleOffsets(cluster.pins.length);
+      const circleRadiusPx = Math.hypot(offsets[0].x, offsets[0].y);
+      const ringEdgeLatLng = map.layerPointToLatLng(
+        L.point(anchorPt.x + circleRadiusPx, anchorPt.y)
+      );
+      const ringMeters = calculateDistanceMeters(
+        cluster.anchor.lat,
+        cluster.anchor.lng,
+        ringEdgeLatLng.lat,
+        ringEdgeLatLng.lng
+      );
+
+      if (ringMeters > 0.5) {
+        L.circle([cluster.anchor.lat, cluster.anchor.lng], {
+          radius: ringMeters,
+          color: '#A66B3F',
+          weight: 1.5,
+          opacity: 0.55,
+          dashArray: '4, 5',
+          fillColor: '#F6ECE0',
+          fillOpacity: 0.14,
+          interactive: false,
+        }).addTo(group);
+      }
+
+      cluster.pins.forEach((pin, idx) => {
+        const offset = offsets[idx];
+        const dispersedLatLng = map.layerPointToLatLng(
+          L.point(anchorPt.x + offset.x, anchorPt.y + offset.y)
+        );
+
+        L.polyline(
+          [
+            [cluster.anchor.lat, cluster.anchor.lng],
+            [dispersedLatLng.lat, dispersedLatLng.lng],
+          ],
+          {
+            color: '#7C4D2B',
+            weight: 2,
+            opacity: 0.72,
+            dashArray: '4, 4',
+            interactive: false,
+          }
+        ).addTo(group);
+
+        attachSinglePin(pin, dispersedLatLng.lat, dispersedLatLng.lng, true, idx);
+      });
+
+      const anchorIcon = L.divIcon({
+        className: 'campus-leaflet-icon',
+        html: '<button type="button" class="campus-spider-anchor" aria-label="Collapse spread pins" title="Collapse spread pins">×</button>',
+        iconSize: [0, 0],
+        iconAnchor: [0, 0],
+      });
+      const anchorMarker = L.marker([cluster.anchor.lat, cluster.anchor.lng], {
+        icon: anchorIcon,
+        interactive: false,
+        zIndexOffset: 920,
+      }).addTo(group);
+
+      const anchorEl = anchorMarker.getElement();
+      if (anchorEl) {
+        L.DomEvent.disableClickPropagation(anchorEl);
+        const btn = anchorEl.querySelector('.campus-spider-anchor');
+        if (btn) {
+          btn.addEventListener('click', (ev) => {
+            ev.preventDefault();
+            ev.stopPropagation();
+            setExpandedClusterKey(null);
+          });
+        }
+      }
     });
-  }, [selectedFilter, searchText, focusedPin, customOriginPinId]);
+  }, [selectedFilter, searchText, focusedPin, customOriginPinId, expandedClusterKey, mapZoom]);
 
   // 5. Render User GPS Blue Dot
   useEffect(() => {
@@ -854,6 +1001,8 @@ export function OutdoorMapView({
   useEffect(() => {
     if (!navTargetPin) return;
     setFocusedPin(navTargetPin);
+    const clusters = groupOverlappingPins(CAMPUS_PINS);
+    setExpandedClusterKey(findClusterKeyForPin(clusters, navTargetPin.id));
     setSelectedFilter('ALL');
     setSearchText('');
     setActiveStepIndex(0);
@@ -902,29 +1051,29 @@ export function OutdoorMapView({
   const currentTutorialStep = activeRoute?.steps[activeStepIndex] ?? null;
 
   return (
-    <div className="flex flex-col lg:grid lg:grid-cols-[360px_1fr] xl:grid-cols-[400px_1fr] h-[calc(100dvh-148px)] sm:h-[calc(100dvh-152px)] lg:h-[calc(100dvh-96px)] min-h-[380px] lg:min-h-[480px] w-full overflow-hidden rounded-[28px] border border-[#E2E8F0] bg-[#FFFFFF] shadow-sm">
+    <div className="flex flex-col lg:grid lg:grid-cols-[360px_1fr] xl:grid-cols-[400px_1fr] h-[calc(100dvh-148px)] sm:h-[calc(100dvh-152px)] lg:h-[calc(100dvh-96px)] min-h-[380px] lg:min-h-[480px] w-full overflow-hidden rounded-[28px] border border-[#E6DDD0] bg-[#FFFFFF] nutty-card">
       {/* =================================================================== */}
-      {/* DESKTOP LEFT PIXEL PANEL (Hidden < lg so mobile stays full-screen)  */}
+      {/* DESKTOP LEFT PANEL (Hidden < lg so mobile stays full-screen)       */}
       {/* =================================================================== */}
-      <aside className="hidden lg:flex flex-col h-full min-h-0 overflow-hidden border-r border-[#E2E8F0] bg-[#FFFFFF]">
+      <aside className="hidden lg:flex flex-col h-full min-h-0 overflow-hidden border-r border-[#E6DDD0] bg-[#FFFFFF]">
         {/* Header & Search */}
-        <div className="border-b border-[#E2E8F0] p-4 space-y-3 bg-[#F8FAFC]">
+        <div className="border-b border-[#E6DDD0] p-4 space-y-3 bg-gradient-to-b from-[#FAF7F2] to-[#FFFFFF]">
           <div className="flex items-center justify-between gap-2">
             <div>
-              <h1 className="font-display text-base font-bold text-[#111827]">
+              <h1 className="font-display text-base font-bold text-[#1F1812]">
                 Campus Directions
               </h1>
-              <p className="font-mono text-[10.5px] font-medium text-[#5F6368]">
+              <p className="font-mono text-[10.5px] font-medium text-[#7D7166]">
                 27.5108° N • 68.7416° E • Khairpur Mirs
               </p>
             </div>
             <button
               type="button"
               onClick={onRequestLiveGps}
-              className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 font-display text-[11px] font-semibold cursor-pointer transition ${
+              className={`nutty-btn flex items-center gap-1.5 rounded-full px-3 py-1.5 font-display text-[11px] font-semibold cursor-pointer ${
                 gpsMode === 'LIVE'
                   ? 'bg-[#E6F4EA] text-[#137333] border border-[#0F9D58]'
-                  : 'bg-[#EFF3F8] text-[#444746] hover:bg-[#E2E8F0]'
+                  : 'bg-[#F6ECE0] text-[#7C4D2B] border border-[#DFCBB4] hover:bg-[#EFE0CE]'
               }`}
             >
               <Radio className="h-3 w-3" />
@@ -933,7 +1082,7 @@ export function OutdoorMapView({
           </div>
 
           {/* Start From (Origin) Selector */}
-          <div className="rounded-2xl border border-[#DCE2EC] bg-[#FFFFFF] p-3 space-y-2">
+          <div className="rounded-2xl border border-[#DFCBB4] bg-[#FFFFFF] p-3 space-y-2 shadow-[0_3px_10px_-3px_rgba(74,44,21,0.08)]">
             <div className="flex items-center justify-between gap-2">
               <label
                 htmlFor="desktop-origin-select"
@@ -945,7 +1094,7 @@ export function OutdoorMapView({
                 <button
                   type="button"
                   onClick={() => setCustomOriginPinId('AUTO_GPS')}
-                  className="flex items-center gap-1 text-[11px] font-semibold text-[#0B57D0] hover:underline cursor-pointer"
+                  className="nutty-chip flex items-center gap-1 rounded-full bg-[#F6ECE0] px-2 py-0.5 text-[11px] font-semibold text-[#7C4D2B] cursor-pointer"
                 >
                   <RotateCcw className="h-3 w-3" />
                   Reset GPS
@@ -959,7 +1108,7 @@ export function OutdoorMapView({
                 setCustomOriginPinId(e.target.value);
                 setActiveStepIndex(0);
               }}
-              className="w-full rounded-xl border border-[#DCE2EC] bg-[#EFF3F8] px-3 py-2 text-xs font-medium text-[#111827] outline-none focus:border-[#0B57D0]"
+              className="w-full rounded-xl border border-[#E6DDD0] bg-[#FAF7F2] px-3 py-2 text-xs font-medium text-[#1F1812] outline-none focus:border-[#7C4D2B] transition"
             >
               <option value="AUTO_GPS">
                 {gpsMode === 'LIVE'
@@ -977,12 +1126,12 @@ export function OutdoorMapView({
 
             {customOriginPinId === 'AUTO_GPS' && gpsMode === 'SIMULATED' && (
               <div className="flex items-center justify-between gap-2 pt-0.5">
-                <span className="text-[10.5px] font-semibold text-[#5F6368]">Preset:</span>
+                <span className="text-[10.5px] font-semibold text-[#7D7166]">Preset:</span>
                 <select
                   aria-label="Campus GPS Preset"
                   value={presetIndex}
                   onChange={(e) => onSelectPreset(Number(e.target.value))}
-                  className="flex-1 rounded-xl border border-[#DCE2EC] bg-[#F8FAFC] px-2.5 py-1.5 text-[11px] text-[#111827] outline-none focus:border-[#0B57D0]"
+                  className="flex-1 rounded-xl border border-[#E6DDD0] bg-[#FAF7F2] px-2.5 py-1.5 text-[11px] text-[#1F1812] outline-none focus:border-[#7C4D2B]"
                 >
                   {presets.map((p, idx) => (
                     <option key={p.label} value={idx}>
@@ -996,20 +1145,20 @@ export function OutdoorMapView({
 
           {/* Destination Search Pill */}
           <div className="relative">
-            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#0B57D0]" />
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7C4D2B]" />
             <input
               type="text"
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
-              placeholder="B • Destination (Library, Main Gates, Mosque, Points...)"
-              className="w-full rounded-full border border-[#DCE2EC] bg-[#FFFFFF] py-2.5 pl-10 pr-8 text-xs text-[#111827] placeholder-[#747775] outline-none focus:border-[#0B57D0]"
+              placeholder="B • Destination (Library, Labs, ATM, Mosque...)"
+              className="w-full rounded-full border border-[#DFCBB4] bg-[#FFFFFF] py-2.5 pl-10 pr-8 text-xs text-[#1F1812] placeholder-[#7D7166] shadow-[0_2px_8px_-2px_rgba(74,44,21,0.08)] outline-none focus:border-[#7C4D2B] focus:ring-2 focus:ring-[#F6ECE0] transition"
             />
             {searchText && (
               <button
                 type="button"
                 onClick={() => setSearchText('')}
                 aria-label="Clear search"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#5F6368] hover:text-[#111827] cursor-pointer"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7D7166] hover:text-[#1F1812] cursor-pointer"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -1017,7 +1166,7 @@ export function OutdoorMapView({
           </div>
 
           {/* Category Filter Chips */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5">
+          <div className="flex items-center gap-1.5 overflow-x-auto py-0.5">
             {FILTER_TABS.map((tab) => {
               const active = selectedFilter === tab.key;
               return (
@@ -1025,10 +1174,10 @@ export function OutdoorMapView({
                   key={tab.key}
                   type="button"
                   onClick={() => setSelectedFilter(tab.key)}
-                  className={`shrink-0 rounded-full px-3 py-1 font-display text-[11px] font-semibold transition cursor-pointer ${
+                  className={`nutty-chip shrink-0 rounded-full border px-3 py-1.5 font-display text-[11px] font-semibold cursor-pointer ${
                     active
-                      ? 'bg-[#D3E3FD] text-[#041E49]'
-                      : 'bg-[#EFF3F8] text-[#444746] hover:bg-[#E2E8F0]'
+                      ? 'border-[#7C4D2B] bg-[#7C4D2B] text-[#FAF7F2]'
+                      : 'border-[#E6DDD0] bg-[#FAF7F2] text-[#5C5147] hover:bg-[#F6ECE0] hover:text-[#1F1812]'
                   }`}
                 >
                   {tab.label}
@@ -1140,7 +1289,7 @@ export function OutdoorMapView({
                       setCustomOriginPinId(focusedPin.id);
                       setActiveStepIndex(0);
                     }}
-                    className="flex items-center gap-1.5 rounded-full bg-[#E6F4EA] px-3 py-1.5 font-display text-[11px] font-semibold text-[#137333] hover:bg-[#D7EFE0] cursor-pointer"
+                    className="nutty-btn flex items-center gap-1.5 rounded-full border border-[#CBE6D3] bg-[#E6F4EA] px-3.5 py-1.5 font-display text-[11px] font-semibold text-[#137333] hover:bg-[#D7EFE0] cursor-pointer"
                   >
                     <Navigation className="h-3 w-3" />
                     Set Start
@@ -1148,7 +1297,7 @@ export function OutdoorMapView({
                   <button
                     type="button"
                     onClick={() => onOpenPinDetail(focusedPin)}
-                    className="flex items-center gap-1.5 rounded-full bg-[#0B57D0] px-3 py-1.5 font-display text-[11px] font-semibold text-white hover:bg-[#0842A0] cursor-pointer"
+                    className="nutty-btn-primary flex items-center gap-1.5 rounded-full bg-[#0B57D0] px-3.5 py-1.5 font-display text-[11px] font-semibold text-white hover:bg-[#0842A0] cursor-pointer"
                   >
                     <Info className="h-3 w-3" />
                     Full Info
@@ -1158,7 +1307,7 @@ export function OutdoorMapView({
                     <button
                       type="button"
                       onClick={onOpenBusTimings}
-                      className="flex items-center gap-1.5 rounded-full bg-[#0F9D58] px-3 py-1.5 font-display text-[11px] font-semibold text-white hover:bg-[#0B8043] cursor-pointer"
+                      className="nutty-btn flex items-center gap-1.5 rounded-full bg-[#0F9D58] px-3.5 py-1.5 font-display text-[11px] font-semibold text-white hover:bg-[#0B8043] cursor-pointer"
                     >
                       <Bus className="h-3 w-3" />
                       Bus Timings
@@ -1336,21 +1485,21 @@ export function OutdoorMapView({
                     key={pin.id}
                     type="button"
                     onClick={() => focusPinFromSearch(pin)}
-                    className="flex w-full items-center gap-3 rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] p-3 text-left transition hover:border-[#0B57D0] hover:bg-[#FFFFFF] cursor-pointer"
+                    className="nutty-card flex w-full items-center gap-3 rounded-2xl border border-[#E6DDD0] bg-[#FAF7F2] p-3 text-left transition hover:border-[#A66B3F] hover:bg-[#FFFFFF] hover:-translate-y-0.5 cursor-pointer"
                   >
                     <span
                       className="h-3 w-3 shrink-0 rounded-full border-2 border-white shadow-xs"
                       style={{ backgroundColor: color }}
                     />
                     <div className="min-w-0 flex-1">
-                      <div className="truncate font-display text-xs font-bold text-[#111827]">
+                      <div className="truncate font-display text-xs font-bold text-[#1F1812]">
                         {pin.name}
                       </div>
-                      <div className="truncate font-mono text-[10.5px] text-[#5F6368]">
+                      <div className="truncate font-mono text-[10.5px] text-[#7D7166]">
                         {BUILDINGS[pin.building].shortName} • {pin.roomNumber}
                       </div>
                     </div>
-                    <ChevronRight className="h-4 w-4 shrink-0 text-[#747775]" />
+                    <ChevronRight className="h-4 w-4 shrink-0 text-[#7C4D2B]" />
                   </button>
                 );
               })}
@@ -1365,12 +1514,12 @@ export function OutdoorMapView({
       <div className="relative flex-1 h-full min-h-0 w-full overflow-hidden">
         <div ref={mapContainerRef} className="relative z-0 isolate h-full w-full" />
 
-        {/* MOBILE TOP COMPACT PIXEL SEARCH BAR (< lg) */}
+        {/* MOBILE TOP COMPACT SEARCH BAR (< lg) */}
         <div className="pointer-events-none absolute top-3 left-3 right-3 z-40 flex flex-col gap-2 lg:hidden">
-          <div className="pointer-events-auto rounded-3xl border border-[#E2E8F0] bg-[#FFFFFF]/95 backdrop-blur-md p-2.5 shadow-lg space-y-2">
+          <div className="pointer-events-auto rounded-3xl border border-[#DFCBB4] bg-[#FFFFFF]/96 backdrop-blur-md p-2.5 shadow-[0_10px_26px_-6px_rgba(62,39,20,0.2)] space-y-2">
             <div className="flex items-center gap-1.5">
               <div className="relative flex-1 min-w-0">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#0B57D0]" />
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#7C4D2B]" />
                 <input
                   type="text"
                   value={searchText}
@@ -1378,15 +1527,15 @@ export function OutdoorMapView({
                     setSearchText(e.target.value);
                     if (e.target.value.trim()) setShowMobileDirectory(false);
                   }}
-                  placeholder="Search Library, Main Gates, Mosque, Points..."
-                  className="w-full rounded-full bg-[#EFF3F8] py-2 pl-9 pr-8 text-xs text-[#111827] placeholder-[#747775] outline-none focus:ring-2 focus:ring-[#D3E3FD]"
+                  placeholder="Search Library, Labs, ATM, Mosque..."
+                  className="w-full rounded-full border border-[#E6DDD0] bg-[#FAF7F2] py-2 pl-9 pr-8 text-xs text-[#1F1812] placeholder-[#7D7166] outline-none focus:border-[#7C4D2B] focus:ring-2 focus:ring-[#F6ECE0]"
                 />
                 {searchText && (
                   <button
                     type="button"
                     onClick={() => setSearchText('')}
                     aria-label="Clear search"
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#5F6368]"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#7D7166]"
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
@@ -1395,10 +1544,10 @@ export function OutdoorMapView({
               <button
                 type="button"
                 onClick={() => setShowMobileDirectory((v) => !v)}
-                className={`shrink-0 flex items-center gap-1 rounded-full px-2.5 py-2 text-[11px] font-semibold cursor-pointer ${
+                className={`nutty-btn shrink-0 flex items-center gap-1 rounded-full border px-2.5 py-2 text-[11px] font-semibold cursor-pointer ${
                   showMobileDirectory
-                    ? 'bg-[#0B57D0] text-white'
-                    : 'bg-[#E8F0FE] text-[#0B57D0]'
+                    ? 'border-[#7C4D2B] bg-[#7C4D2B] text-[#FAF7F2]'
+                    : 'border-[#DFCBB4] bg-[#F6ECE0] text-[#7C4D2B]'
                 }`}
               >
                 <MapPin className="h-3 w-3" />
@@ -1407,10 +1556,10 @@ export function OutdoorMapView({
               <button
                 type="button"
                 onClick={onRequestLiveGps}
-                className={`shrink-0 flex items-center gap-1 rounded-full px-2.5 py-2 text-[11px] font-semibold cursor-pointer ${
+                className={`nutty-btn shrink-0 flex items-center gap-1 rounded-full border px-2.5 py-2 text-[11px] font-semibold cursor-pointer ${
                   gpsMode === 'LIVE'
-                    ? 'bg-[#E6F4EA] text-[#137333]'
-                    : 'bg-[#EFF3F8] text-[#444746]'
+                    ? 'border-[#CBE6D3] bg-[#E6F4EA] text-[#137333]'
+                    : 'border-[#E6DDD0] bg-[#FAF7F2] text-[#5C5147]'
                 }`}
               >
                 <Radio className="h-3 w-3" />
@@ -1430,7 +1579,7 @@ export function OutdoorMapView({
                   setCustomOriginPinId(e.target.value);
                   setActiveStepIndex(0);
                 }}
-                className="min-w-0 flex-1 rounded-full bg-[#EFF3F8] px-3 py-1 text-[11px] font-medium text-[#111827] outline-none"
+                className="min-w-0 flex-1 rounded-full border border-[#E6DDD0] bg-[#FAF7F2] px-3 py-1 text-[11px] font-medium text-[#1F1812] outline-none"
               >
                 <option value="AUTO_GPS">
                   {gpsMode === 'LIVE'
@@ -1447,7 +1596,7 @@ export function OutdoorMapView({
           </div>
 
           {/* Mobile Horizontal Category Filter Pills */}
-          <div className="pointer-events-auto flex items-center gap-1.5 overflow-x-auto pb-0.5">
+          <div className="pointer-events-auto flex items-center gap-1.5 overflow-x-auto py-0.5">
             {FILTER_TABS.map((tab) => {
               const active = selectedFilter === tab.key;
               return (
@@ -1455,10 +1604,10 @@ export function OutdoorMapView({
                   key={tab.key}
                   type="button"
                   onClick={() => setSelectedFilter(tab.key)}
-                  className={`shrink-0 rounded-full px-3 py-1.5 font-display text-[11px] font-semibold shadow-sm cursor-pointer ${
+                  className={`nutty-chip shrink-0 rounded-full border px-3 py-1.5 font-display text-[11px] font-semibold cursor-pointer ${
                     active
-                      ? 'bg-[#0B57D0] text-white'
-                      : 'bg-[#FFFFFF]/95 text-[#444746] border border-[#E2E8F0]'
+                      ? 'border-[#7C4D2B] bg-[#7C4D2B] text-[#FAF7F2]'
+                      : 'border-[#DFCBB4] bg-[#FFFFFF]/96 text-[#5C5147] hover:bg-[#F6ECE0]'
                   }`}
                 >
                   {tab.label}
@@ -1546,15 +1695,15 @@ export function OutdoorMapView({
           </div>
         )}
 
-        {/* Right-Edge Floating Pixel Map Controls (Zoom +/- always visible & unobstructed) */}
+        {/* Right-Edge Floating Map Controls (Zoom +/- always visible & unobstructed) */}
         <div className="absolute right-3 top-[148px] sm:top-[152px] lg:top-4 z-30 flex flex-col items-center gap-2">
-          <div className="flex flex-col overflow-hidden rounded-2xl border border-[#DCE2EC] bg-[#FFFFFF]/97 shadow-lg divide-y divide-[#E2E8F0]">
+          <div className="flex flex-col overflow-hidden rounded-2xl border border-[#DFCBB4] bg-[#FFFFFF]/98 shadow-[0_8px_22px_-4px_rgba(62,39,20,0.22)] divide-y divide-[#E6DDD0]">
             <button
               type="button"
               title="Zoom In"
               aria-label="Zoom In"
               onClick={() => mapRef.current?.zoomIn()}
-              className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center text-[#111827] hover:bg-[#EFF3F8] active:bg-[#D3E3FD] cursor-pointer"
+              className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center text-[#1F1812] transition hover:bg-[#F6ECE0] hover:text-[#7C4D2B] active:bg-[#EAE1D4] active:scale-95 cursor-pointer"
             >
               <ZoomIn className="h-4 w-4" />
             </button>
@@ -1563,7 +1712,7 @@ export function OutdoorMapView({
               title="Zoom Out"
               aria-label="Zoom Out"
               onClick={() => mapRef.current?.zoomOut()}
-              className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center text-[#111827] hover:bg-[#EFF3F8] active:bg-[#D3E3FD] cursor-pointer"
+              className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center text-[#1F1812] transition hover:bg-[#F6ECE0] hover:text-[#7C4D2B] active:bg-[#EAE1D4] active:scale-95 cursor-pointer"
             >
               <ZoomOut className="h-4 w-4" />
             </button>
@@ -1596,11 +1745,11 @@ export function OutdoorMapView({
 
         {/* Desktop Map Top-Left Floating Route Pill */}
         {focusedPin && activeRoute && (
-          <div className="hidden lg:flex items-center gap-2.5 absolute top-3.5 left-3.5 z-30 rounded-full border border-[#DCE2EC] bg-[#FFFFFF]/95 backdrop-blur-md px-4 py-2 shadow-md">
+          <div className="hidden lg:flex items-center gap-2.5 absolute top-3.5 left-3.5 z-30 rounded-full border border-[#DFCBB4] bg-[#FFFFFF]/96 backdrop-blur-md px-4 py-2 shadow-[0_8px_22px_-4px_rgba(62,39,20,0.2)]">
             <Footprints className="h-4 w-4 text-[#0B57D0]" />
-            <div className="text-xs font-semibold text-[#111827]">
+            <div className="text-xs font-semibold text-[#1F1812]">
               <span className="text-[#0F9D58]">{effectiveOrigin?.label}</span>
-              <span className="mx-1.5 text-[#5F6368]">→</span>
+              <span className="mx-1.5 text-[#7D7166]">→</span>
               <span>{focusedPin.mapLabel || focusedPin.name}</span>
               <span className="ml-2 font-mono text-[11px] text-[#0B57D0]">
                 ({formatDistance(activeRoute.totalDistanceMeters)} •{' '}
@@ -1610,7 +1759,7 @@ export function OutdoorMapView({
           </div>
         )}
 
-        <div className="hidden lg:flex absolute bottom-3.5 left-3.5 z-30 items-center gap-3.5 rounded-full border border-[#E2E8F0] bg-[#FFFFFF]/95 px-4 py-1.5 text-[11px] font-semibold text-[#444746] shadow-md">
+        <div className="hidden lg:flex absolute bottom-3.5 left-3.5 z-30 items-center gap-3.5 rounded-full border border-[#DFCBB4] bg-[#FFFFFF]/96 px-4 py-1.5 text-[11px] font-semibold text-[#5C5147] shadow-[0_6px_18px_-4px_rgba(62,39,20,0.18)]">
           <span className="flex items-center gap-1.5">
             <span className="h-2.5 w-2.5 rounded-full bg-[#B3261E]" /> Old Complex
           </span>
@@ -1618,9 +1767,12 @@ export function OutdoorMapView({
             <span className="h-2.5 w-2.5 rounded-full bg-[#0F9D58]" /> New Complex
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-[#0B57D0]" /> Shortest Route
+            <span className="h-2.5 w-2.5 rounded-full bg-[#0B57D0]" /> Route
           </span>
-          <span className="border-l border-[#E2E8F0] pl-3 text-[#0B57D0]">
+          <span className="flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-[#7C4D2B]" /> Shared Cluster
+          </span>
+          <span className="border-l border-[#E6DDD0] pl-3 text-[#7C4D2B]">
             {mapZoom >= LABEL_ZOOM_THRESHOLD ? 'Labels visible' : 'Zoom in for names'}
           </span>
         </div>
@@ -1815,7 +1967,7 @@ export function OutdoorMapView({
                   <button
                     type="button"
                     onClick={() => onOpenPinDetail(focusedPin)}
-                    className="flex flex-1 items-center justify-center gap-1 rounded-full bg-[#0B57D0] px-3 py-2 font-display text-xs font-semibold text-white"
+                    className="nutty-btn-primary flex flex-1 items-center justify-center gap-1 rounded-full bg-[#0B57D0] px-3 py-2 font-display text-xs font-semibold text-white cursor-pointer"
                   >
                     <Info className="h-3.5 w-3.5" />
                     Details
@@ -1825,7 +1977,7 @@ export function OutdoorMapView({
                     <button
                       type="button"
                       onClick={onOpenBusTimings}
-                      className="flex flex-1 items-center justify-center gap-1 rounded-full bg-[#0F9D58] px-3 py-2 font-display text-xs font-semibold text-white"
+                      className="nutty-btn flex flex-1 items-center justify-center gap-1 rounded-full bg-[#0F9D58] px-3 py-2 font-display text-xs font-semibold text-white cursor-pointer"
                     >
                       <Bus className="h-3.5 w-3.5" />
                       Buses
@@ -1836,14 +1988,17 @@ export function OutdoorMapView({
             )}
           </div>
         ) : (
-          <div className="lg:hidden absolute bottom-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2.5 rounded-full border border-[#E2E8F0] bg-[#FFFFFF]/95 px-3.5 py-1.5 text-[10.5px] font-semibold text-[#444746] shadow-md whitespace-nowrap">
+          <div className="lg:hidden absolute bottom-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2.5 rounded-full border border-[#DFCBB4] bg-[#FFFFFF]/96 px-3.5 py-1.5 text-[10.5px] font-semibold text-[#5C5147] shadow-[0_6px_18px_-4px_rgba(62,39,20,0.2)] whitespace-nowrap">
             <span className="flex items-center gap-1">
               <span className="h-2 w-2 rounded-full bg-[#B3261E]" /> Old
             </span>
             <span className="flex items-center gap-1">
               <span className="h-2 w-2 rounded-full bg-[#0F9D58]" /> New
             </span>
-            <span className="text-[#0B57D0]">
+            <span className="flex items-center gap-1">
+              <span className="h-2 w-2 rounded-full bg-[#7C4D2B]" /> Cluster
+            </span>
+            <span className="text-[#7C4D2B]">
               {mapZoom >= LABEL_ZOOM_THRESHOLD ? 'Tap any pin' : 'Zoom in for labels'}
             </span>
           </div>
@@ -1872,12 +2027,12 @@ function MapCircleBtn({
       title={title}
       aria-label={title}
       onClick={onClick}
-      className={`flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full border shadow-md transition cursor-pointer ${
+      className={`nutty-btn flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full border cursor-pointer ${
         active
           ? 'border-[#0B57D0] bg-[#0B57D0] text-white'
           : primary
-          ? 'border-[#D3E3FD] bg-[#D3E3FD] text-[#041E49] hover:bg-[#C2D7FC]'
-          : 'border-[#E2E8F0] bg-[#FFFFFF]/95 text-[#111827] hover:bg-[#EFF3F8]'
+          ? 'border-[#DFCBB4] bg-[#F6ECE0] text-[#7C4D2B] hover:bg-[#EDE0CE]'
+          : 'border-[#DFCBB4] bg-[#FFFFFF]/96 text-[#1F1812] hover:bg-[#FAF7F2] hover:text-[#7C4D2B]'
       }`}
     >
       {children}

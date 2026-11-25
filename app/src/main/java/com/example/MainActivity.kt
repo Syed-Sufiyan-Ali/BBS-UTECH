@@ -42,14 +42,15 @@ import com.example.ui.screens.OutdoorMapScreen
 import com.example.ui.screens.PinDetailSheet
 import com.example.ui.screens.ScheduleScreen
 import com.example.ui.theme.BodyFontFamily
+import com.example.ui.theme.HazelnutBorder
 import com.example.ui.theme.InkBlack
-import com.example.ui.theme.MistOutline
 import com.example.ui.theme.MyApplicationTheme
-import com.example.ui.theme.OnPixelBlueContainer
-import com.example.ui.theme.PixelBlueContainer
 import com.example.ui.theme.PorcelainCanvas
 import com.example.ui.theme.PureSurface
+import com.example.ui.theme.RoastedWalnut
 import com.example.ui.theme.SlateGray
+import com.example.ui.theme.ToastedCreamTint
+import com.example.ui.theme.warmShadow
 
 class MainActivity : ComponentActivity() {
 
@@ -100,8 +101,12 @@ fun BBSUTSDApp(viewModel: MainViewModel) {
         modifier = Modifier.fillMaxSize(),
         containerColor = PorcelainCanvas,
         bottomBar = {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                HorizontalDivider(color = MistOutline, thickness = 1.dp)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .warmShadow(elevation = 10.dp)
+            ) {
+                HorizontalDivider(color = HazelnutBorder, thickness = 1.dp)
                 NavigationBar(
                     containerColor = PureSurface,
                     tonalElevation = 0.dp,
@@ -136,9 +141,9 @@ fun BBSUTSDApp(viewModel: MainViewModel) {
                                 )
                             },
                             colors = NavigationBarItemDefaults.colors(
-                                selectedIconColor = OnPixelBlueContainer,
+                                selectedIconColor = RoastedWalnut,
                                 selectedTextColor = InkBlack,
-                                indicatorColor = PixelBlueContainer,
+                                indicatorColor = ToastedCreamTint,
                                 unselectedIconColor = SlateGray,
                                 unselectedTextColor = SlateGray
                             ),

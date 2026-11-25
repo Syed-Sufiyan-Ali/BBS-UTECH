@@ -57,6 +57,7 @@ import com.example.ui.theme.CampusEmeraldBorder
 import com.example.ui.theme.CampusEmeraldDark
 import com.example.ui.theme.CampusEmeraldTint
 import com.example.ui.theme.DisplayFontFamily
+import com.example.ui.theme.HazelnutBorder
 import com.example.ui.theme.InkBlack
 import com.example.ui.theme.MistOutline
 import com.example.ui.theme.MonoFontFamily
@@ -68,8 +69,11 @@ import com.example.ui.theme.PixelBlueTint
 import com.example.ui.theme.PorcelainCanvas
 import com.example.ui.theme.PureSurface
 import com.example.ui.theme.PureWhite
+import com.example.ui.theme.RoastedWalnut
 import com.example.ui.theme.SlateGray
+import com.example.ui.theme.ToastedCreamTint
 import com.example.ui.theme.TonalMist
+import com.example.ui.theme.warmShadow
 import java.util.Calendar
 
 @Composable
@@ -138,13 +142,14 @@ fun ScheduleScreen(
                 }
 
                 Surface(
-                    color = if (isCurrentSaved) CampusEmeraldTint else PixelBlueContainer,
+                    color = if (isCurrentSaved) CampusEmeraldTint else ToastedCreamTint,
                     shape = RoundedCornerShape(50),
                     border = BorderStroke(
                         1.dp,
-                        if (isCurrentSaved) CampusEmeraldBorder else PixelBlueContainer
+                        if (isCurrentSaved) CampusEmeraldBorder else HazelnutBorder
                     ),
                     modifier = Modifier
+                        .warmShadow(elevation = 3.dp, shape = RoundedCornerShape(50))
                         .clickable {
                             viewModel.saveMySchedulePreference(selectedDept, selectedSemester, selectedSection)
                         }
@@ -157,14 +162,14 @@ fun ScheduleScreen(
                         Icon(
                             imageVector = if (isCurrentSaved) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
                             contentDescription = "Bookmark",
-                            tint = if (isCurrentSaved) CampusEmeraldDark else OnPixelBlueContainer,
+                            tint = if (isCurrentSaved) CampusEmeraldDark else RoastedWalnut,
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = if (isCurrentSaved) "My Timetable" else "Save Mine",
                             fontFamily = BodyFontFamily,
-                            color = if (isCurrentSaved) CampusEmeraldDark else OnPixelBlueContainer,
+                            color = if (isCurrentSaved) CampusEmeraldDark else RoastedWalnut,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -179,6 +184,7 @@ fun ScheduleScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 16.dp, end = 16.dp, bottom = 10.dp)
+                    .warmShadow(elevation = 3.dp, shape = RoundedCornerShape(16.dp))
                     .clickable { viewModel.openBusTimings() }
                     .testTag("schedule_open_bus_timetables")
             ) {
@@ -208,7 +214,7 @@ fun ScheduleScreen(
                         fontFamily = BodyFontFamily,
                         fontSize = 11.5.sp,
                         fontWeight = FontWeight.Bold,
-                        color = PixelBlue
+                        color = RoastedWalnut
                     )
                 }
             }
@@ -296,7 +302,9 @@ fun ScheduleScreen(
                         borderColor = MistOutline,
                         selectedBorderColor = PixelBlue
                     ),
-                    modifier = Modifier.testTag("chip_sem_$sem")
+                    modifier = Modifier
+                        .warmShadow(elevation = 3.dp, shape = RoundedCornerShape(50))
+                        .testTag("chip_sem_$sem")
                 )
             }
 
@@ -320,16 +328,18 @@ fun ScheduleScreen(
                     colors = FilterChipDefaults.filterChipColors(
                         containerColor = PureSurface,
                         labelColor = SlateGray,
-                        selectedContainerColor = PixelBlueContainer,
-                        selectedLabelColor = OnPixelBlueContainer
+                        selectedContainerColor = ToastedCreamTint,
+                        selectedLabelColor = RoastedWalnut
                     ),
                     border = FilterChipDefaults.filterChipBorder(
                         enabled = true,
                         selected = selectedSection == sec,
-                        borderColor = MistOutline,
-                        selectedBorderColor = PixelBlueContainer
+                        borderColor = HazelnutBorder,
+                        selectedBorderColor = RoastedWalnut
                     ),
-                    modifier = Modifier.testTag("chip_sec_$sec")
+                    modifier = Modifier
+                        .warmShadow(elevation = 3.dp, shape = RoundedCornerShape(50))
+                        .testTag("chip_sec_$sec")
                 )
             }
         }
@@ -345,10 +355,11 @@ fun ScheduleScreen(
             daysOfWeek.forEach { day ->
                 val isSelected = selectedDay.equals(day, ignoreCase = true)
                 Surface(
-                    color = if (isSelected) PixelBlueContainer else PureSurface,
+                    color = if (isSelected) ToastedCreamTint else PureSurface,
                     shape = RoundedCornerShape(50),
-                    border = BorderStroke(1.dp, if (isSelected) PixelBlueContainer else MistOutline),
+                    border = BorderStroke(1.dp, if (isSelected) RoastedWalnut else HazelnutBorder),
                     modifier = Modifier
+                        .warmShadow(elevation = 3.dp, shape = RoundedCornerShape(50))
                         .clickable {
                             viewModel.setScheduleFilter(selectedDept, selectedSemester, selectedSection, day)
                         }
@@ -357,7 +368,7 @@ fun ScheduleScreen(
                     Text(
                         text = day.take(3),
                         fontFamily = BodyFontFamily,
-                        color = if (isSelected) OnPixelBlueContainer else SlateGray,
+                        color = if (isSelected) RoastedWalnut else SlateGray,
                         fontSize = 12.5.sp,
                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
@@ -418,7 +429,11 @@ fun ScheduleScreen(
                         shape = RoundedCornerShape(24.dp),
                         border = BorderStroke(
                             if (isOngoing) 1.5.dp else 1.dp,
-                            if (isOngoing) CampusEmerald else MistOutline
+                            if (isOngoing) CampusEmerald else HazelnutBorder
+                        ),
+                        elevation = CardDefaults.cardElevation(
+                            defaultElevation = 4.dp,
+                            hoveredElevation = 7.dp
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
@@ -568,9 +583,11 @@ fun ScheduleScreen(
 
                                 if (viewModel.repository.getPinById(item.locationPinId) != null) {
                                     Surface(
-                                        color = PixelBlueTint,
+                                        color = PureSurface,
                                         shape = RoundedCornerShape(50),
+                                        border = BorderStroke(1.dp, HazelnutBorder),
                                         modifier = Modifier
+                                            .warmShadow(elevation = 3.dp, shape = RoundedCornerShape(50))
                                             .clickable { viewModel.locatePinById(item.locationPinId) }
                                             .testTag("locate_room_${item.subjectCode}")
                                     ) {

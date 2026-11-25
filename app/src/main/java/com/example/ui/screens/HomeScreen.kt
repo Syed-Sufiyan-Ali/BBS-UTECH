@@ -93,6 +93,7 @@ import com.example.ui.theme.CampusEmeraldBorder
 import com.example.ui.theme.CampusEmeraldDark
 import com.example.ui.theme.CampusEmeraldTint
 import com.example.ui.theme.DisplayFontFamily
+import com.example.ui.theme.HazelnutBorder
 import com.example.ui.theme.InkBlack
 import com.example.ui.theme.MistOutline
 import com.example.ui.theme.MonoFontFamily
@@ -104,8 +105,13 @@ import com.example.ui.theme.PixelBlueTint
 import com.example.ui.theme.PorcelainCanvas
 import com.example.ui.theme.PureSurface
 import com.example.ui.theme.PureWhite
+import com.example.ui.theme.RoastedWalnut
 import com.example.ui.theme.SlateGray
+import com.example.ui.theme.ToastedCreamTint
 import com.example.ui.theme.TonalMist
+import com.example.ui.theme.WarmHazelnut
+import com.example.ui.theme.nuttyButtonElevation
+import com.example.ui.theme.warmShadow
 import kotlinx.coroutines.delay
 
 @Composable
@@ -146,15 +152,18 @@ fun HomeScreen(
                 Card(
                     colors = CardDefaults.cardColors(containerColor = PureSurface),
                     shape = RoundedCornerShape(28.dp),
-                    border = BorderStroke(1.dp, MistOutline),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                    border = BorderStroke(1.dp, HazelnutBorder),
+                    elevation = CardDefaults.cardElevation(
+                        defaultElevation = 5.dp,
+                        hoveredElevation = 8.dp
+                    ),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
                         Surface(
-                            color = PixelBlueTint,
+                            color = ToastedCreamTint,
                             shape = RoundedCornerShape(50),
-                            border = BorderStroke(1.dp, PixelBlueContainer)
+                            border = BorderStroke(1.dp, HazelnutBorder)
                         ) {
                             Row(
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
@@ -163,7 +172,7 @@ fun HomeScreen(
                                 Icon(
                                     imageVector = Icons.Default.AutoAwesome,
                                     contentDescription = null,
-                                    tint = PixelBlue,
+                                    tint = RoastedWalnut,
                                     modifier = Modifier.size(14.dp)
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
@@ -172,7 +181,7 @@ fun HomeScreen(
                                     fontFamily = BodyFontFamily,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.SemiBold,
-                                    color = PixelBlue
+                                    color = RoastedWalnut
                                 )
                             }
                         }
@@ -210,10 +219,11 @@ fun HomeScreen(
                                     containerColor = PixelBlue,
                                     contentColor = PureWhite
                                 ),
+                                elevation = nuttyButtonElevation(),
                                 shape = RoundedCornerShape(50),
                                 modifier = Modifier
                                     .weight(1f)
-                                    .height(46.dp)
+                                    .height(48.dp)
                                     .testTag("hero_launch_map_button")
                             ) {
                                 Icon(Icons.Default.NearMe, contentDescription = null, modifier = Modifier.size(16.dp))
@@ -229,16 +239,21 @@ fun HomeScreen(
                             OutlinedButton(
                                 onClick = { viewModel.openBusTimings() },
                                 shape = RoundedCornerShape(50),
-                                border = BorderStroke(1.dp, MistOutline),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    containerColor = PureSurface,
+                                    contentColor = InkBlack
+                                ),
+                                elevation = nuttyButtonElevation(),
+                                border = BorderStroke(1.dp, HazelnutBorder),
                                 modifier = Modifier
                                     .weight(1f)
-                                    .height(46.dp)
+                                    .height(48.dp)
                                     .testTag("hero_bus_timetables_button")
                             ) {
                                 Icon(
                                     Icons.Default.DirectionsBus,
                                     contentDescription = null,
-                                    tint = PixelBlue,
+                                    tint = RoastedWalnut,
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
@@ -419,7 +434,7 @@ fun HomeScreen(
                         Icon(
                             imageVector = Icons.Default.Route,
                             contentDescription = null,
-                            tint = PixelBlue,
+                            tint = RoastedWalnut,
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
@@ -428,7 +443,7 @@ fun HomeScreen(
                             fontFamily = MonoFontFamily,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
-                            color = PixelBlue
+                            color = RoastedWalnut
                         )
                     }
 
@@ -552,7 +567,11 @@ fun HomeScreen(
             Card(
                 colors = CardDefaults.cardColors(containerColor = PureSurface),
                 shape = RoundedCornerShape(24.dp),
-                border = BorderStroke(1.dp, MistOutline),
+                border = BorderStroke(1.dp, HazelnutBorder),
+                elevation = CardDefaults.cardElevation(
+                    defaultElevation = 4.dp,
+                    hoveredElevation = 7.dp
+                ),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(18.dp)) {
@@ -560,7 +579,7 @@ fun HomeScreen(
                         Icon(
                             imageVector = Icons.Default.Explore,
                             contentDescription = null,
-                            tint = PixelBlue,
+                            tint = RoastedWalnut,
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
@@ -589,13 +608,20 @@ fun HomeScreen(
                         OutlinedButton(
                             onClick = { viewModel.openBusTimings() },
                             shape = RoundedCornerShape(50),
-                            border = BorderStroke(1.dp, MistOutline),
-                            modifier = Modifier.weight(1f)
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                containerColor = PureSurface,
+                                contentColor = InkBlack
+                            ),
+                            elevation = nuttyButtonElevation(),
+                            border = BorderStroke(1.dp, HazelnutBorder),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(48.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.DirectionsBus,
                                 contentDescription = null,
-                                tint = PixelBlue,
+                                tint = RoastedWalnut,
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
@@ -614,8 +640,11 @@ fun HomeScreen(
                                 containerColor = PixelBlue,
                                 contentColor = PureWhite
                             ),
+                            elevation = nuttyButtonElevation(),
                             shape = RoundedCornerShape(50),
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(48.dp)
                         ) {
                             Icon(Icons.Default.NearMe, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
@@ -662,8 +691,11 @@ private fun AnimatedRoutingPreviewCard(
     Card(
         colors = CardDefaults.cardColors(containerColor = PureSurface),
         shape = RoundedCornerShape(26.dp),
-        border = BorderStroke(1.dp, MistOutline),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        border = BorderStroke(1.dp, HazelnutBorder),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 4.dp,
+            hoveredElevation = 8.dp
+        ),
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
@@ -690,13 +722,17 @@ private fun AnimatedRoutingPreviewCard(
                         color = InkBlack
                     )
                 }
-                Surface(color = TonalMist, shape = RoundedCornerShape(50)) {
+                Surface(
+                    color = ToastedCreamTint,
+                    shape = RoundedCornerShape(50),
+                    border = BorderStroke(1.dp, HazelnutBorder)
+                ) {
                     Text(
                         text = if (hasLiveGps) "GPS Ready" else "27.51°N 68.74°E",
                         fontFamily = MonoFontFamily,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = PixelBlue,
+                        color = RoastedWalnut,
                         modifier = Modifier.padding(horizontal = 9.dp, vertical = 4.dp)
                     )
                 }
@@ -868,7 +904,8 @@ private fun TelemetryMetricChip(
     Surface(
         color = PorcelainCanvas,
         shape = RoundedCornerShape(16.dp),
-        modifier = modifier
+        border = BorderStroke(1.dp, MistOutline),
+        modifier = modifier.warmShadow(elevation = 2.dp, shape = RoundedCornerShape(16.dp))
     ) {
         Column(
             modifier = Modifier.padding(vertical = 8.dp, horizontal = 6.dp),
@@ -906,7 +943,11 @@ private fun PillarModuleCard(
     Card(
         colors = CardDefaults.cardColors(containerColor = PureSurface),
         shape = RoundedCornerShape(24.dp),
-        border = BorderStroke(1.dp, MistOutline),
+        border = BorderStroke(1.dp, HazelnutBorder),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 4.dp,
+            hoveredElevation = 8.dp
+        ),
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
@@ -937,7 +978,7 @@ private fun PillarModuleCard(
                     fontFamily = MonoFontFamily,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
-                    color = SlateGray
+                    color = WarmHazelnut
                 )
             }
             Spacer(modifier = Modifier.height(12.dp))
@@ -957,21 +998,31 @@ private fun PillarModuleCard(
                 color = SlateGray
             )
             Spacer(modifier = Modifier.height(12.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = ctaLabel,
-                    fontFamily = DisplayFontFamily,
-                    fontSize = 12.5.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = PixelBlue
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                    contentDescription = null,
-                    tint = PixelBlue,
-                    modifier = Modifier.size(15.dp)
-                )
+            Surface(
+                color = ToastedCreamTint,
+                shape = RoundedCornerShape(50),
+                border = BorderStroke(1.dp, HazelnutBorder),
+                modifier = Modifier.warmShadow(elevation = 2.dp, shape = RoundedCornerShape(50))
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = ctaLabel,
+                        fontFamily = DisplayFontFamily,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = RoastedWalnut
+                    )
+                    Spacer(modifier = Modifier.width(5.dp))
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = null,
+                        tint = RoastedWalnut,
+                        modifier = Modifier.size(14.dp)
+                    )
+                }
             }
         }
     }
@@ -994,6 +1045,10 @@ private fun CampusZoneOverviewCard(
         colors = CardDefaults.cardColors(containerColor = containerColor),
         shape = RoundedCornerShape(22.dp),
         border = BorderStroke(1.dp, borderColor),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 3.dp,
+            hoveredElevation = 6.dp
+        ),
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
@@ -1027,7 +1082,12 @@ private fun CampusZoneOverviewCard(
                 color = SlateGray
             )
             Spacer(modifier = Modifier.height(12.dp))
-            Surface(color = PureSurface, shape = RoundedCornerShape(50)) {
+            Surface(
+                color = PureSurface,
+                shape = RoundedCornerShape(50),
+                border = BorderStroke(1.dp, HazelnutBorder),
+                modifier = Modifier.warmShadow(elevation = 3.dp, shape = RoundedCornerShape(50))
+            ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -1043,7 +1103,7 @@ private fun CampusZoneOverviewCard(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                         contentDescription = null,
-                        tint = PixelBlue,
+                        tint = RoastedWalnut,
                         modifier = Modifier.size(13.dp)
                     )
                 }

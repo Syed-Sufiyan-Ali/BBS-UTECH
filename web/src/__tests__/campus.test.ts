@@ -16,6 +16,11 @@ import {
   searchPins,
 } from '../utils/geo';
 import { classifyTurnDelta, computeCampusRoute } from '../utils/routing';
+import {
+  computeCircleOffsets,
+  findClusterKeyForPin,
+  groupOverlappingPins,
+} from '../utils/spiderfy';
 
 describe('BBSUTSD Web Data & Geospatial Logic', () => {
   it('contains only the 10 manually added BBSUTSD landmark pins', () => {
@@ -206,5 +211,34 @@ describe('BBSUTSD Web Data & Geospatial Logic', () => {
     );
     const route = computeCampusRoute(nearbyUser, 'Your Live Location', library);
     expect(route.totalDistanceMeters).toBeLessThanOrEqual(Math.ceil(directMeters) + 2);
+  });
+
+  it('clusters overlapping building pins (hod_prof_saleem & computer_lab_1) and computes clean circular spiderfy offsets', () => {
+    const clusters = groupOverlappingPins(CAMPUS_PINS, 6);
+    expect(clusters.length).toBe(9);
+
+    const sharedCluster = clusters.find((c) => c.pins.length > 1);
+    expect(sharedCluster).toBeDefined();
+    expect(sharedCluster!.pins.map((p) => p.id).sort()).toEqual([
+      'computer_lab_1',
+      'hod_prof_saleem',
+    ]);
+
+    const key = findClusterKeyForPin(clusters, 'computer_lab_1');
+    expect(key).toBe(sharedCluster!.key);
+    expect(findClusterKeyForPin(clusters, 'hod_prof_saleem')).toBe(sharedCluster!.key);
+    expect(findClusterKeyForPin(clusters, 'campus_atm')).toBeNull();
+
+    const twoOffsets = computeCircleOffsets(2);
+    expect(twoOffsets.length).toBe(2);
+    expect(Math.round(twoOffsets[0].x)).toBe(-56);
+    expect(Math.round(twoOffsets[1].x)).toBe(56);
+    expect(Math.abs(twoOffsets[0].y)).toBeLessThan(0.001);
+    expect(Math.abs(twoOffsets[1].y)).toBeLessThan(0.001);
+
+    const fourOffsets = computeCircleOffsets(4);
+    expect(fourOffsets.length).toBe(4);
+    const radii = fourOffsets.map((o) => Math.hypot(o.x, o.y));
+    expect(radii.every((r) => Math.abs(r - radii[0]) < 0.01)).toBe(true);
   });
 });

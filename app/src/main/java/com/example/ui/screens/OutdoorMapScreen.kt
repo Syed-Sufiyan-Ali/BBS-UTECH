@@ -107,22 +107,25 @@ import com.example.ui.theme.CampusEmeraldBorder
 import com.example.ui.theme.CampusEmeraldDark
 import com.example.ui.theme.CampusEmeraldTint
 import com.example.ui.theme.DisplayFontFamily
+import com.example.ui.theme.HazelnutBorder
 import com.example.ui.theme.InkBlack
 import com.example.ui.theme.LibraryViolet
 import com.example.ui.theme.MistOutline
 import com.example.ui.theme.MonoFontFamily
 import com.example.ui.theme.MutedGray
-import com.example.ui.theme.OnPixelBlueContainer
 import com.example.ui.theme.PixelBlue
 import com.example.ui.theme.PixelBlueContainer
 import com.example.ui.theme.PixelBlueTint
 import com.example.ui.theme.PorcelainCanvas
 import com.example.ui.theme.PureSurface
 import com.example.ui.theme.PureWhite
+import com.example.ui.theme.RoastedWalnut
 import com.example.ui.theme.SkyTeal
 import com.example.ui.theme.SlateGray
-import com.example.ui.theme.SoftOutline
+import com.example.ui.theme.ToastedCreamTint
 import com.example.ui.theme.TonalMist
+import com.example.ui.theme.nuttyButtonElevation
+import com.example.ui.theme.warmShadow
 import kotlinx.coroutines.delay
 import org.json.JSONArray
 import org.json.JSONObject
@@ -502,10 +505,10 @@ fun OutdoorMapScreen(
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .shadow(8.dp, RoundedCornerShape(24.dp)),
+                    .warmShadow(10.dp, RoundedCornerShape(24.dp)),
                 shape = RoundedCornerShape(24.dp),
-                color = PureSurface.copy(alpha = 0.96f),
-                border = BorderStroke(1.dp, MistOutline)
+                color = PureSurface.copy(alpha = 0.97f),
+                border = BorderStroke(1.dp, HazelnutBorder)
             ) {
                 Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp)) {
                     Row(
@@ -535,9 +538,10 @@ fun OutdoorMapScreen(
                         ) {
                             Surface(
                                 shape = RoundedCornerShape(50),
-                                color = if (showQuickPinsList) PixelBlue else PixelBlueTint,
-                                border = BorderStroke(1.dp, if (showQuickPinsList) PixelBlue else PixelBlueContainer),
+                                color = if (showQuickPinsList) RoastedWalnut else ToastedCreamTint,
+                                border = BorderStroke(1.dp, if (showQuickPinsList) RoastedWalnut else HazelnutBorder),
                                 modifier = Modifier
+                                    .warmShadow(3.dp, RoundedCornerShape(50))
                                     .clickable { showQuickPinsList = !showQuickPinsList }
                                     .testTag("toggle_quick_pins_list")
                             ) {
@@ -548,14 +552,14 @@ fun OutdoorMapScreen(
                                     Icon(
                                         imageVector = Icons.Default.LocationOn,
                                         contentDescription = null,
-                                        tint = if (showQuickPinsList) PureWhite else PixelBlue,
+                                        tint = if (showQuickPinsList) PureWhite else RoastedWalnut,
                                         modifier = Modifier.size(13.dp)
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(
                                         text = "Pins (${allPins.size})",
                                         fontFamily = BodyFontFamily,
-                                        color = if (showQuickPinsList) PureWhite else PixelBlue,
+                                        color = if (showQuickPinsList) PureWhite else RoastedWalnut,
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.SemiBold
                                     )
@@ -724,6 +728,7 @@ fun OutdoorMapScreen(
                                         containerColor = PixelBlue,
                                         contentColor = PureWhite
                                     ),
+                                    elevation = nuttyButtonElevation(),
                                     shape = RoundedCornerShape(50),
                                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
                                     modifier = Modifier.testTag("enable_gps_button")
@@ -845,21 +850,21 @@ fun OutdoorMapScreen(
                     val isSelected = selectedFilter == tab
                     Surface(
                         modifier = Modifier
+                            .warmShadow(4.dp, RoundedCornerShape(50))
                             .clip(RoundedCornerShape(50))
-                            .shadow(2.dp, RoundedCornerShape(50))
                             .clickable { selectedFilter = tab }
                             .testTag("map_filter_${tab.key.lowercase()}"),
                         shape = RoundedCornerShape(50),
-                        color = if (isSelected) PixelBlueContainer else PureSurface,
+                        color = if (isSelected) ToastedCreamTint else PureSurface,
                         border = BorderStroke(
                             1.dp,
-                            if (isSelected) PixelBlue else MistOutline
+                            if (isSelected) RoastedWalnut else HazelnutBorder
                         )
                     ) {
                         Text(
                             text = tab.label,
                             fontFamily = BodyFontFamily,
-                            color = if (isSelected) OnPixelBlueContainer else SlateGray,
+                            color = if (isSelected) RoastedWalnut else SlateGray,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold,
                             modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
@@ -874,10 +879,10 @@ fun OutdoorMapScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(max = 210.dp)
-                        .shadow(10.dp, RoundedCornerShape(22.dp)),
+                        .warmShadow(12.dp, RoundedCornerShape(22.dp)),
                     shape = RoundedCornerShape(22.dp),
                     color = PureSurface,
-                    border = BorderStroke(1.dp, MistOutline)
+                    border = BorderStroke(1.dp, HazelnutBorder)
                 ) {
                     LazyColumn {
                         items(searchSuggestions, key = { it.id }) { pin ->
@@ -932,10 +937,10 @@ fun OutdoorMapScreen(
                         .fillMaxWidth()
                         .padding(end = 58.dp)
                         .heightIn(max = 240.dp)
-                        .shadow(10.dp, RoundedCornerShape(22.dp)),
+                        .warmShadow(12.dp, RoundedCornerShape(22.dp)),
                     shape = RoundedCornerShape(22.dp),
                     color = PureSurface,
-                    border = BorderStroke(1.dp, MistOutline)
+                    border = BorderStroke(1.dp, HazelnutBorder)
                 ) {
                     LazyColumn {
                         items(allPins, key = { it.id }) { pin ->
@@ -1018,8 +1023,8 @@ fun OutdoorMapScreen(
             Surface(
                 shape = RoundedCornerShape(24.dp),
                 color = PureSurface,
-                border = BorderStroke(1.dp, MistOutline),
-                modifier = Modifier.shadow(6.dp, RoundedCornerShape(24.dp))
+                border = BorderStroke(1.dp, HazelnutBorder),
+                modifier = Modifier.warmShadow(7.dp, RoundedCornerShape(24.dp))
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Box(
@@ -1060,8 +1065,8 @@ fun OutdoorMapScreen(
                 modifier = Modifier
                     .minimumInteractiveComponentSize()
                     .size(48.dp)
+                    .warmShadow(7.dp, CircleShape)
                     .clip(CircleShape)
-                    .shadow(6.dp, CircleShape)
                     .clickable {
                         isSatelliteView = !isSatelliteView
                         val mode = if (isSatelliteView) "satellite" else "roadmap"
@@ -1070,7 +1075,7 @@ fun OutdoorMapScreen(
                     .testTag("toggle_satellite_button"),
                 shape = CircleShape,
                 color = if (isSatelliteView) PixelBlue else PureSurface,
-                border = BorderStroke(1.dp, if (isSatelliteView) PixelBlue else MistOutline)
+                border = BorderStroke(1.dp, if (isSatelliteView) PixelBlue else HazelnutBorder)
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
@@ -1086,7 +1091,7 @@ fun OutdoorMapScreen(
                 icon = if (isGpsActive && userLocation != null) Icons.Default.GpsFixed else Icons.Default.MyLocation,
                 description = "My Current GPS Location",
                 tint = if (isGpsActive && userLocation != null) PureWhite else PixelBlue,
-                borderColor = if (isGpsActive && userLocation != null) PixelBlue else MistOutline,
+                borderColor = if (isGpsActive && userLocation != null) PixelBlue else HazelnutBorder,
                 bgColor = if (isGpsActive && userLocation != null) PixelBlue else PureSurface,
                 testTag = "my_location_button"
             ) {
@@ -1106,8 +1111,8 @@ fun OutdoorMapScreen(
             MapCircleControl(
                 icon = Icons.Default.CenterFocusStrong,
                 description = "Fit All Campus Pins",
-                tint = InkBlack,
-                borderColor = MistOutline,
+                tint = RoastedWalnut,
+                borderColor = HazelnutBorder,
                 bgColor = PureSurface,
                 testTag = "campus_center_button"
             ) { webViewInstance?.evaluateJavascript("recenterCampus();", null) }
@@ -1140,11 +1145,11 @@ fun OutdoorMapScreen(
                     .fillMaxWidth()
                     .heightIn(max = 300.dp)
                     .padding(horizontal = 12.dp, vertical = 12.dp)
-                    .shadow(12.dp, RoundedCornerShape(28.dp))
+                    .warmShadow(14.dp, RoundedCornerShape(28.dp))
                     .testTag("selected_landmark_card"),
                 shape = RoundedCornerShape(28.dp),
                 color = PureSurface,
-                border = BorderStroke(1.dp, MistOutline)
+                border = BorderStroke(1.dp, HazelnutBorder)
             ) {
                 Column(
                     modifier = Modifier
@@ -1390,6 +1395,7 @@ fun OutdoorMapScreen(
                                     containerColor = CampusEmeraldTint,
                                     contentColor = CampusEmeraldDark
                                 ),
+                                elevation = nuttyButtonElevation(),
                                 shape = RoundedCornerShape(50),
                                 modifier = Modifier
                                     .weight(1f)
@@ -1417,6 +1423,7 @@ fun OutdoorMapScreen(
                                 containerColor = PixelBlue,
                                 contentColor = PureWhite
                             ),
+                            elevation = nuttyButtonElevation(),
                             shape = RoundedCornerShape(50),
                             modifier = Modifier
                                 .weight(1f)
@@ -1444,10 +1451,10 @@ fun OutdoorMapScreen(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(horizontal = 12.dp, vertical = 14.dp)
-                    .shadow(6.dp, RoundedCornerShape(50)),
+                    .warmShadow(8.dp, RoundedCornerShape(50)),
                 shape = RoundedCornerShape(50),
-                color = PureSurface.copy(alpha = 0.96f),
-                border = BorderStroke(1.dp, MistOutline)
+                color = PureSurface.copy(alpha = 0.97f),
+                border = BorderStroke(1.dp, HazelnutBorder)
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 9.dp),
@@ -1456,7 +1463,8 @@ fun OutdoorMapScreen(
                 ) {
                     LegendChip(color = CampusCrimson, label = "Old")
                     LegendChip(color = CampusEmerald, label = "New")
-                    LegendChip(color = PixelBlue, label = "Zoom in for names")
+                    LegendChip(color = RoastedWalnut, label = "Tap clusters")
+                    LegendChip(color = PixelBlue, label = "Zoom for names")
                 }
             }
         }
@@ -1477,8 +1485,8 @@ private fun MapCircleControl(
         modifier = Modifier
             .minimumInteractiveComponentSize()
             .size(48.dp)
+            .warmShadow(7.dp, CircleShape)
             .clip(CircleShape)
-            .shadow(6.dp, CircleShape)
             .clickable(onClick = onClick)
             .testTag(testTag),
         shape = CircleShape,

@@ -3,18 +3,24 @@ package com.example.ui.theme
 import androidx.compose.ui.graphics.Color
 
 // =====================================================================
-// GOOGLE PIXEL MATERIAL YOU LIGHT // BBS-UTECH MINIMALIST WHITISH THEME
+// MINIMALIST WARM NUTTY LIGHT // BBS-UTECH SIGNATURE PALETTE
 // =====================================================================
 
-// Porcelain Daylight Surfaces & Soft Hairlines
-val PorcelainCanvas = Color(0xFFF8FAFC)
+// Warm Oat / Almond Surfaces & Soft Hairlines
+val PorcelainCanvas = Color(0xFFFAF7F2)
 val PureSurface = Color(0xFFFFFFFF)
-val TonalMist = Color(0xFFEFF3F8)
-val ElevatedMist = Color(0xFFE4EAF2)
-val MistOutline = Color(0xFFE2E8F0)
-val SoftOutline = Color(0xFFDCE2EC)
+val TonalMist = Color(0xFFF3EDE4)
+val ElevatedMist = Color(0xFFEBE2D5)
+val MistOutline = Color(0xFFE6DDD0)
+val SoftOutline = Color(0xFFD6C7B5)
 
-// Primary Accent — BBS-UTECH Cobalt Blue & Signature Pixel Pill Tints
+// Signature Warm Nutty Accents (Roasted Walnut, Warm Hazelnut & Toasted Cream)
+val RoastedWalnut = Color(0xFF7C4D2B)
+val WarmHazelnut = Color(0xFFA66B3F)
+val ToastedCreamTint = Color(0xFFF6ECE0)
+val HazelnutBorder = Color(0xFFDFCBB4)
+
+// Primary Accent — BBS-UTECH Cobalt Blue & Signature Navigation Pill Tints
 val PixelBlue = Color(0xFF0B57D0)
 val PixelBlueBright = Color(0xFF1A73E8)
 val PixelBlueContainer = Color(0xFFD3E3FD)
@@ -37,8 +43,8 @@ val LibraryViolet = Color(0xFF7C3AED)
 val LibraryVioletTint = Color(0xFFF3E8FF)
 val SkyTeal = Color(0xFF0284C7)
 
-// Crisp Ink Typography Hierarchy
-val InkBlack = Color(0xFF111827)
-val SlateGray = Color(0xFF444746)
-val MutedGray = Color(0xFF747775)
+// Crisp Espresso Ink Typography Hierarchy
+val InkBlack = Color(0xFF1F1812)
+val SlateGray = Color(0xFF5C5147)
+val MutedGray = Color(0xFF7D7166)
 val PureWhite = Color(0xFFFFFFFF)

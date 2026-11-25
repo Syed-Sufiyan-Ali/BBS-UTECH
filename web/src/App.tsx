@@ -95,7 +95,7 @@ export function App() {
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className="min-h-screen bg-[#F8FAFC] text-[#111827]">
+      <div className="min-h-screen bg-[#FAF7F2] text-[#1F1812]">
         <Navbar
           activeTab={activeTab}
           onSelectTab={setActiveTab}

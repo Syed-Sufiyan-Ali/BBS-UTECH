@@ -60,22 +60,22 @@ export function PinDetailModal({
       aria-label={pin.name}
     >
       <div
-        className="w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-t-[28px] sm:rounded-[28px] border border-[#E2E8F0] bg-[#FFFFFF] p-6 shadow-2xl"
+        className="w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-t-[28px] sm:rounded-[28px] border border-[#DFCBB4] bg-[#FFFFFF] p-6 shadow-[0_24px_60px_-12px_rgba(62,39,20,0.3)]"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Pixel drag handle on mobile */}
-        <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-[#CBD5E1] sm:hidden" />
+        {/* drag handle on mobile */}
+        <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-[#DFCBB4] sm:hidden" />
 
         {/* Badges + Close */}
         <div className="flex items-center justify-between gap-2">
           <div className="flex flex-wrap items-center gap-2 font-mono text-[11px] font-semibold">
-            <span className="rounded-full bg-[#E8F0FE] px-3 py-1 text-[#0B57D0]">
+            <span className="rounded-full bg-[#F6ECE0] px-3 py-1 text-[#7C4D2B] border border-[#DFCBB4]">
               {BUILDINGS[pin.building].shortName}
             </span>
             <span className="rounded-full bg-[#E6F4EA] px-3 py-1 text-[#137333]">
               {pin.floor === 'OUTDOOR' ? 'Grounds' : FLOORS[pin.floor].code}
             </span>
-            <span className="rounded-full bg-[#EFF3F8] px-3 py-1 text-[#444746]">
+            <span className="rounded-full bg-[#FAF7F2] px-3 py-1 text-[#5C5147] border border-[#E6DDD0]">
               {pin.roomNumber}
             </span>
           </div>
@@ -84,7 +84,7 @@ export function PinDetailModal({
             type="button"
             onClick={onClose}
             aria-label="Close landmark details"
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-[#EFF3F8] text-[#444746] transition hover:bg-[#E2E8F0] hover:text-[#111827] cursor-pointer"
+            className="nutty-chip flex h-10 w-10 items-center justify-center rounded-full border border-[#E6DDD0] bg-[#FAF7F2] text-[#5C5147] hover:bg-[#F6ECE0] hover:text-[#1F1812] cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
@@ -162,12 +162,12 @@ export function PinDetailModal({
         </div>
 
         {/* Indoor Route Guide */}
-        <div className="mt-4 rounded-2xl bg-[#EFF3F8] p-4">
-          <div className="flex items-center gap-2 text-xs font-bold text-[#0B57D0]">
+        <div className="mt-4 rounded-2xl border border-[#DFCBB4] bg-[#F6ECE0]/60 p-4">
+          <div className="flex items-center gap-2 text-xs font-bold text-[#7C4D2B]">
             <Footprints className="h-4 w-4" />
             <span>Indoor Walk Guide</span>
           </div>
-          <p className="mt-1.5 text-sm text-[#111827]">{pin.indoorGuide}</p>
+          <p className="mt-1.5 text-sm text-[#1F1812]">{pin.indoorGuide}</p>
         </div>
 
         {/* Actions */}
@@ -179,7 +179,7 @@ export function PinDetailModal({
                 onClose();
                 onOpenBusTimings();
               }}
-              className="flex w-full items-center justify-center gap-2 rounded-full bg-[#0F9D58] px-5 py-3 font-display text-sm font-semibold text-white transition hover:bg-[#0B8043] cursor-pointer shadow-xs"
+              className="nutty-btn flex w-full items-center justify-center gap-2 rounded-full bg-[#0F9D58] px-5 py-3 font-display text-sm font-semibold text-white hover:bg-[#0B8043] cursor-pointer"
             >
               <Bus className="h-4 w-4" />
               <span>View Bus &amp; Coaster Timings (7 Routes)</span>
@@ -192,7 +192,7 @@ export function PinDetailModal({
               onClose();
               onNavigateOutdoor(pin);
             }}
-            className="flex w-full items-center justify-center gap-2 rounded-full bg-[#0B57D0] px-5 py-3 font-display text-sm font-semibold text-white transition hover:bg-[#0842A0] cursor-pointer shadow-xs"
+            className="nutty-btn-primary flex w-full items-center justify-center gap-2 rounded-full bg-[#0B57D0] px-5 py-3 font-display text-sm font-semibold text-white hover:bg-[#0842A0] cursor-pointer"
           >
             <MapPin className="h-4 w-4" />
             <span>Directions on Campus Map</span>

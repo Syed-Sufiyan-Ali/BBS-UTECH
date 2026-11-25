@@ -59,6 +59,7 @@ import com.example.ui.theme.CampusEmeraldBorder
 import com.example.ui.theme.CampusEmeraldDark
 import com.example.ui.theme.CampusEmeraldTint
 import com.example.ui.theme.DisplayFontFamily
+import com.example.ui.theme.HazelnutBorder
 import com.example.ui.theme.InkBlack
 import com.example.ui.theme.MistOutline
 import com.example.ui.theme.MonoFontFamily
@@ -66,11 +67,13 @@ import com.example.ui.theme.MutedGray
 import com.example.ui.theme.OnPixelBlueContainer
 import com.example.ui.theme.PixelBlue
 import com.example.ui.theme.PixelBlueContainer
+import com.example.ui.theme.PorcelainCanvas
 import com.example.ui.theme.PureSurface
 import com.example.ui.theme.PureWhite
+import com.example.ui.theme.RoastedWalnut
 import com.example.ui.theme.SlateGray
-import com.example.ui.theme.SoftOutline
 import com.example.ui.theme.TonalMist
+import com.example.ui.theme.nuttyButtonElevation
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -96,7 +99,7 @@ fun PinDetailSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = PureSurface,
+        containerColor = PorcelainCanvas,
         contentColor = InkBlack,
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         modifier = Modifier.testTag("pin_detail_bottom_sheet")
@@ -280,8 +283,10 @@ fun PinDetailSheet(
             )
 
             Card(
-                colors = CardDefaults.cardColors(containerColor = TonalMist),
+                colors = CardDefaults.cardColors(containerColor = PureSurface),
                 shape = RoundedCornerShape(20.dp),
+                border = BorderStroke(1.dp, HazelnutBorder),
+                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(14.dp)) {
@@ -324,6 +329,7 @@ fun PinDetailSheet(
                         containerColor = CampusEmeraldTint,
                         contentColor = CampusEmeraldDark
                     ),
+                    elevation = nuttyButtonElevation(),
                     shape = RoundedCornerShape(50),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -351,6 +357,7 @@ fun PinDetailSheet(
                     containerColor = PixelBlue,
                     contentColor = PureWhite
                 ),
+                elevation = nuttyButtonElevation(),
                 shape = RoundedCornerShape(50),
                 modifier = Modifier
                     .fillMaxWidth()
