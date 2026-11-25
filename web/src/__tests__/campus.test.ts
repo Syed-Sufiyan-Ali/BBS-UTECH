@@ -140,8 +140,8 @@ describe('BBSUTSD Web Data & Geospatial Logic', () => {
     expect(mainGates.longitude).toBeCloseTo(68.74388, 5);
     expect(electronicsLab.latitude).toBeCloseTo(27.5108, 5);
     expect(electronicsLab.longitude).toBeCloseTo(68.7447, 5);
-    expect(computerLab1.latitude).toBeCloseTo(27.5109, 5);
-    expect(computerLab1.longitude).toBeCloseTo(68.7445, 5);
+    expect(computerLab1.latitude).toBeCloseTo(27.5108, 5);
+    expect(computerLab1.longitude).toBeCloseTo(68.7447, 5);
     expect(computerLab1.floor).toBe('SECOND');
     expect(atm.latitude).toBeCloseTo(27.513132, 5);
     expect(atm.longitude).toBeCloseTo(68.741812, 5);
@@ -213,7 +213,7 @@ describe('BBSUTSD Web Data & Geospatial Logic', () => {
     expect(route.totalDistanceMeters).toBeLessThanOrEqual(Math.ceil(directMeters) + 2);
   });
 
-  it('clusters overlapping building pins (hod_prof_saleem & computer_lab_1) and computes clean circular spiderfy offsets', () => {
+  it('clusters overlapping building pins (electronics_lab & computer_lab_1) while keeping hod_prof_saleem standalone', () => {
     const clusters = groupOverlappingPins(CAMPUS_PINS, 6);
     expect(clusters.length).toBe(9);
 
@@ -221,12 +221,13 @@ describe('BBSUTSD Web Data & Geospatial Logic', () => {
     expect(sharedCluster).toBeDefined();
     expect(sharedCluster!.pins.map((p) => p.id).sort()).toEqual([
       'computer_lab_1',
-      'hod_prof_saleem',
+      'electronics_lab',
     ]);
 
     const key = findClusterKeyForPin(clusters, 'computer_lab_1');
     expect(key).toBe(sharedCluster!.key);
-    expect(findClusterKeyForPin(clusters, 'hod_prof_saleem')).toBe(sharedCluster!.key);
+    expect(findClusterKeyForPin(clusters, 'electronics_lab')).toBe(sharedCluster!.key);
+    expect(findClusterKeyForPin(clusters, 'hod_prof_saleem')).toBeNull();
     expect(findClusterKeyForPin(clusters, 'campus_atm')).toBeNull();
 
     const twoOffsets = computeCircleOffsets(2);

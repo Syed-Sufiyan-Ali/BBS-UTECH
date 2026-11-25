@@ -93,7 +93,7 @@ const GRAPH_NODES: Record<string, GraphNode> = {
   dr_saleem_office_node: { id: 'dr_saleem_office_node', lat: 27.5109, lng: 68.7445, label: 'Dr. Saleem HOD Office' },
   mosque_new_bldg: { id: 'mosque_new_bldg', lat: 27.5105, lng: 68.7448, label: 'New Building Mosque' },
   electronics_lab_node: { id: 'electronics_lab_node', lat: 27.5108, lng: 68.7447, label: 'Electronics Lab' },
-  computer_lab_1_node: { id: 'computer_lab_1_node', lat: 27.5109, lng: 68.7445, label: 'Computer Lab 1 (2F)' },
+  computer_lab_1_node: { id: 'computer_lab_1_node', lat: 27.5108, lng: 68.7447, label: 'Computer Lab 1 (2F)' },
   atm_kiosk: { id: 'atm_kiosk', lat: 27.513132, lng: 68.741812, label: 'Campus ATM' },
 };
 

@@ -62,8 +62,8 @@ class ExampleUnitTest {
         assertEquals(68.744700, electronicsLab.longitude, 0.0001)
 
         val computerLab1 = repository.getPinById("computer_lab_1")!!
-        assertEquals(27.510900, computerLab1.latitude, 0.0001)
-        assertEquals(68.744500, computerLab1.longitude, 0.0001)
+        assertEquals(27.510800, computerLab1.latitude, 0.0001)
+        assertEquals(68.744700, computerLab1.longitude, 0.0001)
         assertEquals(FloorLevel.SECOND, computerLab1.floor)
 
         val atm = repository.getPinById("campus_atm")!!
