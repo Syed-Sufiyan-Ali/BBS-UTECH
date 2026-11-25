@@ -1,4 +1,4 @@
-import { BUILDINGS, CAMPUS_PINS } from '../data/campusData';
+import { BBSUTSD_CENTER, BUILDINGS, CAMPUS_PINS } from '../data/campusData';
 import type { CampusPin, LatLng } from '../types/campus';
 import {
   calculateBearing,
@@ -48,142 +48,129 @@ interface GraphEdge {
   streetName: string;
 }
 
+/**
+ * Real-world BBSUTSD Khairpur Mirs road centerline & walkway junction nodes
+ * anchored to OpenStreetMap & Google Street/Satellite geometry.
+ */
 const GRAPH_NODES: Record<string, GraphNode> = {
-  gate_entry: { id: 'gate_entry', lat: 27.50965, lng: 68.7405, label: 'Main Entrance Gate' },
-  gate_plaza: { id: 'gate_plaza', lat: 27.50998, lng: 68.74082, label: 'Main Gate Plaza' },
-  mosque_jct: { id: 'mosque_jct', lat: 27.51035, lng: 68.74115, label: 'Masjid & Old Block Turnoff' },
-  quad_jct: { id: 'quad_jct', lat: 27.51062, lng: 68.74142, label: 'Canteen & Dividing Road Junction' },
+  // Campus West Avenue (North-South street serving Cafeteria, ATM, Central Library, Smart Class)
+  rd_cafeteria_nw: { id: 'rd_cafeteria_nw', lat: 27.513343, lng: 68.741668, label: 'Cafeteria North Junction' },
+  rd_cafeteria_turn: { id: 'rd_cafeteria_turn', lat: 27.51319, lng: 68.741553, label: 'Central Cafeteria Curb' },
+  rd_atm_curb: { id: 'rd_atm_curb', lat: 27.513127, lng: 68.741801, label: 'ATM Roadfront' },
+  rd_atm_front: { id: 'rd_atm_front', lat: 27.513008, lng: 68.741874, label: 'ATM & Cafeteria Avenue' },
+  rd_library_front: { id: 'rd_library_front', lat: 27.512811, lng: 68.741885, label: 'Central Library Road Turn' },
+  rd_library_walk: { id: 'rd_library_walk', lat: 27.512822, lng: 68.74212, label: 'Central Library Entrance Walk' },
+  rd_north_mid: { id: 'rd_north_mid', lat: 27.512617, lng: 68.741895, label: 'Campus West Avenue' },
+  rd_smart_front: { id: 'rd_smart_front', lat: 27.512267, lng: 68.741904, label: 'Smart Class West Turnoff' },
+  rd_west_spine_jct: { id: 'rd_west_spine_jct', lat: 27.511843, lng: 68.741913, label: 'West Ave & Central Spine Junction' },
+  rd_mid_west_ave: { id: 'rd_mid_west_ave', lat: 27.511246, lng: 68.741928, label: 'Campus West Avenue South' },
+  rd_south_west_ave: { id: 'rd_south_west_ave', lat: 27.51043, lng: 68.741948, label: 'New Complex West Road' },
+
+  // Campus Central Spine Road (WNW-ESE road connecting West Ave, Smart Class South, Points Stop, Main Gates)
+  rd_smart_south_jct: { id: 'rd_smart_south_jct', lat: 27.511792, lng: 68.742401, label: 'Smart Class South Junction' },
+  rd_central_bend: { id: 'rd_central_bend', lat: 27.511767, lng: 68.742705, label: 'Points Terminal Curve' },
+  rd_points_jct: { id: 'rd_points_jct', lat: 27.511772, lng: 68.742769, label: 'Points Stop Junction' },
+  rd_gates_jct: { id: 'rd_gates_jct', lat: 27.511044, lng: 68.744096, label: 'Main Gates Boulevard Junction' },
+
+  // Eastern Campus Boulevard & New Building Outer Perimeter
+  rd_boulevard_sw: { id: 'rd_boulevard_sw', lat: 27.509919, lng: 68.743061, label: 'BBSUTSD South Boulevard' },
+  rd_gates_front: { id: 'rd_gates_front', lat: 27.51091, lng: 68.743973, label: 'Main Entrance Approach' },
+  rd_ne_bend: { id: 'rd_ne_bend', lat: 27.511542, lng: 68.744553, label: 'North-East Campus Road' },
+  rd_ne_corner: { id: 'rd_ne_corner', lat: 27.511616, lng: 68.744611, label: 'North-East Wing Corner' },
+  rd_east_lane_1: { id: 'rd_east_lane_1', lat: 27.511408, lng: 68.744818, label: 'East Wing Access Road' },
+  rd_east_lane_2: { id: 'rd_east_lane_2', lat: 27.510959, lng: 68.745268, label: 'East Labs & Mosque Road' },
+
+  // Campus Legacy / Old & New Building Dividing Connectors
+  gate_entry: { id: 'gate_entry', lat: 27.50965, lng: 68.7405, label: 'Hami Road Corner' },
+  gate_plaza: { id: 'gate_plaza', lat: 27.50998, lng: 68.74082, label: 'South-West Plaza' },
+  mosque_jct: { id: 'mosque_jct', lat: 27.51035, lng: 68.74115, label: 'Dividing Road South' },
+  quad_jct: { id: 'quad_jct', lat: 27.51062, lng: 68.74142, label: 'Dividing Road Mid' },
   dividing_center: { id: 'dividing_center', lat: 27.51082, lng: 68.74164, label: 'Campus Dividing Road Center' },
   new_mid_road: { id: 'new_mid_road', lat: 27.51112, lng: 68.74194, label: 'Dividing Road North-East' },
-  ws_split: { id: 'ws_split', lat: 27.51145, lng: 68.74222, label: 'Workshops & Hostels Junction' },
-  hostel_jct: { id: 'hostel_jct', lat: 27.51172, lng: 68.74256, label: 'Transport & Boys Hostel Junction' },
-  transport_plaza: { id: 'transport_plaza', lat: 27.51185, lng: 68.74275, label: 'Transport Terminal Road' },
+  ws_split: { id: 'ws_split', lat: 27.51145, lng: 68.74222, label: 'Central Walkway Split' },
+  old_porch: { id: 'old_porch', lat: 27.511234, lng: 68.741032, label: 'Old Academic Complex Front' },
+  new_east: { id: 'new_east', lat: 27.51045, lng: 68.74245, label: 'New Complex East Walk' },
 
-  // Old Complex Network (West of Dividing Road)
-  mosque_walk: { id: 'mosque_walk', lat: 27.51055, lng: 68.7406, label: 'Campus Mosque Walkway' },
-  old_porch: { id: 'old_porch', lat: 27.51092, lng: 68.74088, label: 'Old Building Front Porch' },
-  old_west: { id: 'old_west', lat: 27.51125, lng: 68.74072, label: 'Old Complex West Wing (VC)' },
-  old_center: { id: 'old_center', lat: 27.51118, lng: 68.74105, label: 'Old Complex Central Foyer' },
-  old_east: { id: 'old_east', lat: 27.5112, lng: 68.74135, label: 'Old Complex East Wing' },
-  old_north: { id: 'old_north', lat: 27.51144, lng: 68.74102, label: 'Old Complex Upper Labs Corridor' },
+  // New Building Structured Courtyard & Corridor Turns (orthogonal turns, no diagonals)
+  nb_gate_courtyard: { id: 'nb_gate_courtyard', lat: 27.510977, lng: 68.74404, label: 'Main Gate Courtyard Entry' },
+  nb_west_gallery: { id: 'nb_west_gallery', lat: 27.5109, lng: 68.74432, label: 'New Building West Gallery' },
+  nb_labs_corner: { id: 'nb_labs_corner', lat: 27.5109, lng: 68.7447, label: 'East Wing Labs Junction' },
+  nb_east_gate_turn: { id: 'nb_east_gate_turn', lat: 27.510959, lng: 68.74492, label: 'East Wing Road Entry' },
+  nb_mosque_turn: { id: 'nb_mosque_turn', lat: 27.5105, lng: 68.7447, label: 'Mosque Courtyard Corner' },
 
-  // New Complex & Canteen Network (East of Dividing Road)
-  canteen_quad: { id: 'canteen_quad', lat: 27.51022, lng: 68.74132, label: 'University Canteen Quad' },
-  new_porch: { id: 'new_porch', lat: 27.51056, lng: 68.74202, label: 'New Complex Glass Entrance' },
-  new_west: { id: 'new_west', lat: 27.51036, lng: 68.74192, label: 'New Complex West Wing (CS Labs)' },
-  new_center: { id: 'new_center', lat: 27.51046, lng: 68.74218, label: 'New Complex Central Atrium (Library)' },
-  new_east: { id: 'new_east', lat: 27.51045, lng: 68.74245, label: 'New Complex East Wing (AI / Medical)' },
-  sports_track: { id: 'sports_track', lat: 27.51088, lng: 68.74292, label: 'Sports Ground Perimeter' },
-  girls_hostel_walk: { id: 'girls_hostel_walk', lat: 27.5114, lng: 68.74335, label: 'Girls Hostel Lane' },
-
-  // Workshop Complex Network (North)
-  ws_civil_bay: { id: 'ws_civil_bay', lat: 27.51162, lng: 68.74122, label: 'Civil Workshop Yard' },
-  ws_mech_bay: { id: 'ws_mech_bay', lat: 27.51172, lng: 68.7417, label: 'Mechanical Workshop Bay' },
-  ws_elec_bay: { id: 'ws_elec_bay', lat: 27.51162, lng: 68.74208, label: 'Electrical & Electronics Workshops' },
-
-  // Hostels & Transport Bays
-  boys_hostel_gate: { id: 'boys_hostel_gate', lat: 27.51195, lng: 68.74265, label: 'Boys Hostel Gate' },
-  transport_office_door: { id: 'transport_office_door', lat: 27.51182, lng: 68.74288, label: 'Transport Office' },
-  point_parking_bay: { id: 'point_parking_bay', lat: 27.51162, lng: 68.74295, label: 'Student Point Parking Bay' },
+  // Calibrated Manual Landmark Entrance Nodes
   cafeteria_plaza: { id: 'cafeteria_plaza', lat: 27.513138, lng: 68.741641, label: 'BBSUTSD Central Cafeteria' },
+  atm_kiosk: { id: 'atm_kiosk', lat: 27.513132, lng: 68.741812, label: 'Campus ATM' },
   central_library_entry: { id: 'central_library_entry', lat: 27.512831, lng: 68.742349, label: 'Central Library' },
   smart_class_entry: { id: 'smart_class_entry', lat: 27.512277, lng: 68.742401, label: 'Smart Class Room' },
   points_stop_node: { id: 'points_stop_node', lat: 27.511694, lng: 68.742806, label: 'Points Stop Terminal' },
   main_gates_entry: { id: 'main_gates_entry', lat: 27.510977, lng: 68.74388, label: 'Main Gates (Old & New Buildings)' },
   dr_saleem_office_node: { id: 'dr_saleem_office_node', lat: 27.5109, lng: 68.7445, label: 'Dr. Saleem HOD Office' },
-  mosque_new_bldg: { id: 'mosque_new_bldg', lat: 27.5105, lng: 68.7448, label: 'New Building Mosque' },
   electronics_lab_node: { id: 'electronics_lab_node', lat: 27.5108, lng: 68.7447, label: 'Electronics Lab' },
   computer_lab_1_node: { id: 'computer_lab_1_node', lat: 27.5108, lng: 68.7447, label: 'Computer Lab 1 (2F)' },
-  atm_kiosk: { id: 'atm_kiosk', lat: 27.513132, lng: 68.741812, label: 'Campus ATM' },
+  mosque_new_bldg: { id: 'mosque_new_bldg', lat: 27.5105, lng: 68.7448, label: 'New Building Mosque' },
 };
 
 const EDGE_DEFS: [string, string, string][] = [
-  // Campus Dividing Road Spine
-  ['gate_entry', 'gate_plaza', 'Hami Road Entrance Walk'],
+  // Campus West Avenue (Cafeteria -> ATM -> Central Library -> Smart Class -> West Spine Junction -> Dividing Rd)
+  ['rd_cafeteria_turn', 'cafeteria_plaza', 'Central Cafeteria Entrance'],
+  ['rd_cafeteria_nw', 'rd_cafeteria_turn', 'Cafeteria North Lane'],
+  ['rd_cafeteria_nw', 'rd_atm_curb', 'Campus West Avenue'],
+  ['rd_atm_curb', 'atm_kiosk', 'Campus ATM Curb'],
+  ['rd_atm_curb', 'rd_atm_front', 'Campus West Avenue'],
+  ['rd_atm_front', 'rd_library_front', 'Campus West Avenue'],
+  ['rd_library_front', 'rd_library_walk', 'Central Library Path'],
+  ['rd_library_walk', 'central_library_entry', 'Central Library Path'],
+  ['rd_library_front', 'rd_north_mid', 'Campus West Avenue'],
+  ['rd_north_mid', 'rd_smart_front', 'Campus West Avenue'],
+  ['rd_smart_front', 'smart_class_entry', 'Smart Classrooms West Walk'],
+  ['rd_smart_front', 'rd_west_spine_jct', 'Campus West Avenue'],
+  ['rd_west_spine_jct', 'rd_mid_west_ave', 'Campus West Avenue South'],
+  ['rd_mid_west_ave', 'rd_south_west_ave', 'Campus West Avenue South'],
+
+  // Campus Central Spine Road (West Ave Junction -> Smart Class South -> Points Stop -> Main Gates Junction)
+  ['rd_west_spine_jct', 'rd_smart_south_jct', 'Campus Central Road'],
+  ['rd_smart_south_jct', 'smart_class_entry', 'Smart Classrooms Courtyard Walk'],
+  ['rd_smart_south_jct', 'rd_central_bend', 'Campus Central Road'],
+  ['rd_central_bend', 'rd_points_jct', 'Campus Central Road'],
+  ['rd_points_jct', 'points_stop_node', 'Points Stop Terminal Bay'],
+  ['rd_points_jct', 'rd_gates_jct', 'Campus Central Road'],
+
+  // Dividing Road & Old/New Complex Connectors
+  ['gate_entry', 'gate_plaza', 'Hami Road Campus Walk'],
   ['gate_plaza', 'mosque_jct', 'Campus Dividing Road'],
   ['mosque_jct', 'quad_jct', 'Campus Dividing Road'],
   ['quad_jct', 'dividing_center', 'Campus Dividing Road'],
   ['dividing_center', 'new_mid_road', 'Campus Dividing Road'],
-  ['new_mid_road', 'ws_split', 'Campus Dividing Road'],
-  ['ws_split', 'hostel_jct', 'Transport & Hostel Access Road'],
-  ['hostel_jct', 'transport_plaza', 'Transport Terminal Road'],
+  ['new_mid_road', 'rd_mid_west_ave', 'Campus West Avenue'],
+  ['rd_mid_west_ave', 'old_porch', 'Old Complex Access Lane'],
+  ['new_mid_road', 'ws_split', 'Central Campus Walkway'],
+  ['ws_split', 'rd_west_spine_jct', 'West Junction Connector'],
+  ['ws_split', 'rd_smart_south_jct', 'Central Courtyard Path'],
+  ['rd_south_west_ave', 'new_east', 'New Complex Front Walk'],
+  ['new_east', 'rd_boulevard_sw', 'South Campus Road'],
 
-  // Old Building Walkway Connections
-  ['gate_plaza', 'mosque_walk', 'Masjid Lawn Walkway'],
-  ['mosque_jct', 'mosque_walk', 'Masjid Connector Path'],
-  ['mosque_walk', 'old_porch', 'Admin Block West Walk'],
-  ['mosque_jct', 'old_porch', 'Old Complex Approach Lane'],
-  ['old_porch', 'quad_jct', 'Old Complex Plaza Walk'],
-  ['old_porch', 'old_east', 'Admin Front Walkway'],
-  ['quad_jct', 'old_east', 'Admin East Path'],
-  ['dividing_center', 'old_east', 'Old Complex Crossing'],
-  ['old_east', 'new_mid_road', 'Science Block Crossing'],
-  ['old_porch', 'old_center', 'Old Complex Main Corridor'],
-  ['old_porch', 'old_west', 'VC Secretariat Walkway'],
-  ['old_west', 'old_center', 'Old Admin West Corridor'],
-  ['old_center', 'old_east', 'Old Admin East Corridor'],
-  ['old_west', 'old_north', 'Old Complex West Stairway'],
-  ['old_center', 'old_north', 'Old Complex North Corridor'],
-  ['old_east', 'old_north', 'Old Complex East Corridor'],
+  // Eastern Boulevard & Main Gates Approach
+  ['rd_boulevard_sw', 'rd_gates_front', 'BBSUTSD Main Boulevard'],
+  ['rd_gates_front', 'main_gates_entry', 'Main Gates Entrance'],
+  ['rd_gates_front', 'rd_gates_jct', 'BBSUTSD Main Boulevard'],
+  ['rd_gates_jct', 'nb_gate_courtyard', 'Main Gates Entrance'],
+  ['rd_gates_jct', 'rd_ne_bend', 'BBSUTSD East Boulevard'],
+  ['rd_ne_bend', 'rd_ne_corner', 'BBSUTSD East Boulevard'],
+  ['rd_ne_corner', 'rd_east_lane_1', 'East Academic Perimeter Road'],
+  ['rd_east_lane_1', 'rd_east_lane_2', 'East Academic Perimeter Road'],
+  ['rd_east_lane_2', 'nb_east_gate_turn', 'East Wing Gate Walk'],
+  ['nb_east_gate_turn', 'nb_labs_corner', 'East Wing Corridor'],
 
-  // Canteen & New Complex Connections
-  ['mosque_jct', 'canteen_quad', 'Student Quad Path'],
-  ['quad_jct', 'canteen_quad', 'University Canteen Walkway'],
-  ['canteen_quad', 'new_west', 'Canteen–New Complex Walkway'],
-  ['canteen_quad', 'new_porch', 'New Complex Lawn Walk'],
-  ['dividing_center', 'new_porch', 'New Complex Crossing'],
-  ['new_mid_road', 'new_porch', 'New Complex North Entry'],
-  ['new_porch', 'new_west', 'New Complex West Wing'],
-  ['new_porch', 'new_center', 'New Complex Main Atrium'],
-  ['new_west', 'new_center', 'CS & AI Corridor'],
-  ['new_center', 'new_east', 'New Complex East Corridor'],
-  ['new_east', 'sports_track', 'Sports Ground Path'],
-  ['new_mid_road', 'sports_track', 'Sports Track Connector'],
-  ['sports_track', 'girls_hostel_walk', 'Girls Hostel Walkway'],
-  ['point_parking_bay', 'girls_hostel_walk', 'East Campus Perimeter Path'],
-
-  // Workshop Industrial Complex Connections
-  ['old_north', 'ws_civil_bay', 'Workshop West Lane'],
-  ['ws_civil_bay', 'ws_mech_bay', 'Workshop Central Spine'],
-  ['ws_mech_bay', 'ws_elec_bay', 'Workshop East Bay'],
-  ['ws_split', 'ws_elec_bay', 'Workshop Complex Turnoff'],
-
-  // Hostels & Transport Bays
-  ['hostel_jct', 'boys_hostel_gate', 'Boys Hostel Walkway'],
-  ['transport_plaza', 'boys_hostel_gate', 'Hostel Approach Path'],
-  ['transport_plaza', 'transport_office_door', 'Transport Office Walkway'],
-  ['transport_plaza', 'point_parking_bay', 'Point Bus Parking Lane'],
-  ['transport_office_door', 'point_parking_bay', 'Bus Bay Steps'],
-  ['sports_track', 'point_parking_bay', 'East Campus Spine'],
-  ['ws_mech_bay', 'cafeteria_plaza', 'Central Cafeteria North Walk'],
-  ['boys_hostel_gate', 'cafeteria_plaza', 'Cafeteria & Hostel Path'],
-  ['cafeteria_plaza', 'atm_kiosk', 'Cafeteria–ATM Walkway'],
-  ['atm_kiosk', 'central_library_entry', 'ATM–Central Library Walkway'],
-  ['boys_hostel_gate', 'atm_kiosk', 'Hostel–ATM Path'],
-  ['ws_split', 'smart_class_entry', 'Smart Classrooms North Walk'],
-  ['hostel_jct', 'smart_class_entry', 'Smart Classrooms Connector'],
-  ['smart_class_entry', 'boys_hostel_gate', 'Smart Classroom–Hostel Path'],
-  ['cafeteria_plaza', 'central_library_entry', 'Cafeteria–Central Library Walkway'],
-  ['smart_class_entry', 'central_library_entry', 'Smart Class–Central Library Path'],
-  ['boys_hostel_gate', 'central_library_entry', 'Hostel–Central Library Lane'],
-  ['hostel_jct', 'points_stop_node', 'Transport & Points Stop Path'],
-  ['transport_plaza', 'points_stop_node', 'Points Stop Terminal Walk'],
-  ['point_parking_bay', 'points_stop_node', 'Points Stop Bay Access'],
-  ['smart_class_entry', 'points_stop_node', 'Smart Class–Points Stop Path'],
-  ['girls_hostel_walk', 'main_gates_entry', 'Main Gates Approach Road'],
-  ['point_parking_bay', 'main_gates_entry', 'Points Bay–Main Gates Road'],
-  ['sports_track', 'main_gates_entry', 'Sports Ground–Main Gates Path'],
-  ['main_gates_entry', 'dr_saleem_office_node', 'Main Gates–Dr. Saleem Office Walk'],
-  ['girls_hostel_walk', 'dr_saleem_office_node', 'East Wing HOD Office Path'],
-  ['dr_saleem_office_node', 'mosque_new_bldg', 'Dr. Saleem Office–New Building Mosque Walk'],
-  ['main_gates_entry', 'mosque_new_bldg', 'Main Gates–New Building Mosque Road'],
-  ['new_east', 'mosque_new_bldg', 'New Complex–New Building Mosque Path'],
-  ['dr_saleem_office_node', 'electronics_lab_node', 'New Building East Wing Walk'],
-  ['main_gates_entry', 'electronics_lab_node', 'Main Gates–Electronics Lab Path'],
-  ['electronics_lab_node', 'mosque_new_bldg', 'Electronics Lab–New Building Mosque Walk'],
-  ['dr_saleem_office_node', 'computer_lab_1_node', 'New Building 2nd Floor Stairwell'],
-  ['electronics_lab_node', 'computer_lab_1_node', 'Stairway to Computer Lab 1 (2nd Floor)'],
-  ['main_gates_entry', 'computer_lab_1_node', 'Main Gates–Computer Lab 1 Access'],
+  // New Building Structured Courtyard & Wing Corridors (90-degree turns)
+  ['main_gates_entry', 'nb_gate_courtyard', 'Main Gate Plaza'],
+  ['nb_gate_courtyard', 'nb_west_gallery', 'New Building Main Walkway'],
+  ['nb_west_gallery', 'dr_saleem_office_node', 'Dr. Saleem HOD Office Corridor'],
+  ['dr_saleem_office_node', 'nb_labs_corner', 'New Building East Corridor'],
+  ['nb_labs_corner', 'electronics_lab_node', 'Electronics Lab Wing'],
+  ['electronics_lab_node', 'computer_lab_1_node', 'Stairway to Computer Lab 1 (2F)'],
+  ['electronics_lab_node', 'nb_mosque_turn', 'New Building South Walkway'],
+  ['nb_mosque_turn', 'mosque_new_bldg', 'New Building Mosque Walk'],
 ];
 
 const PIN_TO_NODE: Record<string, string> = {
@@ -230,14 +217,118 @@ function projectPointOntoSegment(
   };
 }
 
+interface DynamicGraph {
+  nodes: Record<string, GraphNode>;
+  adj: Record<string, GraphEdge[]>;
+  edges: [string, string, string][];
+}
+
+function buildCampusAndOsmGraph(osmRoads?: LatLng[][]): DynamicGraph {
+  const nodes: Record<string, GraphNode> = {};
+  for (const [k, v] of Object.entries(GRAPH_NODES)) {
+    nodes[k] = { ...v };
+  }
+  const adj: Record<string, GraphEdge[]> = {};
+  for (const id of Object.keys(nodes)) {
+    adj[id] = [];
+  }
+  const edges: [string, string, string][] = [...EDGE_DEFS];
+  for (const [a, b, streetName] of EDGE_DEFS) {
+    adj[a]?.push({ to: b, streetName });
+    adj[b]?.push({ to: a, streetName });
+  }
+
+  // Merge live OpenStreetMap road ways into the navigable graph when loaded
+  if (osmRoads && osmRoads.length > 0) {
+    const osmNodeIds: string[] = [];
+    const findOrCreateOsmNode = (pt: LatLng): string => {
+      for (const id of osmNodeIds) {
+        const n = nodes[id];
+        if (calculateDistanceMeters(pt.lat, pt.lng, n.lat, n.lng) <= 4.5) {
+          return id;
+        }
+      }
+      const newId = `osm_${osmNodeIds.length}`;
+      nodes[newId] = {
+        id: newId,
+        lat: pt.lat,
+        lng: pt.lng,
+        label: 'Campus Street',
+      };
+      adj[newId] = [];
+      osmNodeIds.push(newId);
+      return newId;
+    };
+
+    for (const road of osmRoads) {
+      if (road.length < 2) continue;
+      let prevId: string | null = null;
+      for (const pt of road) {
+        if (
+          calculateDistanceMeters(pt.lat, pt.lng, BBSUTSD_CENTER.lat, BBSUTSD_CENTER.lng) >
+          560
+        ) {
+          prevId = null;
+          continue;
+        }
+        const curId = findOrCreateOsmNode(pt);
+        if (prevId && prevId !== curId) {
+          const already = adj[prevId].some((e) => e.to === curId);
+          if (!already) {
+            adj[prevId].push({ to: curId, streetName: 'Mapped Campus Street' });
+            adj[curId].push({ to: prevId, streetName: 'Mapped Campus Street' });
+            edges.push([prevId, curId, 'Mapped Campus Street']);
+          }
+        }
+        prevId = curId;
+      }
+    }
+
+    // Bridge road junctions on our street backbone to nearby OSM road nodes (<= 16m)
+    const anchorRoadIds = [
+      'rd_cafeteria_nw',
+      'rd_atm_front',
+      'rd_library_front',
+      'rd_smart_front',
+      'rd_west_spine_jct',
+      'rd_points_jct',
+      'rd_gates_jct',
+      'rd_ne_corner',
+      'rd_east_lane_2',
+    ];
+    for (const aId of anchorRoadIds) {
+      const aNode = nodes[aId];
+      if (!aNode) continue;
+      let bestOsmId: string | null = null;
+      let bestDist = Infinity;
+      for (const oId of osmNodeIds) {
+        const d = calculateDistanceMeters(aNode.lat, aNode.lng, nodes[oId].lat, nodes[oId].lng);
+        if (d < bestDist) {
+          bestDist = d;
+          bestOsmId = oId;
+        }
+      }
+      if (bestOsmId && bestDist <= 16 && bestDist >= 1.5) {
+        if (!adj[aId].some((e) => e.to === bestOsmId)) {
+          adj[aId].push({ to: bestOsmId, streetName: aNode.label });
+          adj[bestOsmId].push({ to: aId, streetName: aNode.label });
+          edges.push([aId, bestOsmId, aNode.label]);
+        }
+      }
+    }
+  }
+
+  return { nodes, adj, edges };
+}
+
 function attachPointToDynamicGraph(
   virtualId: string,
   coord: LatLng,
   approachName: string,
-  nodes: Record<string, GraphNode>,
-  adj: Record<string, GraphEdge[]>,
+  graph: DynamicGraph,
   preferredNodeId?: string
 ): void {
+  const { nodes, adj, edges } = graph;
   nodes[virtualId] = {
     id: virtualId,
     lat: coord.lat,
@@ -246,7 +337,19 @@ function attachPointToDynamicGraph(
   };
   adj[virtualId] = [];
 
-  // 1. Connect to nearest edge projections (eliminates backtracking along walkways)
+  // If this coordinate corresponds directly to a mapped landmark entrance node,
+  // enter strictly via that mapped entrance spur so paths follow roads/corridors instead of cutting diagonally.
+  if (preferredNodeId && nodes[preferredNodeId]) {
+    const pref = nodes[preferredNodeId];
+    const prefDist = calculateDistanceMeters(coord.lat, coord.lng, pref.lat, pref.lng);
+    if (prefDist <= 15) {
+      adj[virtualId].push({ to: preferredNodeId, streetName: approachName });
+      adj[preferredNodeId].push({ to: virtualId, streetName: approachName });
+      return;
+    }
+  }
+
+  // Otherwise snap perpendicularly onto the closest road/walkway segment(s)
   const edgeCandidates: {
     u: string;
     v: string;
@@ -256,9 +359,9 @@ function attachPointToDynamicGraph(
     distMeters: number;
   }[] = [];
 
-  for (const [u, v, streetName] of EDGE_DEFS) {
-    const nu = GRAPH_NODES[u];
-    const nv = GRAPH_NODES[v];
+  for (const [u, v, streetName] of edges) {
+    const nu = nodes[u];
+    const nv = nodes[v];
     if (!nu || !nv) continue;
     const res = projectPointOntoSegment(coord, nu, nv);
     edgeCandidates.push({
@@ -272,7 +375,10 @@ function attachPointToDynamicGraph(
   }
 
   edgeCandidates.sort((a, b) => a.distMeters - b.distMeters);
-  const topEdges = edgeCandidates.filter((c, i) => i < 4 && (i === 0 || c.distMeters <= 75));
+  const closestDist = edgeCandidates[0]?.distMeters ?? 0;
+  const topEdges = edgeCandidates.filter(
+    (c, i) => i < 2 && (i === 0 || c.distMeters <= Math.min(18, closestDist + 6))
+  );
 
   topEdges.forEach((cand, idx) => {
     if (cand.t <= 0.04) {
@@ -299,62 +405,41 @@ function attachPointToDynamicGraph(
       adj[virtualId].push({ to: splitId, streetName: approachName });
     }
   });
-
-  // 2. Also ensure direct connection to nearest graph vertices & preferred entrance node
-  const nodeDists = Object.values(GRAPH_NODES)
-    .map((n) => ({
-      id: n.id,
-      d: calculateDistanceMeters(coord.lat, coord.lng, n.lat, n.lng),
-    }))
-    .sort((a, b) => a.d - b.d);
-
-  const nearbyIds = new Set<string>();
-  if (nodeDists[0]) nearbyIds.add(nodeDists[0].id);
-  if (nodeDists[1] && nodeDists[1].d <= 65) nearbyIds.add(nodeDists[1].id);
-  if (preferredNodeId && GRAPH_NODES[preferredNodeId]) {
-    nearbyIds.add(preferredNodeId);
-  }
-
-  for (const targetId of nearbyIds) {
-    if (!adj[virtualId].some((e) => e.to === targetId)) {
-      adj[virtualId].push({ to: targetId, streetName: approachName });
-      adj[targetId]?.push({ to: virtualId, streetName: approachName });
-    }
-  }
 }
 
 function solveShortestGraphPath(
   origin: LatLng,
   originLabel: string,
-  destinationPin: CampusPin
+  destinationPin: CampusPin,
+  osmRoads?: LatLng[][]
 ): { points: LatLng[]; segNames: string[]; totalDist: number } {
-  const nodes: Record<string, GraphNode> = {};
-  for (const [k, v] of Object.entries(GRAPH_NODES)) {
-    nodes[k] = { ...v };
-  }
-  const adj: Record<string, GraphEdge[]> = {};
-  for (const id of Object.keys(nodes)) {
-    adj[id] = [];
-  }
-  for (const [a, b, streetName] of EDGE_DEFS) {
-    adj[a]?.push({ to: b, streetName });
-    adj[b]?.push({ to: a, streetName });
-  }
+  const graph = buildCampusAndOsmGraph(osmRoads);
+  const { nodes, adj } = graph;
 
   const startId = '__start__';
   const endId = '__end__';
-  attachPointToDynamicGraph(startId, origin, `Walkway from ${originLabel}`, nodes, adj);
+
+  // Match if origin itself sits right on one of the manual pins
+  const originMatchingPin = CAMPUS_PINS.find(
+    (p) => calculateDistanceMeters(origin.lat, origin.lng, p.latitude, p.longitude) <= 8
+  );
+
+  attachPointToDynamicGraph(
+    startId,
+    origin,
+    `Walkway from ${originLabel}`,
+    graph,
+    originMatchingPin ? PIN_TO_NODE[originMatchingPin.id] : undefined
+  );
   attachPointToDynamicGraph(
     endId,
     { lat: destinationPin.latitude, lng: destinationPin.longitude },
     `${destinationPin.mapLabel || destinationPin.name} Entrance`,
-    nodes,
-    adj,
+    graph,
     PIN_TO_NODE[destinationPin.id]
   );
 
-  // If the same edge has projections for both start and end, connect them directly
-  // so intra-edge walks are strictly straight along that walkway!
+  // Connect projections that land on the exact same road segment
   for (const [sId, sNode] of Object.entries(nodes)) {
     if (!sId.startsWith('__start___proj_')) continue;
     for (const [eId, eNode] of Object.entries(nodes)) {
@@ -433,14 +518,13 @@ export function classifyTurnDelta(deltaDeg: number): {
   action: TurnAction;
   verb: string;
 } {
-  // Normalize to [-180, 180]
   const d = ((deltaDeg + 540) % 360) - 180;
-  if (Math.abs(d) < 22) return { action: 'STRAIGHT', verb: 'Continue straight' };
-  if (d >= 22 && d < 55) return { action: 'KEEP_RIGHT', verb: 'Keep right' };
-  if (d >= 55 && d < 120) return { action: 'RIGHT', verb: 'Turn right' };
-  if (d >= 120) return { action: 'SHARP_RIGHT', verb: 'Make a sharp right' };
-  if (d <= -22 && d > -55) return { action: 'KEEP_LEFT', verb: 'Keep left' };
-  if (d <= -55 && d > -120) return { action: 'LEFT', verb: 'Turn left' };
+  if (Math.abs(d) < 18) return { action: 'STRAIGHT', verb: 'Continue straight' };
+  if (d >= 18 && d < 50) return { action: 'KEEP_RIGHT', verb: 'Keep right' };
+  if (d >= 50 && d < 125) return { action: 'RIGHT', verb: 'Turn right' };
+  if (d >= 125) return { action: 'SHARP_RIGHT', verb: 'Make a sharp right' };
+  if (d <= -18 && d > -50) return { action: 'KEEP_LEFT', verb: 'Keep left' };
+  if (d <= -50 && d > -125) return { action: 'LEFT', verb: 'Turn left' };
   return { action: 'SHARP_LEFT', verb: 'Make a sharp left' };
 }
 
@@ -452,7 +536,8 @@ export function compassDirectionLabel(bearingDeg: number): string {
 export function computeCampusRoute(
   origin: LatLng,
   originLabel: string,
-  destinationPin: CampusPin
+  destinationPin: CampusPin,
+  osmRoads?: LatLng[][]
 ): ComputedRoute {
   const destCoord: LatLng = { lat: destinationPin.latitude, lng: destinationPin.longitude };
   const directDist = calculateDistanceMeters(origin.lat, origin.lng, destCoord.lat, destCoord.lng);
@@ -464,12 +549,12 @@ export function computeCampusRoute(
     rawPoints = [origin, destCoord];
     rawSegNames = [`Walk directly to ${destinationPin.mapLabel || destinationPin.name}`];
   } else {
-    const solved = solveShortestGraphPath(origin, originLabel, destinationPin);
+    const solved = solveShortestGraphPath(origin, originLabel, destinationPin, osmRoads);
     rawPoints = solved.points;
     rawSegNames = solved.segNames;
   }
 
-  // Deduplicate ultra-close vertices (< 2.5m) while preserving start & destination
+  // Deduplicate ultra-close vertices (< 2m) while preserving start & destination
   const cleanedPoints: LatLng[] = [];
   const cleanedNames: string[] = [];
   for (let i = 0; i < rawPoints.length; i++) {
@@ -479,7 +564,7 @@ export function computeCampusRoute(
     } else {
       const prevPt = cleanedPoints[cleanedPoints.length - 1];
       const d = calculateDistanceMeters(prevPt.lat, prevPt.lng, pt.lat, pt.lng);
-      if (d >= 2.5 || i === rawPoints.length - 1) {
+      if (d >= 2.0 || i === rawPoints.length - 1) {
         cleanedPoints.push(pt);
         cleanedNames.push(rawSegNames[i - 1] ?? 'Campus Walkway');
       }
@@ -491,7 +576,6 @@ export function computeCampusRoute(
     cleanedNames.push('Immediate Arrival');
   }
 
-  // Convert segments into clean merged turn-by-turn steps
   const steps: RouteStep[] = [];
   let totalDist = 0;
 
@@ -540,7 +624,6 @@ export function computeCampusRoute(
     };
   }
 
-  // Step 0: Start instruction (merge subsequent straight segments on the same road)
   let currentCoords: LatLng[] = [segs[0].from, segs[0].to];
   let currentDist = segs[0].dist;
   let currentStreet = segs[0].streetName;
@@ -572,7 +655,7 @@ export function computeCampusRoute(
       currentCoords.push(next.to);
       currentDist += next.dist;
       currentBearing = next.bearing;
-    } else if (turn.action === 'STRAIGHT' && next.dist < 14) {
+    } else if (turn.action === 'STRAIGHT' && next.dist < 5) {
       currentCoords.push(next.to);
       currentDist += next.dist;
       currentBearing = next.bearing;
@@ -588,7 +671,6 @@ export function computeCampusRoute(
   }
   flushStep(steps.length);
 
-  // Final arrival step with indoor continuation hint
   const isIndoor =
     destinationPin.building !== 'CAMPUS_GROUNDS' && destinationPin.floor !== 'OUTDOOR';
   steps.push({
@@ -615,13 +697,31 @@ export function computeCampusRoute(
 
 export async function fetchOsrmRoadRoute(
   origin: LatLng,
-  destinationPin: CampusPin
+  destinationPin: CampusPin,
+  osmRoads?: LatLng[][]
 ): Promise<ComputedRoute | null> {
+  const destCoord: LatLng = { lat: destinationPin.latitude, lng: destinationPin.longitude };
+  const directDist = calculateDistanceMeters(origin.lat, origin.lng, destCoord.lat, destCoord.lng);
+  if (directDist <= 38) return null;
+
+  const distFromCampus = calculateDistanceMeters(
+    origin.lat,
+    origin.lng,
+    BBSUTSD_CENTER.lat,
+    BBSUTSD_CENTER.lng
+  );
+  const isOutsideCampus = distFromCampus > 450;
+
+  // Outside campus: road route to Main Gates + calibrated campus walk.
+  // Inside campus: road route directly between origin and destination curb, unless inside courtyard.
   const gateCoord = CAMPUS_PINS.find((p) => p.id === 'gate_main');
   const gateLat = gateCoord?.latitude ?? 27.510977;
   const gateLng = gateCoord?.longitude ?? 68.74388;
 
-  const url = `https://router.project-osrm.org/route/v1/foot/${origin.lng},${origin.lat};${gateLng},${gateLat}?overview=full&geometries=geojson&steps=true`;
+  const targetLat = isOutsideCampus ? gateLat : destCoord.lat;
+  const targetLng = isOutsideCampus ? gateLng : destCoord.lng;
+
+  const url = `https://router.project-osrm.org/route/v1/foot/${origin.lng},${origin.lat};${targetLng},${targetLat}?overview=full&geometries=geojson&steps=true`;
   try {
     const controller = new AbortController();
     const timer = window.setTimeout(() => controller.abort(), 5000);
@@ -635,6 +735,21 @@ export async function fetchOsrmRoadRoute(
     const roadPolyline: LatLng[] = route.geometry.coordinates.map(
       (c: [number, number]) => ({ lat: c[1], lng: c[0] })
     );
+    if (roadPolyline.length < 2) return null;
+
+    // Guard against OSRM looping outside courtyard walls when an internal campus walkway is shorter
+    if (!isOutsideCampus) {
+      const localCampus = computeCampusRoute(origin, 'Start', destinationPin, osmRoads);
+      if (localCampus.totalDistanceMeters < 180 && route.distance > localCampus.totalDistanceMeters * 1.65) {
+        return null;
+      }
+    }
+
+    const fullPolyline: LatLng[] = [];
+    if (calculateDistanceMeters(origin.lat, origin.lng, roadPolyline[0].lat, roadPolyline[0].lng) > 3) {
+      fullPolyline.push(origin);
+    }
+    fullPolyline.push(...roadPolyline);
 
     const roadSteps: RouteStep[] = [];
     const legs = route.legs?.[0];
@@ -644,6 +759,7 @@ export async function fetchOsrmRoadRoute(
           s: {
             distance: number;
             name?: string;
+            geometry?: { coordinates?: [number, number][] };
             maneuver?: {
               type?: string;
               modifier?: string;
@@ -655,11 +771,23 @@ export async function fetchOsrmRoadRoute(
           const mType = s.maneuver?.type ?? 'continue';
           const mod = s.maneuver?.modifier ?? '';
           if (mType === 'arrive') return;
+
+          const segCoords: LatLng[] =
+            s.geometry?.coordinates && s.geometry.coordinates.length >= 2
+              ? s.geometry.coordinates.map((c) => ({ lat: c[1], lng: c[0] }))
+              : s.maneuver?.location
+              ? [{ lat: s.maneuver.location[1], lng: s.maneuver.location[0] }]
+              : [origin];
+
           let action: TurnAction = 'STRAIGHT';
           let verb = 'Continue straight';
           if (idx === 0) {
             action = 'START';
-            verb = 'Start toward BBSUTSD Main Gate';
+            const bearing =
+              segCoords.length >= 2
+                ? calculateBearing(segCoords[0].lat, segCoords[0].lng, segCoords[1].lat, segCoords[1].lng)
+                : calculateBearing(origin.lat, origin.lng, targetLat, targetLng);
+            verb = `Head ${compassDirectionLabel(bearing)}`;
           } else if (mod.includes('sharp right')) {
             action = 'SHARP_RIGHT';
             verb = 'Make a sharp right';
@@ -681,8 +809,14 @@ export async function fetchOsrmRoadRoute(
           }
 
           const loc = s.maneuver?.location;
-          const pt = loc ? { lat: loc[1], lng: loc[0] } : origin;
-          const roadName = s.name && s.name.trim() ? s.name : 'City Approach Road';
+          const pt = loc ? { lat: loc[1], lng: loc[0] } : segCoords[0] ?? origin;
+          const roadName =
+            s.name && s.name.trim()
+              ? s.name
+              : isOutsideCampus
+              ? 'City Approach Road'
+              : 'Campus Street';
+
           roadSteps.push({
             id: `osrm-${idx}`,
             action,
@@ -690,22 +824,86 @@ export async function fetchOsrmRoadRoute(
             streetName: roadName,
             distanceMeters: Math.round(s.distance),
             coord: pt,
-            segmentCoords: [pt],
+            segmentCoords: segCoords,
           });
         }
       );
     }
 
-    const campusPart = computeCampusRoute(
-      { lat: gateLat, lng: gateLng },
-      'Main Entrance Gate',
-      destinationPin
-    );
+    if (isOutsideCampus) {
+      const campusPart = computeCampusRoute(
+        { lat: gateLat, lng: gateLng },
+        'Main Entrance Gate',
+        destinationPin,
+        osmRoads
+      );
+      const totalDist = Math.round((route.distance || 0) + campusPart.totalDistanceMeters);
+      return {
+        polyline: [...fullPolyline, ...campusPart.polyline],
+        steps: [...roadSteps, ...campusPart.steps],
+        totalDistanceMeters: totalDist,
+        estimatedMinutes: estimateWalkMinutes(totalDist),
+        usedExternalRoad: true,
+      };
+    }
 
-    const totalDist = Math.round((route.distance || 0) + campusPart.totalDistanceMeters);
+    // Intra-campus OSRM: append perpendicular entrance spur from last road point to exact pin entrance
+    const lastRoadPt = roadPolyline[roadPolyline.length - 1];
+    const entranceGap = calculateDistanceMeters(
+      lastRoadPt.lat,
+      lastRoadPt.lng,
+      destCoord.lat,
+      destCoord.lng
+    );
+    let extraDist = 0;
+    if (entranceGap > 3) {
+      fullPolyline.push(destCoord);
+      extraDist = entranceGap;
+      const roadTailBearing =
+        roadPolyline.length >= 2
+          ? calculateBearing(
+              roadPolyline[roadPolyline.length - 2].lat,
+              roadPolyline[roadPolyline.length - 2].lng,
+              lastRoadPt.lat,
+              lastRoadPt.lng
+            )
+          : 0;
+      const spurBearing = calculateBearing(
+        lastRoadPt.lat,
+        lastRoadPt.lng,
+        destCoord.lat,
+        destCoord.lng
+      );
+      const entranceTurn = classifyTurnDelta(spurBearing - roadTailBearing);
+      roadSteps.push({
+        id: 'osrm-entrance',
+        action: entranceTurn.action === 'STRAIGHT' ? 'STRAIGHT' : entranceTurn.action,
+        instruction: `${entranceTurn.verb} toward ${destinationPin.mapLabel || destinationPin.name} Entrance • walk ${formatDistance(entranceGap)}`,
+        streetName: `${destinationPin.mapLabel || destinationPin.name} Walk`,
+        distanceMeters: Math.round(entranceGap),
+        coord: lastRoadPt,
+        segmentCoords: [lastRoadPt, destCoord],
+      });
+    }
+
+    const isIndoor =
+      destinationPin.building !== 'CAMPUS_GROUNDS' && destinationPin.floor !== 'OUTDOOR';
+    roadSteps.push({
+      id: 'step-arrive',
+      action: 'ARRIVE',
+      instruction: isIndoor
+        ? `Arrive at ${destinationPin.name} (${destinationPin.roomNumber}). ${destinationPin.indoorGuide}`
+        : `Arrive at ${destinationPin.name} (${destinationPin.roomNumber})`,
+      streetName: BUILDINGS[destinationPin.building].shortName,
+      distanceMeters: 0,
+      coord: destCoord,
+      segmentCoords: [destCoord],
+    });
+
+    const totalDist = Math.round((route.distance || 0) + extraDist);
     return {
-      polyline: [...roadPolyline, ...campusPart.polyline],
-      steps: [...roadSteps, ...campusPart.steps],
+      polyline: fullPolyline,
+      steps: roadSteps,
       totalDistanceMeters: totalDist,
       estimatedMinutes: estimateWalkMinutes(totalDist),
       usedExternalRoad: true,

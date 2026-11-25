@@ -206,7 +206,7 @@ export function OutdoorMapView({
   const guideLayerGroupRef = useRef<L.LayerGroup | null>(null);
   const lastOsrmOriginRef = useRef<{ pinId: string; coord: LatLng } | null>(null);
 
-  const [isSatellite, setIsSatellite] = useState(false);
+  const [isSatellite, setIsSatellite] = useState(true);
   const [mapZoom, setMapZoom] = useState(17);
   const [selectedFilter, setSelectedFilter] = useState<MapFilterTab>('ALL');
   const [searchText, setSearchText] = useState('');
@@ -272,27 +272,33 @@ export function OutdoorMapView({
 
   const localCampusRoute = useMemo<ComputedRoute | null>(() => {
     if (!focusedPin || !effectiveOrigin) return null;
-    return computeCampusRoute(effectiveOrigin.coord, effectiveOrigin.label, focusedPin);
-  }, [focusedPin, effectiveOrigin]);
+    return computeCampusRoute(effectiveOrigin.coord, effectiveOrigin.label, focusedPin, osmRoads);
+  }, [focusedPin, effectiveOrigin, osmRoads]);
 
   useEffect(() => {
     setActiveStepIndex(0);
   }, [focusedPin?.id, customOriginPinId]);
 
   useEffect(() => {
-    if (!focusedPin || !effectiveOrigin || effectiveOrigin.isPinOrigin) {
+    if (!focusedPin || !effectiveOrigin) {
       setExternalRoute(null);
       setIsFetchingExternalRoute(false);
       lastOsrmOriginRef.current = null;
       return;
     }
+    const directDist = calculateDistanceMeters(
+      effectiveOrigin.coord.lat,
+      effectiveOrigin.coord.lng,
+      focusedPin.latitude,
+      focusedPin.longitude
+    );
     const distFromCampus = calculateDistanceMeters(
       effectiveOrigin.coord.lat,
       effectiveOrigin.coord.lng,
       BBSUTSD_CENTER.lat,
       BBSUTSD_CENTER.lng
     );
-    if (distFromCampus <= 450 || distFromCampus > 50000) {
+    if (directDist <= 38 || distFromCampus > 50000) {
       setExternalRoute(null);
       setIsFetchingExternalRoute(false);
       lastOsrmOriginRef.current = null;
@@ -308,15 +314,16 @@ export function OutdoorMapView({
         last.coord.lng,
         effectiveOrigin.coord.lat,
         effectiveOrigin.coord.lng
-      ) < 18
+      ) < 12
     ) {
       return;
     }
 
     lastOsrmOriginRef.current = { pinId: focusedPin.id, coord: effectiveOrigin.coord };
+    setExternalRoute(null);
     let cancelled = false;
     setIsFetchingExternalRoute(true);
-    fetchOsrmRoadRoute(effectiveOrigin.coord, focusedPin)
+    fetchOsrmRoadRoute(effectiveOrigin.coord, focusedPin, osmRoads)
       .then((res) => {
         if (!cancelled && res) {
           setExternalRoute(res);
@@ -329,7 +336,7 @@ export function OutdoorMapView({
     return () => {
       cancelled = true;
     };
-  }, [focusedPin, effectiveOrigin]);
+  }, [focusedPin, effectiveOrigin, osmRoads]);
 
   const activeRoute = externalRoute ?? localCampusRoute;
 
@@ -392,9 +399,9 @@ export function OutdoorMapView({
       const bounds = L.latLngBounds(
         step.segmentCoords.map((p) => [p.lat, p.lng] as [number, number])
       );
-      map.fitBounds(bounds, { padding: [64, 64], maxZoom: 19, animate: true });
+      map.fitBounds(bounds, { padding: [64, 64], maxZoom: 20, animate: true });
     } else {
-      map.setView([step.coord.lat, step.coord.lng], 19, { animate: true });
+      map.setView([step.coord.lat, step.coord.lng], 20, { animate: true });
     }
   }, []);
 
@@ -415,22 +422,33 @@ export function OutdoorMapView({
       center: [BBSUTSD_CENTER.lat, BBSUTSD_CENTER.lng],
       zoom: 17,
       minZoom: 15,
-      maxZoom: 19,
+      maxZoom: 21,
       maxBounds: bounds.pad(0.25),
       maxBoundsViscosity: 0.75,
       zoomControl: false,
       attributionControl: false,
     });
 
+    // Updated Google Hybrid Satellite (satellite photography + live streets & labels)
     const sat = L.tileLayer(
-      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-      { maxZoom: 19 }
+      'https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+      {
+        subdomains: ['0', '1', '2', '3'],
+        maxNativeZoom: 20,
+        maxZoom: 21,
+      }
     );
-    const street = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-    });
+    // Updated Google Street Roadmap (crisp current streets, intersections, blocks)
+    const street = L.tileLayer(
+      'https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+      {
+        subdomains: ['0', '1', '2', '3'],
+        maxNativeZoom: 20,
+        maxZoom: 21,
+      }
+    );
 
-    street.addTo(map);
+    sat.addTo(map);
 
     const geoGroup = L.layerGroup().addTo(map);
     const guideGroup = L.layerGroup().addTo(map);
@@ -487,7 +505,13 @@ export function OutdoorMapView({
     fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`, {
       signal: controller.signal,
     })
-      .then((res) => (res.ok ? res.json() : Promise.reject(new Error('OSM failed'))))
+      .then((res) =>
+        res.ok
+          ? res.json()
+          : fetch(`https://overpass.kumi.systems/api/interpreter?data=${encodeURIComponent(query)}`, {
+              signal: controller.signal,
+            }).then((r2) => (r2.ok ? r2.json() : Promise.reject(new Error('OSM failed'))))
+      )
       .then((data) => {
         if (!data || !Array.isArray(data.elements)) return;
         let poly: LatLng[] | null = null;
@@ -598,15 +622,18 @@ export function OutdoorMapView({
       }).addTo(group);
     }
 
+    const zoneFill = isSatellite ? 0.04 : 0.11;
+    const bldFill = isSatellite ? 0.06 : 0.18;
+
     L.polygon(
       OLD_COMPLEX_ZONE.map((p) => [p.lat, p.lng]),
       {
         color: '#B3261E',
-        weight: 2,
-        opacity: 0.85,
+        weight: 1.8,
+        opacity: 0.8,
         dashArray: '6, 5',
         fillColor: '#B3261E',
-        fillOpacity: 0.14,
+        fillOpacity: zoneFill,
         interactive: false,
       }
     ).addTo(group);
@@ -615,11 +642,11 @@ export function OutdoorMapView({
       NEW_COMPLEX_ZONE.map((p) => [p.lat, p.lng]),
       {
         color: '#0F9D58',
-        weight: 2,
-        opacity: 0.85,
+        weight: 1.8,
+        opacity: 0.8,
         dashArray: '6, 5',
         fillColor: '#0F9D58',
-        fillOpacity: 0.14,
+        fillOpacity: zoneFill,
         interactive: false,
       }
     ).addTo(group);
@@ -631,10 +658,10 @@ export function OutdoorMapView({
         bld.coords.map((p) => [p.lat, p.lng]),
         {
           color,
-          weight: 2,
-          opacity: 0.88,
+          weight: 1.5,
+          opacity: 0.72,
           fillColor: color,
-          fillOpacity: 0.22,
+          fillOpacity: bldFill,
           interactive: false,
         }
       ).addTo(group);
@@ -644,8 +671,8 @@ export function OutdoorMapView({
       DIVIDING_ROAD_PATH.map((p) => [p.lat, p.lng]),
       {
         color: '#FFFFFF',
-        weight: 8,
-        opacity: 0.88,
+        weight: isSatellite ? 5 : 7,
+        opacity: isSatellite ? 0.45 : 0.85,
         interactive: false,
       }
     ).addTo(group);
@@ -654,8 +681,8 @@ export function OutdoorMapView({
       DIVIDING_ROAD_PATH.map((p) => [p.lat, p.lng]),
       {
         color: '#0B57D0',
-        weight: 3.5,
-        opacity: 0.9,
+        weight: 2.5,
+        opacity: isSatellite ? 0.65 : 0.85,
         dashArray: '8, 6',
         interactive: false,
       }
@@ -665,9 +692,9 @@ export function OutdoorMapView({
       L.polyline(
         segment.map((p) => [p.lat, p.lng]),
         {
-          color: '#FFFFFF',
-          weight: 3,
-          opacity: 0.72,
+          color: isSatellite ? '#FEF08A' : '#FFFFFF',
+          weight: 2,
+          opacity: isSatellite ? 0.35 : 0.68,
           interactive: false,
         }
       ).addTo(group);
@@ -686,7 +713,7 @@ export function OutdoorMapView({
     addBadge(27.51162, 68.74098, 'Old Building Complex', 'zone-badge-old');
     addBadge(27.51083, 68.74163, 'Campus Dividing Road', 'zone-badge-road');
     addBadge(27.51018, 68.7422, 'New Building Complex', 'zone-badge-new');
-  }, [osmBoundary, osmBuildings, osmRoads]);
+  }, [osmBoundary, osmBuildings, osmRoads, isSatellite]);
 
   // 4. Render Labeled Campus Pill Pins + Spiderfy Dispersion for Overlapping Pins
   useEffect(() => {
@@ -1043,7 +1070,7 @@ export function OutdoorMapView({
     setShowMobileDirectory(false);
     handleSelectPin(pin);
     const route = effectiveOrigin
-      ? computeCampusRoute(effectiveOrigin.coord, effectiveOrigin.label, pin)
+      ? computeCampusRoute(effectiveOrigin.coord, effectiveOrigin.label, pin, osmRoads)
       : null;
     fitRouteBounds(route, pin);
   };
@@ -1345,7 +1372,7 @@ export function OutdoorMapView({
 
                   {isFetchingExternalRoute && (
                     <div className="text-[11px] text-[#5F6368]">
-                      Calculating city street route to campus gate...
+                      Snapping turns to updated campus streets...
                     </div>
                   )}
 
@@ -1719,7 +1746,7 @@ export function OutdoorMapView({
           </div>
 
           <MapCircleBtn
-            title={isSatellite ? 'Switch to Street Map View' : 'Switch to Satellite Imagery'}
+            title={isSatellite ? 'Switch to Updated Street Map' : 'Switch to Satellite + Street Hybrid'}
             active={isSatellite}
             onClick={() => setIsSatellite((s) => !s)}
           >

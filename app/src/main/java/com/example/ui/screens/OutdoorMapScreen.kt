@@ -231,7 +231,7 @@ fun OutdoorMapScreen(
     val hasPermission by viewModel.locationHelper.hasLocationPermission.collectAsState()
     val isGpsActive by viewModel.locationHelper.isGpsActive.collectAsState()
 
-    var isSatelliteView by remember { mutableStateOf(false) }
+    var isSatelliteView by rememberSaveable { mutableStateOf(true) }
     var isMapLoaded by remember { mutableStateOf(false) }
     var isEngineReady by remember { mutableStateOf(false) }
     var webViewInstance by remember { mutableStateOf<WebView?>(null) }
@@ -308,6 +308,8 @@ fun OutdoorMapScreen(
 
     LaunchedEffect(isMapLoaded, isEngineReady, pinsJsonPayload) {
         if (isMapLoaded || isEngineReady) {
+            val mode = if (isSatelliteView) "satellite" else "roadmap"
+            webViewInstance?.evaluateJavascript("setMapTypeMode('$mode');", null)
             webViewInstance?.evaluateJavascript(
                 "setLandmarkPins(${JSONObject.quote(pinsJsonPayload)});",
                 null
@@ -1130,7 +1132,7 @@ fun OutdoorMapScreen(
                 PinCategory.TRANSPORT_GATE -> CampusEmeraldDark
                 PinCategory.ACADEMIC -> SlateGray
             }
-            val distMeters = userLocation?.let { loc ->
+            val straightDistMeters = userLocation?.let { loc ->
                 viewModel.repository.calculateDistanceMeters(
                     loc.latitude,
                     loc.longitude,
@@ -1138,6 +1140,7 @@ fun OutdoorMapScreen(
                     activePin.longitude
                 ).roundToInt()
             }
+            val distMeters = calculatedRoute?.totalDistanceMeters ?: straightDistMeters
 
             Surface(
                 modifier = Modifier

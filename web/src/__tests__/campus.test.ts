@@ -242,4 +242,59 @@ describe('BBSUTSD Web Data & Geospatial Logic', () => {
     const radii = fourOffsets.map((o) => Math.hypot(o.x, o.y));
     expect(radii.every((r) => Math.abs(r - radii[0]) < 0.01)).toBe(true);
   });
+
+  it('routes along real campus road turns without diagonal straight-line shortcuts and ingests live OSM roads', () => {
+    const cafeteria = CAMPUS_PINS.find((p) => p.id === 'campus_cafeteria')!;
+    const library = CAMPUS_PINS.find((p) => p.id === 'central_library')!;
+    const mainGates = CAMPUS_PINS.find((p) => p.id === 'gate_main')!;
+    const labs = CAMPUS_PINS.find((p) => p.id === 'electronics_lab')!;
+
+    // Cafeteria -> Central Library must turn via Campus West Avenue rather than cutting diagonally
+    const cafeToLib = computeCampusRoute(
+      { lat: cafeteria.latitude, lng: cafeteria.longitude },
+      'Central Cafeteria',
+      library
+    );
+    expect(cafeToLib.polyline.length).toBeGreaterThanOrEqual(4);
+    expect(cafeToLib.steps.some((s) => s.action === 'LEFT' || s.action === 'RIGHT')).toBe(true);
+    const directCafeToLib = calculateDistanceMeters(
+      cafeteria.latitude,
+      cafeteria.longitude,
+      library.latitude,
+      library.longitude
+    );
+    expect(cafeToLib.totalDistanceMeters).toBeGreaterThan(directCafeToLib + 5);
+
+    // Main Gates -> Electronics Lab must make real corridor turns
+    const gatesToLab = computeCampusRoute(
+      { lat: mainGates.latitude, lng: mainGates.longitude },
+      'Main Gates',
+      labs
+    );
+    expect(gatesToLab.polyline.length).toBeGreaterThanOrEqual(4);
+    expect(gatesToLab.steps.some((s) => s.action === 'RIGHT' || s.action === 'LEFT')).toBe(true);
+
+    // Live OSM road polyline injection works seamlessly
+    const sampleOsmRoads = [
+      [
+        { lat: 27.513343, lng: 68.741668 },
+        { lat: 27.513008, lng: 68.741874 },
+        { lat: 27.512811, lng: 68.741885 },
+        { lat: 27.512267, lng: 68.741904 },
+        { lat: 27.511843, lng: 68.741913 },
+        { lat: 27.511772, lng: 68.742769 },
+        { lat: 27.511044, lng: 68.744096 },
+      ],
+    ];
+    const osmEnriched = computeCampusRoute(
+      { lat: mainGates.latitude, lng: mainGates.longitude },
+      'Main Gates',
+      cafeteria,
+      sampleOsmRoads
+    );
+    expect(osmEnriched.polyline.length).toBeGreaterThanOrEqual(5);
+    expect(osmEnriched.steps[0].action).toBe('START');
+    expect(osmEnriched.steps[osmEnriched.steps.length - 1].action).toBe('ARRIVE');
+  });
 });
+
