@@ -116,7 +116,7 @@ export function HomeView({
       badge: 'Central Campus Spine',
       title: 'Campus Dividing Road',
       summary:
-        'Main pedestrian and vehicle artery running North-East from Hami Road Main Gate past Campus Masjid and University Canteen toward Workshops, Hostels, and Transport Terminal.',
+        'Main pedestrian and vehicle artery connecting Main Gates, Campus Masjid, University Canteen, Hostels, and the Points Stop terminal.',
       tone: 'border-[#D3E3FD] bg-[#E8F0FE]/45',
       badgeTone: 'bg-[#E8F0FE] text-[#0B57D0]',
       cta: 'Trace Route on Map',

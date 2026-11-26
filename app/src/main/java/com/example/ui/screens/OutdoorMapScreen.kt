@@ -1132,14 +1132,14 @@ fun OutdoorMapScreen(
                 PinCategory.TRANSPORT_GATE -> CampusEmeraldDark
                 PinCategory.ACADEMIC -> SlateGray
             }
-            val straightDistMeters = userLocation?.let { loc ->
-                viewModel.repository.calculateDistanceMeters(
-                    loc.latitude,
-                    loc.longitude,
-                    activePin.latitude,
-                    activePin.longitude
-                ).roundToInt()
-            }
+            val originLat = userLocation?.latitude ?: 27.510977
+            val originLng = userLocation?.longitude ?: 68.743880
+            val straightDistMeters = viewModel.repository.calculateDistanceMeters(
+                originLat,
+                originLng,
+                activePin.latitude,
+                activePin.longitude
+            ).roundToInt()
             val distMeters = calculatedRoute?.totalDistanceMeters ?: straightDistMeters
 
             Surface(

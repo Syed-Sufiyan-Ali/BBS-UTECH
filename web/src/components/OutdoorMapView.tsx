@@ -55,6 +55,7 @@ import {
 import {
   computeCampusRoute,
   fetchOsrmRoadRoute,
+  isOutsideCampusCoord,
   type ComputedRoute,
   type RouteStep,
   type TurnAction,
@@ -228,7 +229,12 @@ export function OutdoorMapView({
   const [osmRoads, setOsmRoads] = useState<LatLng[][]>([]);
   const [outsideNotice, setOutsideNotice] = useState(false);
 
-  const effectiveOrigin = useMemo<{ coord: LatLng; label: string; isPinOrigin: boolean } | null>(
+  const mainGatesPin = useMemo(
+    () => CAMPUS_PINS.find((p) => p.id === 'gate_main'),
+    []
+  );
+
+  const effectiveOrigin = useMemo<{ coord: LatLng; label: string; isPinOrigin: boolean }>(
     () => {
       if (customOriginPinId !== 'AUTO_GPS') {
         const originPin = CAMPUS_PINS.find((p) => p.id === customOriginPinId);
@@ -247,9 +253,16 @@ export function OutdoorMapView({
           isPinOrigin: false,
         };
       }
-      return null;
+      return {
+        coord: {
+          lat: mainGatesPin?.latitude ?? 27.510977,
+          lng: mainGatesPin?.longitude ?? 68.74388,
+        },
+        label: 'Main Gates (Old & New Buildings)',
+        isPinOrigin: true,
+      };
     },
-    [customOriginPinId, userLocation]
+    [customOriginPinId, userLocation, mainGatesPin]
   );
 
   const boundaryStatus = useMemo(() => {
@@ -298,7 +311,8 @@ export function OutdoorMapView({
       BBSUTSD_CENTER.lat,
       BBSUTSD_CENTER.lng
     );
-    if (directDist <= 38 || distFromCampus > 50000) {
+    const isOutside = isOutsideCampusCoord(effectiveOrigin.coord, osmBoundary);
+    if (!isOutside || directDist <= 38 || distFromCampus > 50000) {
       setExternalRoute(null);
       setIsFetchingExternalRoute(false);
       lastOsrmOriginRef.current = null;
@@ -323,7 +337,7 @@ export function OutdoorMapView({
     setExternalRoute(null);
     let cancelled = false;
     setIsFetchingExternalRoute(true);
-    fetchOsrmRoadRoute(effectiveOrigin.coord, focusedPin, osmRoads)
+    fetchOsrmRoadRoute(effectiveOrigin.coord, focusedPin, osmRoads, osmBoundary)
       .then((res) => {
         if (!cancelled && res) {
           setExternalRoute(res);
@@ -336,7 +350,7 @@ export function OutdoorMapView({
     return () => {
       cancelled = true;
     };
-  }, [focusedPin, effectiveOrigin, osmRoads]);
+  }, [focusedPin, effectiveOrigin, osmRoads, osmBoundary]);
 
   const activeRoute = externalRoute ?? localCampusRoute;
 
@@ -429,18 +443,18 @@ export function OutdoorMapView({
       attributionControl: false,
     });
 
-    // Updated Google Hybrid Satellite (satellite photography + live streets & labels)
+    // Updated Google Hybrid Satellite with POI & transit pins stripped
     const sat = L.tileLayer(
-      'https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+      'https://mt{s}.google.com/vt/lyrs=y&apistyle=s.t%3A2%7Cp.v%3Aoff%2Cs.t%3A4%7Cp.v%3Aoff&x={x}&y={y}&z={z}',
       {
         subdomains: ['0', '1', '2', '3'],
         maxNativeZoom: 20,
         maxZoom: 21,
       }
     );
-    // Updated Google Street Roadmap (crisp current streets, intersections, blocks)
+    // Updated Google Street Roadmap with POI & transit pins stripped
     const street = L.tileLayer(
-      'https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+      'https://mt{s}.google.com/vt/lyrs=m&apistyle=s.t%3A2%7Cp.v%3Aoff%2Cs.t%3A4%7Cp.v%3Aoff&x={x}&y={y}&z={z}',
       {
         subdomains: ['0', '1', '2', '3'],
         maxNativeZoom: 20,
@@ -1138,11 +1152,11 @@ export function OutdoorMapView({
               className="w-full rounded-xl border border-[#E6DDD0] bg-[#FAF7F2] px-3 py-2 text-xs font-medium text-[#1F1812] outline-none focus:border-[#7C4D2B] transition"
             >
               <option value="AUTO_GPS">
-                {gpsMode === 'LIVE'
-                  ? 'Live Browser GPS Signal'
-                  : `GPS Preset: ${presets[presetIndex]?.label ?? 'Main Gates (Old & New Buildings)'}`}
+                {gpsMode === 'LIVE' && userLocation
+                  ? 'Live Browser GPS (Via Main Gates)'
+                  : `Main Gates: ${presets[presetIndex]?.label ?? 'Main Gates (Old & New Buildings)'}`}
               </option>
-              <optgroup label="── Pick Any Campus Starting Landmark ──">
+              <optgroup label="── Manual Campus Landmarks ──">
                 {CAMPUS_PINS.map((pin) => (
                   <option key={pin.id} value={pin.id}>
                     {pin.mapLabel || pin.name} ({pin.roomNumber})
@@ -1151,7 +1165,7 @@ export function OutdoorMapView({
               </optgroup>
             </select>
 
-            {customOriginPinId === 'AUTO_GPS' && gpsMode === 'SIMULATED' && (
+            {customOriginPinId === 'AUTO_GPS' && gpsMode === 'SIMULATED' && presets.length > 1 && (
               <div className="flex items-center justify-between gap-2 pt-0.5">
                 <span className="text-[10.5px] font-semibold text-[#7D7166]">Preset:</span>
                 <select
@@ -1242,8 +1256,10 @@ export function OutdoorMapView({
             <div className="flex items-center gap-2 rounded-2xl border border-[#CBE6D3] bg-[#E6F4EA] px-3 py-2 text-[11px] font-semibold text-[#137333]">
               <Compass className="h-3.5 w-3.5 shrink-0" />
               <span className="truncate">
-                {gpsMode === 'LIVE' ? 'Live GPS active' : 'Demo origin active'} •{' '}
-                {filteredDirectoryPins.length} pins
+                {gpsMode === 'LIVE' && userLocation
+                  ? 'Live GPS active'
+                  : 'Calculating from Main Gates'}{' '}
+                • {filteredDirectoryPins.length} pins
               </span>
             </div>
           )}
@@ -1609,9 +1625,9 @@ export function OutdoorMapView({
                 className="min-w-0 flex-1 rounded-full border border-[#E6DDD0] bg-[#FAF7F2] px-3 py-1 text-[11px] font-medium text-[#1F1812] outline-none"
               >
                 <option value="AUTO_GPS">
-                  {gpsMode === 'LIVE'
-                    ? 'Live GPS Signal'
-                    : `Preset: ${presets[presetIndex]?.label ?? 'Main Gates'}`}
+                  {gpsMode === 'LIVE' && userLocation
+                    ? 'Live GPS Signal (Via Main Gates)'
+                    : 'Main Gates (Old & New Buildings)'}
                 </option>
                 {CAMPUS_PINS.map((pin) => (
                   <option key={pin.id} value={pin.id}>

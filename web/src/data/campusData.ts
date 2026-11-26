@@ -89,41 +89,6 @@ export const PRESET_USER_LOCATIONS: UserLocation[] = [
     label: 'Main Gates (Old & New Buildings)',
     accuracyMeters: 10,
   },
-  {
-    latitude: 27.512831,
-    longitude: 68.742349,
-    isSimulated: true,
-    label: 'Central Library',
-    accuracyMeters: 10,
-  },
-  {
-    latitude: 27.511694,
-    longitude: 68.742806,
-    isSimulated: true,
-    label: 'Student Points Stop',
-    accuracyMeters: 10,
-  },
-  {
-    latitude: 27.512277,
-    longitude: 68.742401,
-    isSimulated: true,
-    label: 'Smart Class Room (CR-101 to CR-106)',
-    accuracyMeters: 10,
-  },
-  {
-    latitude: 27.513138,
-    longitude: 68.741641,
-    isSimulated: true,
-    label: 'BBSUTSD Central Cafeteria',
-    accuracyMeters: 10,
-  },
-  {
-    latitude: 27.5105,
-    longitude: 68.7448,
-    isSimulated: true,
-    label: 'New Building Mosque',
-    accuracyMeters: 10,
-  },
 ];
 
 export const CAMPUS_PINS: CampusPin[] = [

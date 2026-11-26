@@ -5,6 +5,7 @@ import {
   calculateDistanceMeters,
   estimateWalkMinutes,
   formatDistance,
+  isPointInPolygon,
 } from './geo';
 
 export type TurnAction =
@@ -72,17 +73,11 @@ const GRAPH_NODES: Record<string, GraphNode> = {
   rd_points_jct: { id: 'rd_points_jct', lat: 27.511772, lng: 68.742769, label: 'Points Stop Junction' },
   rd_gates_jct: { id: 'rd_gates_jct', lat: 27.511044, lng: 68.744096, label: 'Main Gates Boulevard Junction' },
 
-  // Eastern Campus Boulevard & New Building Outer Perimeter
+  // Eastern Campus Boulevard & Main Gates Approach
   rd_boulevard_sw: { id: 'rd_boulevard_sw', lat: 27.509919, lng: 68.743061, label: 'BBSUTSD South Boulevard' },
   rd_gates_front: { id: 'rd_gates_front', lat: 27.51091, lng: 68.743973, label: 'Main Entrance Approach' },
-  rd_ne_bend: { id: 'rd_ne_bend', lat: 27.511542, lng: 68.744553, label: 'North-East Campus Road' },
-  rd_ne_corner: { id: 'rd_ne_corner', lat: 27.511616, lng: 68.744611, label: 'North-East Wing Corner' },
-  rd_east_lane_1: { id: 'rd_east_lane_1', lat: 27.511408, lng: 68.744818, label: 'East Wing Access Road' },
-  rd_east_lane_2: { id: 'rd_east_lane_2', lat: 27.510959, lng: 68.745268, label: 'East Labs & Mosque Road' },
 
-  // Campus Legacy / Old & New Building Dividing Connectors
-  gate_entry: { id: 'gate_entry', lat: 27.50965, lng: 68.7405, label: 'Hami Road Corner' },
-  gate_plaza: { id: 'gate_plaza', lat: 27.50998, lng: 68.74082, label: 'South-West Plaza' },
+  // Campus Dividing Connectors (Internal campus paths only)
   mosque_jct: { id: 'mosque_jct', lat: 27.51035, lng: 68.74115, label: 'Dividing Road South' },
   quad_jct: { id: 'quad_jct', lat: 27.51062, lng: 68.74142, label: 'Dividing Road Mid' },
   dividing_center: { id: 'dividing_center', lat: 27.51082, lng: 68.74164, label: 'Campus Dividing Road Center' },
@@ -91,11 +86,10 @@ const GRAPH_NODES: Record<string, GraphNode> = {
   old_porch: { id: 'old_porch', lat: 27.511234, lng: 68.741032, label: 'Old Academic Complex Front' },
   new_east: { id: 'new_east', lat: 27.51045, lng: 68.74245, label: 'New Complex East Walk' },
 
-  // New Building Structured Courtyard & Corridor Turns (orthogonal turns, no diagonals)
+  // New Building Structured Courtyard & Corridor Turns (entered strictly via Main Gates)
   nb_gate_courtyard: { id: 'nb_gate_courtyard', lat: 27.510977, lng: 68.74404, label: 'Main Gate Courtyard Entry' },
   nb_west_gallery: { id: 'nb_west_gallery', lat: 27.5109, lng: 68.74432, label: 'New Building West Gallery' },
   nb_labs_corner: { id: 'nb_labs_corner', lat: 27.5109, lng: 68.7447, label: 'East Wing Labs Junction' },
-  nb_east_gate_turn: { id: 'nb_east_gate_turn', lat: 27.510959, lng: 68.74492, label: 'East Wing Road Entry' },
   nb_mosque_turn: { id: 'nb_mosque_turn', lat: 27.5105, lng: 68.7447, label: 'Mosque Courtyard Corner' },
 
   // Calibrated Manual Landmark Entrance Nodes
@@ -137,8 +131,6 @@ const EDGE_DEFS: [string, string, string][] = [
   ['rd_points_jct', 'rd_gates_jct', 'Campus Central Road'],
 
   // Dividing Road & Old/New Complex Connectors
-  ['gate_entry', 'gate_plaza', 'Hami Road Campus Walk'],
-  ['gate_plaza', 'mosque_jct', 'Campus Dividing Road'],
   ['mosque_jct', 'quad_jct', 'Campus Dividing Road'],
   ['quad_jct', 'dividing_center', 'Campus Dividing Road'],
   ['dividing_center', 'new_mid_road', 'Campus Dividing Road'],
@@ -150,17 +142,11 @@ const EDGE_DEFS: [string, string, string][] = [
   ['rd_south_west_ave', 'new_east', 'New Complex Front Walk'],
   ['new_east', 'rd_boulevard_sw', 'South Campus Road'],
 
-  // Eastern Boulevard & Main Gates Approach
+  // Eastern Boulevard & Main Gates Approach (strictly Main Gates only)
   ['rd_boulevard_sw', 'rd_gates_front', 'BBSUTSD Main Boulevard'],
   ['rd_gates_front', 'main_gates_entry', 'Main Gates Entrance'],
   ['rd_gates_front', 'rd_gates_jct', 'BBSUTSD Main Boulevard'],
   ['rd_gates_jct', 'nb_gate_courtyard', 'Main Gates Entrance'],
-  ['rd_gates_jct', 'rd_ne_bend', 'BBSUTSD East Boulevard'],
-  ['rd_ne_bend', 'rd_ne_corner', 'BBSUTSD East Boulevard'],
-  ['rd_ne_corner', 'rd_east_lane_1', 'East Academic Perimeter Road'],
-  ['rd_east_lane_1', 'rd_east_lane_2', 'East Academic Perimeter Road'],
-  ['rd_east_lane_2', 'nb_east_gate_turn', 'East Wing Gate Walk'],
-  ['nb_east_gate_turn', 'nb_labs_corner', 'East Wing Corridor'],
 
   // New Building Structured Courtyard & Wing Corridors (90-degree turns)
   ['main_gates_entry', 'nb_gate_courtyard', 'Main Gate Plaza'],
@@ -266,7 +252,8 @@ function buildCampusAndOsmGraph(osmRoads?: LatLng[][]): DynamicGraph {
       for (const pt of road) {
         if (
           calculateDistanceMeters(pt.lat, pt.lng, BBSUTSD_CENTER.lat, BBSUTSD_CENTER.lng) >
-          560
+            560 ||
+          (pt.lng > 68.74435 && pt.lat < 27.5122)
         ) {
           prevId = null;
           continue;
@@ -293,8 +280,6 @@ function buildCampusAndOsmGraph(osmRoads?: LatLng[][]): DynamicGraph {
       'rd_west_spine_jct',
       'rd_points_jct',
       'rd_gates_jct',
-      'rd_ne_corner',
-      'rd_east_lane_2',
     ];
     for (const aId of anchorRoadIds) {
       const aNode = nodes[aId];
@@ -548,6 +533,25 @@ export function computeCampusRoute(
   if (directDist <= 28) {
     rawPoints = [origin, destCoord];
     rawSegNames = [`Walk directly to ${destinationPin.mapLabel || destinationPin.name}`];
+  } else if (isOutsideCampusCoord(origin)) {
+    const gatePin = CAMPUS_PINS.find((p) => p.id === 'gate_main');
+    const gateCoord: LatLng = {
+      lat: gatePin?.latitude ?? 27.510977,
+      lng: gatePin?.longitude ?? 68.74388,
+    };
+    if (destinationPin.id === 'gate_main') {
+      rawPoints = [origin, gateCoord];
+      rawSegNames = ['Approach Road to Main Gates'];
+    } else {
+      const fromGate = solveShortestGraphPath(
+        gateCoord,
+        'Main Gates (Old & New Buildings)',
+        destinationPin,
+        osmRoads
+      );
+      rawPoints = [origin, ...fromGate.points];
+      rawSegNames = ['Approach Road to Main Gates', ...fromGate.segNames];
+    }
   } else {
     const solved = solveShortestGraphPath(origin, originLabel, destinationPin, osmRoads);
     rawPoints = solved.points;
@@ -695,33 +699,59 @@ export function computeCampusRoute(
   };
 }
 
+export function isOutsideCampusCoord(
+  coord: LatLng,
+  osmBoundary?: LatLng[] | null
+): boolean {
+  const centerDist = calculateDistanceMeters(
+    coord.lat,
+    coord.lng,
+    BBSUTSD_CENTER.lat,
+    BBSUTSD_CENTER.lng
+  );
+  if (
+    centerDist > 350 ||
+    coord.lat < 27.50995 ||
+    coord.lat > 27.51335 ||
+    coord.lng < 68.7402 ||
+    coord.lng > 68.74495
+  ) {
+    return true;
+  }
+  if (osmBoundary && osmBoundary.length >= 3) {
+    const insidePoly = isPointInPolygon(coord.lat, coord.lng, osmBoundary);
+    if (!insidePoly && centerDist > 260) {
+      const nearManualPin = CAMPUS_PINS.some(
+        (p) => calculateDistanceMeters(coord.lat, coord.lng, p.latitude, p.longitude) <= 35
+      );
+      if (!nearManualPin) return true;
+    }
+  }
+  return false;
+}
+
 export async function fetchOsrmRoadRoute(
   origin: LatLng,
   destinationPin: CampusPin,
-  osmRoads?: LatLng[][]
+  osmRoads?: LatLng[][],
+  osmBoundary?: LatLng[] | null
 ): Promise<ComputedRoute | null> {
   const destCoord: LatLng = { lat: destinationPin.latitude, lng: destinationPin.longitude };
   const directDist = calculateDistanceMeters(origin.lat, origin.lng, destCoord.lat, destCoord.lng);
   if (directDist <= 38) return null;
 
-  const distFromCampus = calculateDistanceMeters(
-    origin.lat,
-    origin.lng,
-    BBSUTSD_CENTER.lat,
-    BBSUTSD_CENTER.lng
-  );
-  const isOutsideCampus = distFromCampus > 450;
+  const isOutsideCampus = isOutsideCampusCoord(origin, osmBoundary);
+  if (!isOutsideCampus) {
+    // Inside campus: strictly use campus + Main Gates walkable graph so routes never detour outside to small gates.
+    return null;
+  }
 
-  // Outside campus: road route to Main Gates + calibrated campus walk.
-  // Inside campus: road route directly between origin and destination curb, unless inside courtyard.
-  const gateCoord = CAMPUS_PINS.find((p) => p.id === 'gate_main');
-  const gateLat = gateCoord?.latitude ?? 27.510977;
-  const gateLng = gateCoord?.longitude ?? 68.74388;
+  const gatePin = CAMPUS_PINS.find((p) => p.id === 'gate_main');
+  const gateLat = gatePin?.latitude ?? 27.510977;
+  const gateLng = gatePin?.longitude ?? 68.74388;
 
-  const targetLat = isOutsideCampus ? gateLat : destCoord.lat;
-  const targetLng = isOutsideCampus ? gateLng : destCoord.lng;
-
-  const url = `https://router.project-osrm.org/route/v1/foot/${origin.lng},${origin.lat};${targetLng},${targetLat}?overview=full&geometries=geojson&steps=true`;
+  // Approaching from outside campus: ALWAYS calculate road path strictly to Main Gates first.
+  const url = `https://router.project-osrm.org/route/v1/foot/${origin.lng},${origin.lat};${gateLng},${gateLat}?overview=full&geometries=geojson&steps=true`;
   try {
     const controller = new AbortController();
     const timer = window.setTimeout(() => controller.abort(), 5000);
@@ -736,14 +766,6 @@ export async function fetchOsrmRoadRoute(
       (c: [number, number]) => ({ lat: c[1], lng: c[0] })
     );
     if (roadPolyline.length < 2) return null;
-
-    // Guard against OSRM looping outside courtyard walls when an internal campus walkway is shorter
-    if (!isOutsideCampus) {
-      const localCampus = computeCampusRoute(origin, 'Start', destinationPin, osmRoads);
-      if (localCampus.totalDistanceMeters < 180 && route.distance > localCampus.totalDistanceMeters * 1.65) {
-        return null;
-      }
-    }
 
     const fullPolyline: LatLng[] = [];
     if (calculateDistanceMeters(origin.lat, origin.lng, roadPolyline[0].lat, roadPolyline[0].lng) > 3) {
@@ -786,7 +808,7 @@ export async function fetchOsrmRoadRoute(
             const bearing =
               segCoords.length >= 2
                 ? calculateBearing(segCoords[0].lat, segCoords[0].lng, segCoords[1].lat, segCoords[1].lng)
-                : calculateBearing(origin.lat, origin.lng, targetLat, targetLng);
+                : calculateBearing(origin.lat, origin.lng, gateLat, gateLng);
             verb = `Head ${compassDirectionLabel(bearing)}`;
           } else if (mod.includes('sharp right')) {
             action = 'SHARP_RIGHT';
@@ -811,11 +833,7 @@ export async function fetchOsrmRoadRoute(
           const loc = s.maneuver?.location;
           const pt = loc ? { lat: loc[1], lng: loc[0] } : segCoords[0] ?? origin;
           const roadName =
-            s.name && s.name.trim()
-              ? s.name
-              : isOutsideCampus
-              ? 'City Approach Road'
-              : 'Campus Street';
+            s.name && s.name.trim() ? s.name : 'City Approach Road';
 
           roadSteps.push({
             id: `osrm-${idx}`,
@@ -830,80 +848,36 @@ export async function fetchOsrmRoadRoute(
       );
     }
 
-    if (isOutsideCampus) {
-      const campusPart = computeCampusRoute(
-        { lat: gateLat, lng: gateLng },
-        'Main Entrance Gate',
-        destinationPin,
-        osmRoads
-      );
-      const totalDist = Math.round((route.distance || 0) + campusPart.totalDistanceMeters);
+    if (destinationPin.id === 'gate_main') {
+      roadSteps.push({
+        id: 'step-arrive-main-gate',
+        action: 'ARRIVE',
+        instruction: `Arrive at ${destinationPin.name} (${destinationPin.roomNumber})`,
+        streetName: BUILDINGS[destinationPin.building].shortName,
+        distanceMeters: 0,
+        coord: { lat: gateLat, lng: gateLng },
+        segmentCoords: [{ lat: gateLat, lng: gateLng }],
+      });
+      const totalDist = Math.round(route.distance || 0);
       return {
-        polyline: [...fullPolyline, ...campusPart.polyline],
-        steps: [...roadSteps, ...campusPart.steps],
+        polyline: fullPolyline,
+        steps: roadSteps,
         totalDistanceMeters: totalDist,
         estimatedMinutes: estimateWalkMinutes(totalDist),
         usedExternalRoad: true,
       };
     }
 
-    // Intra-campus OSRM: append perpendicular entrance spur from last road point to exact pin entrance
-    const lastRoadPt = roadPolyline[roadPolyline.length - 1];
-    const entranceGap = calculateDistanceMeters(
-      lastRoadPt.lat,
-      lastRoadPt.lng,
-      destCoord.lat,
-      destCoord.lng
+    const campusPart = computeCampusRoute(
+      { lat: gateLat, lng: gateLng },
+      'Main Gates (Old & New Buildings)',
+      destinationPin,
+      osmRoads
     );
-    let extraDist = 0;
-    if (entranceGap > 3) {
-      fullPolyline.push(destCoord);
-      extraDist = entranceGap;
-      const roadTailBearing =
-        roadPolyline.length >= 2
-          ? calculateBearing(
-              roadPolyline[roadPolyline.length - 2].lat,
-              roadPolyline[roadPolyline.length - 2].lng,
-              lastRoadPt.lat,
-              lastRoadPt.lng
-            )
-          : 0;
-      const spurBearing = calculateBearing(
-        lastRoadPt.lat,
-        lastRoadPt.lng,
-        destCoord.lat,
-        destCoord.lng
-      );
-      const entranceTurn = classifyTurnDelta(spurBearing - roadTailBearing);
-      roadSteps.push({
-        id: 'osrm-entrance',
-        action: entranceTurn.action === 'STRAIGHT' ? 'STRAIGHT' : entranceTurn.action,
-        instruction: `${entranceTurn.verb} toward ${destinationPin.mapLabel || destinationPin.name} Entrance • walk ${formatDistance(entranceGap)}`,
-        streetName: `${destinationPin.mapLabel || destinationPin.name} Walk`,
-        distanceMeters: Math.round(entranceGap),
-        coord: lastRoadPt,
-        segmentCoords: [lastRoadPt, destCoord],
-      });
-    }
-
-    const isIndoor =
-      destinationPin.building !== 'CAMPUS_GROUNDS' && destinationPin.floor !== 'OUTDOOR';
-    roadSteps.push({
-      id: 'step-arrive',
-      action: 'ARRIVE',
-      instruction: isIndoor
-        ? `Arrive at ${destinationPin.name} (${destinationPin.roomNumber}). ${destinationPin.indoorGuide}`
-        : `Arrive at ${destinationPin.name} (${destinationPin.roomNumber})`,
-      streetName: BUILDINGS[destinationPin.building].shortName,
-      distanceMeters: 0,
-      coord: destCoord,
-      segmentCoords: [destCoord],
-    });
-
-    const totalDist = Math.round((route.distance || 0) + extraDist);
+    const totalDist = Math.round((route.distance || 0) + campusPart.totalDistanceMeters);
     return {
-      polyline: fullPolyline,
-      steps: roadSteps,
+      polyline: [...fullPolyline, ...campusPart.polyline],
+      steps: [...roadSteps, ...campusPart.steps],
       totalDistanceMeters: totalDist,
       estimatedMinutes: estimateWalkMinutes(totalDist),
       usedExternalRoad: true,

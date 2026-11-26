@@ -87,14 +87,14 @@ fun PinDetailSheet(
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    val distanceMeters = if (userLocation != null) {
-        repository.calculateDistanceMeters(
-            userLocation.latitude,
-            userLocation.longitude,
-            pin.latitude,
-            pin.longitude
-        ).toInt()
-    } else null
+    val originLat = userLocation?.latitude ?: 27.510977
+    val originLng = userLocation?.longitude ?: 68.743880
+    val distanceMeters = repository.calculateDistanceMeters(
+        originLat,
+        originLng,
+        pin.latitude,
+        pin.longitude
+    ).toInt()
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -193,51 +193,53 @@ fun PinDetailSheet(
                 modifier = Modifier.padding(top = 3.dp)
             )
 
-            if (distanceMeters != null) {
-                Spacer(modifier = Modifier.height(14.dp))
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = CampusEmeraldTint),
-                    shape = RoundedCornerShape(20.dp),
-                    border = BorderStroke(1.dp, CampusEmeraldBorder)
+            Spacer(modifier = Modifier.height(14.dp))
+            Card(
+                colors = CardDefaults.cardColors(containerColor = CampusEmeraldTint),
+                shape = RoundedCornerShape(20.dp),
+                border = BorderStroke(1.dp, CampusEmeraldBorder)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 14.dp, vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                    Surface(
+                        color = PureWhite,
+                        shape = CircleShape,
+                        modifier = Modifier.size(34.dp)
                     ) {
-                        Surface(
-                            color = PureWhite,
-                            shape = CircleShape,
-                            modifier = Modifier.size(34.dp)
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    imageVector = Icons.Default.NearMe,
-                                    contentDescription = null,
-                                    tint = CampusEmeraldDark,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
-                        }
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            val distText = if (distanceMeters < 1000) "$distanceMeters m away" else String.format("%.1f km away", distanceMeters / 1000f)
-                            val walkTime = "${maxOf(1, (distanceMeters / 75.0).toInt())} min walk"
-                            Text(
-                                text = "$distText • $walkTime",
-                                fontFamily = DisplayFontFamily,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 13.5.sp,
-                                color = CampusEmeraldDark
-                            )
-                            Text(
-                                text = "From your ${if (userLocation?.isSimulated == true) "selected" else "live GPS"} location",
-                                fontFamily = BodyFontFamily,
-                                fontSize = 11.5.sp,
-                                color = InkBlack.copy(alpha = 0.78f)
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Default.NearMe,
+                                contentDescription = null,
+                                tint = CampusEmeraldDark,
+                                modifier = Modifier.size(18.dp)
                             )
                         }
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        val distText = if (distanceMeters < 1000) "$distanceMeters m away" else String.format("%.1f km away", distanceMeters / 1000f)
+                        val walkTime = "${maxOf(1, (distanceMeters / 75.0).toInt())} min walk"
+                        Text(
+                            text = "$distText • $walkTime",
+                            fontFamily = DisplayFontFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 13.5.sp,
+                            color = CampusEmeraldDark
+                        )
+                        Text(
+                            text = if (userLocation != null && !userLocation.isSimulated) {
+                                "From your live GPS location"
+                            } else {
+                                "From ${userLocation?.label ?: "Main Gates (Old & New Buildings)"}"
+                            },
+                            fontFamily = BodyFontFamily,
+                            fontSize = 11.5.sp,
+                            color = InkBlack.copy(alpha = 0.78f)
+                        )
                     }
                 }
             }

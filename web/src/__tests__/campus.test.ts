@@ -8,6 +8,7 @@ import {
   FACULTY_MEMBERS,
   NEW_COMPLEX_ZONE,
   OLD_COMPLEX_ZONE,
+  PRESET_USER_LOCATIONS,
 } from '../data/campusData';
 import {
   calculateDistanceMeters,
@@ -15,7 +16,7 @@ import {
   evaluateCampusContainment,
   searchPins,
 } from '../utils/geo';
-import { classifyTurnDelta, computeCampusRoute } from '../utils/routing';
+import { classifyTurnDelta, computeCampusRoute, isOutsideCampusCoord } from '../utils/routing';
 import {
   computeCircleOffsets,
   findClusterKeyForPin,
@@ -295,6 +296,56 @@ describe('BBSUTSD Web Data & Geospatial Logic', () => {
     expect(osmEnriched.polyline.length).toBeGreaterThanOrEqual(5);
     expect(osmEnriched.steps[0].action).toBe('START');
     expect(osmEnriched.steps[osmEnriched.steps.length - 1].action).toBe('ARRIVE');
+  });
+
+  it('keeps PRESET_USER_LOCATIONS strictly on Main Gates and routes outside/internal paths without using the small gate', () => {
+    expect(PRESET_USER_LOCATIONS.length).toBe(1);
+    expect(PRESET_USER_LOCATIONS[0].label).toContain('Main Gates');
+    expect(PRESET_USER_LOCATIONS[0].latitude).toBeCloseTo(27.510977, 5);
+    expect(PRESET_USER_LOCATIONS[0].longitude).toBeCloseTo(68.74388, 5);
+
+    // Every single one of the 10 manual pins must be inside campus bounds
+    for (const pin of CAMPUS_PINS) {
+      expect(isOutsideCampusCoord({ lat: pin.latitude, lng: pin.longitude })).toBe(false);
+    }
+
+    // Outside approach roads (South approach & East back perimeter road) must be flagged outside
+    expect(isOutsideCampusCoord({ lat: 27.5085, lng: 68.742 })).toBe(true);
+    expect(isOutsideCampusCoord({ lat: 27.510959, lng: 68.745268 })).toBe(true);
+
+    const pointsStop = CAMPUS_PINS.find((p) => p.id === 'campus_transport')!;
+    const mainGates = CAMPUS_PINS.find((p) => p.id === 'gate_main')!;
+    const electronicsLab = CAMPUS_PINS.find((p) => p.id === 'electronics_lab')!;
+    const mosque = CAMPUS_PINS.find((p) => p.id === 'new_building_mosque')!;
+
+    // Routes to Electronics Lab & Mosque must never pass through the East small gate (lng > 68.74485)
+    for (const dest of [electronicsLab, mosque]) {
+      const fromGate = computeCampusRoute(
+        { lat: mainGates.latitude, lng: mainGates.longitude },
+        'Main Gates',
+        dest
+      );
+      expect(fromGate.polyline.every((pt) => pt.lng <= 68.74485)).toBe(true);
+
+      const fromPoints = computeCampusRoute(
+        { lat: pointsStop.latitude, lng: pointsStop.longitude },
+        'Points Stop',
+        dest
+      );
+      expect(fromPoints.polyline.every((pt) => pt.lng <= 68.74485)).toBe(true);
+    }
+
+    // Outside approach fallback routes strictly via Main Gates first
+    const outsideOrigin = { lat: 27.5085, lng: 68.742 };
+    const outsideRoute = computeCampusRoute(outsideOrigin, 'Approach', electronicsLab);
+    expect(
+      outsideRoute.polyline.some(
+        (pt) =>
+          Math.abs(pt.lat - mainGates.latitude) < 0.0001 &&
+          Math.abs(pt.lng - mainGates.longitude) < 0.0001
+      )
+    ).toBe(true);
+    expect(outsideRoute.polyline.every((pt) => pt.lng <= 68.74485)).toBe(true);
   });
 });
 

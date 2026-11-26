@@ -730,17 +730,11 @@
       rd_points_jct: { id: 'rd_points_jct', lat: 27.511772, lng: 68.742769, label: 'Points Stop Junction' },
       rd_gates_jct: { id: 'rd_gates_jct', lat: 27.511044, lng: 68.744096, label: 'Main Gates Boulevard Junction' },
 
-      // Eastern Campus Boulevard & New Building Outer Perimeter
+      // Eastern Campus Boulevard & Main Gates Approach
       rd_boulevard_sw: { id: 'rd_boulevard_sw', lat: 27.509919, lng: 68.743061, label: 'BBSUTSD South Boulevard' },
       rd_gates_front: { id: 'rd_gates_front', lat: 27.51091, lng: 68.743973, label: 'Main Entrance Approach' },
-      rd_ne_bend: { id: 'rd_ne_bend', lat: 27.511542, lng: 68.744553, label: 'North-East Campus Road' },
-      rd_ne_corner: { id: 'rd_ne_corner', lat: 27.511616, lng: 68.744611, label: 'North-East Wing Corner' },
-      rd_east_lane_1: { id: 'rd_east_lane_1', lat: 27.511408, lng: 68.744818, label: 'East Wing Access Road' },
-      rd_east_lane_2: { id: 'rd_east_lane_2', lat: 27.510959, lng: 68.745268, label: 'East Labs & Mosque Road' },
 
-      // Campus Dividing Connectors
-      gate_entry: { id: 'gate_entry', lat: 27.50965, lng: 68.7405, label: 'Hami Road Corner' },
-      gate_plaza: { id: 'gate_plaza', lat: 27.50998, lng: 68.74082, label: 'South-West Plaza' },
+      // Campus Dividing Connectors (Internal campus paths only)
       mosque_jct: { id: 'mosque_jct', lat: 27.51035, lng: 68.74115, label: 'Dividing Road South' },
       quad_jct: { id: 'quad_jct', lat: 27.51062, lng: 68.74142, label: 'Dividing Road Mid' },
       dividing_center: { id: 'dividing_center', lat: 27.51082, lng: 68.74164, label: 'Campus Dividing Road Center' },
@@ -749,11 +743,10 @@
       old_porch: { id: 'old_porch', lat: 27.511234, lng: 68.741032, label: 'Old Academic Complex Front' },
       new_east: { id: 'new_east', lat: 27.51045, lng: 68.74245, label: 'New Complex East Walk' },
 
-      // New Building Structured Courtyard & Corridor Turns
+      // New Building Structured Courtyard & Corridor Turns (entered strictly via Main Gates)
       nb_gate_courtyard: { id: 'nb_gate_courtyard', lat: 27.510977, lng: 68.74404, label: 'Main Gate Courtyard Entry' },
       nb_west_gallery: { id: 'nb_west_gallery', lat: 27.5109, lng: 68.74432, label: 'New Building West Gallery' },
       nb_labs_corner: { id: 'nb_labs_corner', lat: 27.5109, lng: 68.7447, label: 'East Wing Labs Junction' },
-      nb_east_gate_turn: { id: 'nb_east_gate_turn', lat: 27.510959, lng: 68.74492, label: 'East Wing Road Entry' },
       nb_mosque_turn: { id: 'nb_mosque_turn', lat: 27.5105, lng: 68.7447, label: 'Mosque Courtyard Corner' },
 
       // Calibrated Manual Landmark Entrance Nodes
@@ -792,8 +785,6 @@
       ['rd_points_jct', 'points_stop_node', 'Points Stop Terminal Bay'],
       ['rd_points_jct', 'rd_gates_jct', 'Campus Central Road'],
 
-      ['gate_entry', 'gate_plaza', 'Hami Road Campus Walk'],
-      ['gate_plaza', 'mosque_jct', 'Campus Dividing Road'],
       ['mosque_jct', 'quad_jct', 'Campus Dividing Road'],
       ['quad_jct', 'dividing_center', 'Campus Dividing Road'],
       ['dividing_center', 'new_mid_road', 'Campus Dividing Road'],
@@ -809,12 +800,6 @@
       ['rd_gates_front', 'main_gates_entry', 'Main Gates Entrance'],
       ['rd_gates_front', 'rd_gates_jct', 'BBSUTSD Main Boulevard'],
       ['rd_gates_jct', 'nb_gate_courtyard', 'Main Gates Entrance'],
-      ['rd_gates_jct', 'rd_ne_bend', 'BBSUTSD East Boulevard'],
-      ['rd_ne_bend', 'rd_ne_corner', 'BBSUTSD East Boulevard'],
-      ['rd_ne_corner', 'rd_east_lane_1', 'East Academic Perimeter Road'],
-      ['rd_east_lane_1', 'rd_east_lane_2', 'East Academic Perimeter Road'],
-      ['rd_east_lane_2', 'nb_east_gate_turn', 'East Wing Gate Walk'],
-      ['nb_east_gate_turn', 'nb_labs_corner', 'East Wing Corridor'],
 
       ['main_gates_entry', 'nb_gate_courtyard', 'Main Gate Plaza'],
       ['nb_gate_courtyard', 'nb_west_gallery', 'New Building Main Walkway'],
@@ -909,7 +894,8 @@
           if (!road || road.length < 2) return;
           let prevId = null;
           road.forEach(pt => {
-            if (haversineMeters(pt.lat, pt.lng, BBSUTSD_CENTER.lat, BBSUTSD_CENTER.lng) > 560) {
+            if (haversineMeters(pt.lat, pt.lng, BBSUTSD_CENTER.lat, BBSUTSD_CENTER.lng) > 560 ||
+                (pt.lng > 68.74435 && pt.lat < 27.5122)) {
               prevId = null;
               return;
             }
@@ -923,7 +909,7 @@
           });
         });
 
-        ['rd_cafeteria_nw','rd_atm_front','rd_library_front','rd_smart_front','rd_west_spine_jct','rd_points_jct','rd_gates_jct','rd_ne_corner','rd_east_lane_2'].forEach(aId => {
+        ['rd_cafeteria_nw','rd_atm_front','rd_library_front','rd_smart_front','rd_west_spine_jct','rd_points_jct','rd_gates_jct'].forEach(aId => {
           const aNode = nodes[aId];
           if (!aNode) return;
           let bestId = null, bestDist = Infinity;
@@ -1063,6 +1049,21 @@
       };
     }
 
+    function isOutsideCampusCoord(lat, lng) {
+      const centerDist = haversineMeters(lat, lng, BBSUTSD_CENTER.lat, BBSUTSD_CENTER.lng);
+      if (centerDist > 350 || lat < 27.50995 || lat > 27.51335 || lng < 68.7402 || lng > 68.74495) {
+        return true;
+      }
+      if (verifiedOsmBoundary && verifiedOsmBoundary.length >= 3) {
+        const insidePoly = isPointInPolygon(lat, lng, verifiedOsmBoundary);
+        if (!insidePoly && centerDist > 260) {
+          const nearManual = allLandmarkPins.some(p => haversineMeters(lat, lng, p.lat, p.lng) <= 35);
+          if (!nearManual) return true;
+        }
+      }
+      return false;
+    }
+
     function computeWalkableCampusRoute(originLat, originLng, originLabel, pin) {
       const destCoord = { lat: pin.lat, lng: pin.lng };
       const directDist = haversineMeters(originLat, originLng, destCoord.lat, destCoord.lng);
@@ -1072,6 +1073,16 @@
       if (directDist <= 28) {
         rawPoints = [{ lat: originLat, lng: originLng }, destCoord];
         rawNames = ['Walk directly to ' + (pin.label || pin.name)];
+      } else if (isOutsideCampusCoord(originLat, originLng)) {
+        const gatePin = allLandmarkPins.find(p => p.id === 'gate_main') || { lat: 27.510977, lng: 68.743880 };
+        if (pin.id === 'gate_main') {
+          rawPoints = [{ lat: originLat, lng: originLng }, { lat: gatePin.lat, lng: gatePin.lng }];
+          rawNames = ['Approach Road to Main Gates'];
+        } else {
+          const fromGate = solveShortestDynamicDijkstra(gatePin.lat, gatePin.lng, 'Main Gates (Old & New Buildings)', pin);
+          rawPoints = [{ lat: originLat, lng: originLng }].concat(fromGate.points);
+          rawNames = ['Approach Road to Main Gates'].concat(fromGate.segNames);
+        }
       } else {
         const solved = solveShortestDynamicDijkstra(originLat, originLng, originLabel, pin);
         rawPoints = solved.points;
@@ -1276,11 +1287,7 @@
     }
 
     function updateGuideLine() {
-      const origLat = customOrigin ? customOrigin.lat : userLat;
-      const origLng = customOrigin ? customOrigin.lng : userLng;
-      const origLabel = customOrigin ? customOrigin.label : 'Your Live GPS';
-
-      if (!selectedPinId || origLat === null || origLng === null) {
+      if (!selectedPinId) {
         clearRouteLayers();
         activeRouteData = null;
         if (window.AndroidBridge && window.AndroidBridge.onRouteCalculated) {
@@ -1291,23 +1298,26 @@
       const pin = allLandmarkPins.find(p => p.id === selectedPinId);
       if (!pin) return;
 
+      const gatePin = allLandmarkPins.find(p => p.id === 'gate_main') || { lat: 27.510977, lng: 68.743880 };
+      const origLat = customOrigin ? customOrigin.lat : (userLat !== null ? userLat : gatePin.lat);
+      const origLng = customOrigin ? customOrigin.lng : (userLng !== null ? userLng : gatePin.lng);
+      const origLabel = customOrigin ? customOrigin.label : (userLat !== null ? 'Your Live GPS' : 'Main Gates (Old & New Buildings)');
+
       const localRoute = computeWalkableCampusRoute(origLat, origLng, origLabel, pin);
       drawRenderedRoute(localRoute);
 
       const directDist = haversineMeters(origLat, origLng, pin.lat, pin.lng);
       const distFromCampus = haversineMeters(origLat, origLng, BBSUTSD_CENTER.lat, BBSUTSD_CENTER.lng);
-      if (directDist > 38 && distFromCampus <= 50000) {
+      const isOutsideCampus = isOutsideCampusCoord(origLat, origLng);
+      if (isOutsideCampus && directDist > 38 && distFromCampus <= 50000) {
         if (lastOsrmFetch && lastOsrmFetch.pinId === pin.id &&
             haversineMeters(lastOsrmFetch.lat, lastOsrmFetch.lng, origLat, origLng) < 12 &&
             lastOsrmFetch.route) {
           drawRenderedRoute(lastOsrmFetch.route);
           return;
         }
-        const isOutsideCampus = distFromCampus > 450;
-        const gatePin = allLandmarkPins.find(p => p.id === 'gate_main') || { lat: 27.510977, lng: 68.743880 };
-        const targetLat = isOutsideCampus ? gatePin.lat : pin.lat;
-        const targetLng = isOutsideCampus ? gatePin.lng : pin.lng;
-        const osrmUrl = `https://router.project-osrm.org/route/v1/foot/${origLng},${origLat};${targetLng},${targetLat}?overview=full&geometries=geojson&steps=true`;
+        // Outside approaches ALWAYS calculate road path strictly to Main Gates first
+        const osrmUrl = `https://router.project-osrm.org/route/v1/foot/${origLng},${origLat};${gatePin.lng},${gatePin.lat}?overview=full&geometries=geojson&steps=true`;
         const reqOrigin = { lat: origLat, lng: origLng, pinId: pin.id };
         fetch(osrmUrl)
           .then(r => r.ok ? r.json() : null)
@@ -1317,9 +1327,6 @@
             const osrm = data.routes[0];
             const roadPolyline = (osrm.geometry?.coordinates || []).map(c => ({ lat: c[1], lng: c[0] }));
             if (roadPolyline.length < 2) return;
-            if (!isOutsideCampus && localRoute.totalDistanceMeters < 180 && osrm.distance > localRoute.totalDistanceMeters * 1.65) {
-              return;
-            }
             const fullPolyline = [];
             if (haversineMeters(reqOrigin.lat, reqOrigin.lng, roadPolyline[0].lat, roadPolyline[0].lng) > 3) {
               fullPolyline.push({ lat: reqOrigin.lat, lng: reqOrigin.lng });
@@ -1341,7 +1348,7 @@
                 if (idx === 0) {
                   const b = segCoords.length >= 2
                     ? calculateBearingDeg(segCoords[0].lat, segCoords[0].lng, segCoords[1].lat, segCoords[1].lng)
-                    : calculateBearingDeg(reqOrigin.lat, reqOrigin.lng, targetLat, targetLng);
+                    : calculateBearingDeg(reqOrigin.lat, reqOrigin.lng, gatePin.lat, gatePin.lng);
                   verb = 'Head ' + compassDirLabel(b);
                 } else {
                   if (mod.includes('sharp right')) { action = 'SHARP_RIGHT'; verb = 'Make a sharp right'; }
@@ -1353,7 +1360,7 @@
                 }
                 const loc = s.maneuver?.location;
                 const pt = loc ? { lat: loc[1], lng: loc[0] } : segCoords[0];
-                const rName = (s.name && s.name.trim()) ? s.name : (isOutsideCampus ? 'City Approach Road' : 'Campus Street');
+                const rName = (s.name && s.name.trim()) ? s.name : 'City Approach Road';
                 const rDist = Math.round(s.distance || 0);
                 roadSteps.push({
                   action,
@@ -1366,12 +1373,19 @@
               });
             }
 
-            if (isOutsideCampus) {
-              const campusPart = computeWalkableCampusRoute(gatePin.lat, gatePin.lng, 'Main Entrance Gate', pin);
-              const mergedDist = Math.round((osrm.distance || 0) + campusPart.totalDistanceMeters);
+            if (pin.id === 'gate_main') {
+              roadSteps.push({
+                action: 'ARRIVE',
+                instruction: `Arrive at ${pin.name}`,
+                streetName: 'Destination',
+                distanceMeters: 0,
+                coord: { lat: gatePin.lat, lng: gatePin.lng },
+                segmentCoords: [{ lat: gatePin.lat, lng: gatePin.lng }]
+              });
+              const mergedDist = Math.round(osrm.distance || 0);
               const combined = {
-                polyline: fullPolyline.concat(campusPart.polyline),
-                steps: roadSteps.concat(campusPart.steps),
+                polyline: fullPolyline,
+                steps: roadSteps,
                 totalDistanceMeters: mergedDist,
                 estimatedMinutes: Math.max(1, Math.round(mergedDist / 75))
               };
@@ -1380,38 +1394,11 @@
               return;
             }
 
-            const lastRoadPt = roadPolyline[roadPolyline.length - 1];
-            const entranceGap = haversineMeters(lastRoadPt.lat, lastRoadPt.lng, pin.lat, pin.lng);
-            let extraDist = 0;
-            if (entranceGap > 3) {
-              fullPolyline.push({ lat: pin.lat, lng: pin.lng });
-              extraDist = entranceGap;
-              const tailB = roadPolyline.length >= 2
-                ? calculateBearingDeg(roadPolyline[roadPolyline.length - 2].lat, roadPolyline[roadPolyline.length - 2].lng, lastRoadPt.lat, lastRoadPt.lng)
-                : 0;
-              const spurB = calculateBearingDeg(lastRoadPt.lat, lastRoadPt.lng, pin.lat, pin.lng);
-              const entTurn = classifyTurnDelta(spurB - tailB);
-              roadSteps.push({
-                action: entTurn.action,
-                instruction: `${entTurn.verb} toward ${pin.label || pin.name} Entrance • ${Math.round(entranceGap)} m`,
-                streetName: (pin.label || pin.name) + ' Walk',
-                distanceMeters: Math.round(entranceGap),
-                coord: lastRoadPt,
-                segmentCoords: [lastRoadPt, { lat: pin.lat, lng: pin.lng }]
-              });
-            }
-            roadSteps.push({
-              action: 'ARRIVE',
-              instruction: `Arrive at ${pin.name}`,
-              streetName: 'Destination',
-              distanceMeters: 0,
-              coord: { lat: pin.lat, lng: pin.lng },
-              segmentCoords: [{ lat: pin.lat, lng: pin.lng }]
-            });
-            const mergedDist = Math.round((osrm.distance || 0) + extraDist);
+            const campusPart = computeWalkableCampusRoute(gatePin.lat, gatePin.lng, 'Main Gates (Old & New Buildings)', pin);
+            const mergedDist = Math.round((osrm.distance || 0) + campusPart.totalDistanceMeters);
             const combined = {
-              polyline: fullPolyline,
-              steps: roadSteps,
+              polyline: fullPolyline.concat(campusPart.polyline),
+              steps: roadSteps.concat(campusPart.steps),
               totalDistanceMeters: mergedDist,
               estimatedMinutes: Math.max(1, Math.round(mergedDist / 75))
             };
@@ -1911,11 +1898,11 @@
       });
 
       leafletSatLayer = L.tileLayer(
-        'https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+        'https://mt{s}.google.com/vt/lyrs=y&apistyle=s.t%3A2%7Cp.v%3Aoff%2Cs.t%3A4%7Cp.v%3Aoff&x={x}&y={y}&z={z}',
         { subdomains: ['0', '1', '2', '3'], maxNativeZoom: 20, maxZoom: 21 }
       );
       leafletStreetLayer = L.tileLayer(
-        'https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+        'https://mt{s}.google.com/vt/lyrs=m&apistyle=s.t%3A2%7Cp.v%3Aoff%2Cs.t%3A4%7Cp.v%3Aoff&x={x}&y={y}&z={z}',
         { subdomains: ['0', '1', '2', '3'], maxNativeZoom: 20, maxZoom: 21 }
       );
 

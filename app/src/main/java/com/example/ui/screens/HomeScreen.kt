@@ -530,9 +530,9 @@ fun HomeScreen(
                     }
 
                     CampusZoneOverviewCard(
-                        badge = "Central Spine • Hami Road Gate",
+                        badge = "Central Spine • Main Gates",
                         title = "Campus Dividing Road",
-                        summary = "Main road connecting Main Gate, Campus Masjid, University Canteen, Hostels, and the Transport Terminal.",
+                        summary = "Main road connecting Main Gates, Campus Masjid, University Canteen, Hostels, and the Points Stop terminal.",
                         containerColor = PixelBlueTint.copy(alpha = 0.55f),
                         borderColor = PixelBlueContainer,
                         badgeBg = PixelBlueTint,

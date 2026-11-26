@@ -204,4 +204,13 @@ class ExampleUnitTest {
             assertTrue("Bus ${route.pointNumber} should have departure time", route.afternoonDepartureTime.isNotBlank())
         }
     }
+
+    @Test
+    fun testDefaultPresetOriginIsMainGatesOnly() {
+        assertEquals(1, CampusRepository.PRESET_USER_LOCATIONS.size)
+        val preset = CampusRepository.PRESET_USER_LOCATIONS.first()
+        assertTrue(preset.label.contains("Main Gates"))
+        assertEquals(27.510977, preset.latitude, 0.0001)
+        assertEquals(68.743880, preset.longitude, 0.0001)
+    }
 }

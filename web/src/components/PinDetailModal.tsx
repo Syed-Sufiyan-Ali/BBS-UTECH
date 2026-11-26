@@ -39,14 +39,15 @@ export function PinDetailModal({
 
   if (!pin) return null;
 
-  const distMeters = userLocation
-    ? calculateDistanceMeters(
-        userLocation.latitude,
-        userLocation.longitude,
-        pin.latitude,
-        pin.longitude
-      )
-    : null;
+  const originLat = userLocation?.latitude ?? 27.510977;
+  const originLng = userLocation?.longitude ?? 68.74388;
+  const originLabel = userLocation?.label || 'Main Gates (Old & New Buildings)';
+  const distMeters = calculateDistanceMeters(
+    originLat,
+    originLng,
+    pin.latitude,
+    pin.longitude
+  );
 
   const isTransportPin =
     pin.id === 'campus_transport_office' || pin.id === 'campus_transport';
@@ -96,21 +97,21 @@ export function PinDetailModal({
         <p className="mt-1 text-sm text-[#5F6368]">{pin.subTitle}</p>
 
         {/* Distance Strip */}
-        {distMeters !== null && (
-          <div className="mt-4 flex items-center gap-3 rounded-2xl border border-[#CBE6D3] bg-[#E6F4EA] px-4 py-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#0F9D58] text-white">
-              <Navigation className="h-4 w-4" />
+        <div className="mt-4 flex items-center gap-3 rounded-2xl border border-[#CBE6D3] bg-[#E6F4EA] px-4 py-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#0F9D58] text-white">
+            <Navigation className="h-4 w-4" />
+          </div>
+          <div>
+            <div className="text-xs font-bold text-[#137333]">
+              {formatDistance(distMeters)} away • {estimateWalkMinutes(distMeters)} min walk
             </div>
-            <div>
-              <div className="text-xs font-bold text-[#137333]">
-                {formatDistance(distMeters)} away • {estimateWalkMinutes(distMeters)} min walk
-              </div>
-              <div className="text-xs text-[#1E4620]">
-                From {userLocation?.isSimulated ? 'selected preset' : 'live GPS'} ({userLocation?.label})
-              </div>
+            <div className="text-xs text-[#1E4620]">
+              {userLocation && !userLocation.isSimulated
+                ? `From live GPS (${originLabel})`
+                : `From ${originLabel}`}
             </div>
           </div>
-        )}
+        </div>
 
         <div className="my-5 border-t border-[#E2E8F0]" />
 

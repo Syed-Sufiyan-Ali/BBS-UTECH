@@ -28,12 +28,7 @@ class CampusRepository {
         const val CAMPUS_RADIUS_METERS = 360.0 // Full campus grounds span
 
         val PRESET_USER_LOCATIONS = listOf(
-            UserLocation(27.510977, 68.743880, true, "Main Gates (Old & New Buildings)"),
-            UserLocation(27.512831, 68.742349, true, "Central Library"),
-            UserLocation(27.511694, 68.742806, true, "Student Points Stop"),
-            UserLocation(27.512277, 68.742401, true, "Smart Class Room (CR-101 to CR-106)"),
-            UserLocation(27.513138, 68.741641, true, "BBSUTSD Central Cafeteria"),
-            UserLocation(27.510500, 68.744800, true, "New Building Mosque")
+            UserLocation(27.510977, 68.743880, true, "Main Gates (Old & New Buildings)")
         )
     }
 
