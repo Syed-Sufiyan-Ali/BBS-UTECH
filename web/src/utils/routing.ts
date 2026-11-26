@@ -103,6 +103,20 @@ const GRAPH_NODES: Record<string, GraphNode> = {
   electronics_lab_node: { id: 'electronics_lab_node', lat: 27.5108, lng: 68.7447, label: 'Electronics Lab' },
   computer_lab_1_node: { id: 'computer_lab_1_node', lat: 27.5108, lng: 68.7447, label: 'Computer Lab 1 (2F)' },
   mosque_new_bldg: { id: 'mosque_new_bldg', lat: 27.5105, lng: 68.7448, label: 'New Building Mosque' },
+
+  // North & South Wings Road Junctions + New Manual Landmark Nodes
+  rd_north_audi_jct: { id: 'rd_north_audi_jct', lat: 27.513343, lng: 68.7421, label: 'Post Grad & Audi Old Lane' },
+  rd_vc_swo_jct: { id: 'rd_vc_swo_jct', lat: 27.513343, lng: 68.7427, label: 'VC Secretariat & SWO Junction' },
+  rd_east_admin_walk: { id: 'rd_east_admin_walk', lat: 27.5128, lng: 68.7427, label: 'East Admin Block Walkway' },
+  rd_nizam_corridor: { id: 'rd_nizam_corridor', lat: 27.51228, lng: 68.7427, label: 'Smart Class & Memon Office Junction' },
+  rd_new_audi_jct: { id: 'rd_new_audi_jct', lat: 27.50895, lng: 68.74191, label: 'South Auditorium Road' },
+  rd_new_audi_turn: { id: 'rd_new_audi_turn', lat: 27.50915, lng: 68.74235, label: 'New Auditorium Approach' },
+  new_audi_node: { id: 'new_audi_node', lat: 27.5086, lng: 68.7418, label: 'New Audi' },
+  post_grad_office_node: { id: 'post_grad_office_node', lat: 27.5134, lng: 68.7421, label: 'Post Grad Office' },
+  audi_old_node: { id: 'audi_old_node', lat: 27.5134, lng: 68.7421, label: 'Audi Old' },
+  vc_secretariat_node: { id: 'vc_secretariat_node', lat: 27.5132, lng: 68.7427, label: 'VC Secretary Office' },
+  swo_office_node: { id: 'swo_office_node', lat: 27.5132, lng: 68.7427, label: 'SWO Office' },
+  nizam_memon_office_node: { id: 'nizam_memon_office_node', lat: 27.5124, lng: 68.7427, label: 'Nizam Uddin Memon Office' },
 };
 
 const EDGE_DEFS: [string, string, string][] = [
@@ -157,6 +171,27 @@ const EDGE_DEFS: [string, string, string][] = [
   ['electronics_lab_node', 'computer_lab_1_node', 'Stairway to Computer Lab 1 (2F)'],
   ['electronics_lab_node', 'nb_mosque_turn', 'New Building South Walkway'],
   ['nb_mosque_turn', 'mosque_new_bldg', 'New Building Mosque Walk'],
+
+  // North Admin & Auditoriums Wing (Cafeteria North -> Post Grad / Audi Old -> VC Sec / SWO -> Nizam Memon -> Central Spine)
+  ['rd_cafeteria_nw', 'rd_north_audi_jct', 'North Auditorium Lane'],
+  ['rd_north_audi_jct', 'post_grad_office_node', 'Post Grad Office Entrance'],
+  ['rd_north_audi_jct', 'audi_old_node', 'Audi Old Entrance'],
+  ['rd_north_audi_jct', 'rd_vc_swo_jct', 'North Executive Wing Lane'],
+  ['rd_vc_swo_jct', 'vc_secretariat_node', 'VC Secretary Office Walk'],
+  ['rd_vc_swo_jct', 'swo_office_node', 'SWO Office Walk'],
+  ['vc_secretariat_node', 'swo_office_node', 'Admin & Welfare Shared Block'],
+  ['vc_secretariat_node', 'rd_east_admin_walk', 'East Admin Block Walkway'],
+  ['rd_east_admin_walk', 'central_library_entry', 'Library East Connector'],
+  ['rd_east_admin_walk', 'nizam_memon_office_node', 'East Admin Block Walkway'],
+  ['nizam_memon_office_node', 'rd_nizam_corridor', 'Memon Office Corridor'],
+  ['rd_nizam_corridor', 'smart_class_entry', 'Smart Class East Walk'],
+  ['rd_nizam_corridor', 'rd_central_bend', 'Points Terminal North Walk'],
+
+  // South Campus New Auditorium Wing
+  ['rd_south_west_ave', 'rd_new_audi_jct', 'South Auditorium Road'],
+  ['rd_boulevard_sw', 'rd_new_audi_turn', 'South Boulevard Auditorium Turn'],
+  ['rd_new_audi_turn', 'rd_new_audi_jct', 'New Auditorium Approach'],
+  ['rd_new_audi_jct', 'new_audi_node', 'New Audi Entrance'],
 ];
 
 const PIN_TO_NODE: Record<string, string> = {
@@ -170,6 +205,12 @@ const PIN_TO_NODE: Record<string, string> = {
   electronics_lab: 'electronics_lab_node',
   computer_lab_1: 'computer_lab_1_node',
   campus_atm: 'atm_kiosk',
+  new_audi: 'new_audi_node',
+  post_grad_office: 'post_grad_office_node',
+  audi_old: 'audi_old_node',
+  vc_secretariat_office: 'vc_secretariat_node',
+  swo_office: 'swo_office_node',
+  nizam_uddin_memon_office: 'nizam_memon_office_node',
 };
 
 function projectPointOntoSegment(
@@ -274,12 +315,15 @@ function buildCampusAndOsmGraph(osmRoads?: LatLng[][]): DynamicGraph {
     // Bridge road junctions on our street backbone to nearby OSM road nodes (<= 16m)
     const anchorRoadIds = [
       'rd_cafeteria_nw',
+      'rd_north_audi_jct',
+      'rd_vc_swo_jct',
       'rd_atm_front',
       'rd_library_front',
       'rd_smart_front',
       'rd_west_spine_jct',
       'rd_points_jct',
       'rd_gates_jct',
+      'rd_new_audi_jct',
     ];
     for (const aId of anchorRoadIds) {
       const aNode = nodes[aId];
@@ -711,8 +755,8 @@ export function isOutsideCampusCoord(
   );
   if (
     centerDist > 350 ||
-    coord.lat < 27.50995 ||
-    coord.lat > 27.51335 ||
+    coord.lat < 27.50835 ||
+    coord.lat > 27.51365 ||
     coord.lng < 68.7402 ||
     coord.lng > 68.74495
   ) {

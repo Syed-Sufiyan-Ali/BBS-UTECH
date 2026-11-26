@@ -759,7 +759,20 @@
       dr_saleem_office_node: { id: 'dr_saleem_office_node', lat: 27.5109, lng: 68.7445, label: 'Dr. Saleem HOD Office' },
       electronics_lab_node: { id: 'electronics_lab_node', lat: 27.5108, lng: 68.7447, label: 'Electronics Lab' },
       computer_lab_1_node: { id: 'computer_lab_1_node', lat: 27.5108, lng: 68.7447, label: 'Computer Lab 1 (2F)' },
-      mosque_new_bldg: { id: 'mosque_new_bldg', lat: 27.5105, lng: 68.7448, label: 'New Building Mosque' }
+      mosque_new_bldg: { id: 'mosque_new_bldg', lat: 27.5105, lng: 68.7448, label: 'New Building Mosque' },
+
+      rd_north_audi_jct: { id: 'rd_north_audi_jct', lat: 27.513343, lng: 68.7421, label: 'Post Grad & Audi Old Lane' },
+      rd_vc_swo_jct: { id: 'rd_vc_swo_jct', lat: 27.513343, lng: 68.7427, label: 'VC Secretariat & SWO Junction' },
+      rd_east_admin_walk: { id: 'rd_east_admin_walk', lat: 27.5128, lng: 68.7427, label: 'East Admin Block Walkway' },
+      rd_nizam_corridor: { id: 'rd_nizam_corridor', lat: 27.51228, lng: 68.7427, label: 'Smart Class & Memon Office Junction' },
+      rd_new_audi_jct: { id: 'rd_new_audi_jct', lat: 27.50895, lng: 68.74191, label: 'South Auditorium Road' },
+      rd_new_audi_turn: { id: 'rd_new_audi_turn', lat: 27.50915, lng: 68.74235, label: 'New Auditorium Approach' },
+      new_audi_node: { id: 'new_audi_node', lat: 27.5086, lng: 68.7418, label: 'New Audi' },
+      post_grad_office_node: { id: 'post_grad_office_node', lat: 27.5134, lng: 68.7421, label: 'Post Grad Office' },
+      audi_old_node: { id: 'audi_old_node', lat: 27.5134, lng: 68.7421, label: 'Audi Old' },
+      vc_secretariat_node: { id: 'vc_secretariat_node', lat: 27.5132, lng: 68.7427, label: 'VC Secretary Office' },
+      swo_office_node: { id: 'swo_office_node', lat: 27.5132, lng: 68.7427, label: 'SWO Office' },
+      nizam_memon_office_node: { id: 'nizam_memon_office_node', lat: 27.5124, lng: 68.7427, label: 'Nizam Uddin Memon Office' }
     };
 
     const EDGE_DEFS = [
@@ -808,7 +821,26 @@
       ['nb_labs_corner', 'electronics_lab_node', 'Electronics Lab Wing'],
       ['electronics_lab_node', 'computer_lab_1_node', 'Stairway to Computer Lab 1 (2F)'],
       ['electronics_lab_node', 'nb_mosque_turn', 'New Building South Walkway'],
-      ['nb_mosque_turn', 'mosque_new_bldg', 'New Building Mosque Walk']
+      ['nb_mosque_turn', 'mosque_new_bldg', 'New Building Mosque Walk'],
+
+      ['rd_cafeteria_nw', 'rd_north_audi_jct', 'North Auditorium Lane'],
+      ['rd_north_audi_jct', 'post_grad_office_node', 'Post Grad Office Entrance'],
+      ['rd_north_audi_jct', 'audi_old_node', 'Audi Old Entrance'],
+      ['rd_north_audi_jct', 'rd_vc_swo_jct', 'North Executive Wing Lane'],
+      ['rd_vc_swo_jct', 'vc_secretariat_node', 'VC Secretary Office Walk'],
+      ['rd_vc_swo_jct', 'swo_office_node', 'SWO Office Walk'],
+      ['vc_secretariat_node', 'swo_office_node', 'Admin & Welfare Shared Block'],
+      ['vc_secretariat_node', 'rd_east_admin_walk', 'East Admin Block Walkway'],
+      ['rd_east_admin_walk', 'central_library_entry', 'Library East Connector'],
+      ['rd_east_admin_walk', 'nizam_memon_office_node', 'East Admin Block Walkway'],
+      ['nizam_memon_office_node', 'rd_nizam_corridor', 'Memon Office Corridor'],
+      ['rd_nizam_corridor', 'smart_class_entry', 'Smart Class East Walk'],
+      ['rd_nizam_corridor', 'rd_central_bend', 'Points Terminal North Walk'],
+
+      ['rd_south_west_ave', 'rd_new_audi_jct', 'South Auditorium Road'],
+      ['rd_boulevard_sw', 'rd_new_audi_turn', 'South Boulevard Auditorium Turn'],
+      ['rd_new_audi_turn', 'rd_new_audi_jct', 'New Auditorium Approach'],
+      ['rd_new_audi_jct', 'new_audi_node', 'New Audi Entrance']
     ];
 
     const PIN_TO_NODE = {
@@ -821,7 +853,13 @@
       gate_main: 'main_gates_entry',
       electronics_lab: 'electronics_lab_node',
       computer_lab_1: 'computer_lab_1_node',
-      campus_atm: 'atm_kiosk'
+      campus_atm: 'atm_kiosk',
+      new_audi: 'new_audi_node',
+      post_grad_office: 'post_grad_office_node',
+      audi_old: 'audi_old_node',
+      vc_secretariat_office: 'vc_secretariat_node',
+      swo_office: 'swo_office_node',
+      nizam_uddin_memon_office: 'nizam_memon_office_node'
     };
 
     function calculateBearingDeg(lat1, lon1, lat2, lon2) {
@@ -909,7 +947,7 @@
           });
         });
 
-        ['rd_cafeteria_nw','rd_atm_front','rd_library_front','rd_smart_front','rd_west_spine_jct','rd_points_jct','rd_gates_jct'].forEach(aId => {
+        ['rd_cafeteria_nw','rd_north_audi_jct','rd_vc_swo_jct','rd_atm_front','rd_library_front','rd_smart_front','rd_west_spine_jct','rd_points_jct','rd_gates_jct','rd_new_audi_jct'].forEach(aId => {
           const aNode = nodes[aId];
           if (!aNode) return;
           let bestId = null, bestDist = Infinity;
@@ -1051,7 +1089,7 @@
 
     function isOutsideCampusCoord(lat, lng) {
       const centerDist = haversineMeters(lat, lng, BBSUTSD_CENTER.lat, BBSUTSD_CENTER.lng);
-      if (centerDist > 350 || lat < 27.50995 || lat > 27.51335 || lng < 68.7402 || lng > 68.74495) {
+      if (centerDist > 350 || lat < 27.50835 || lat > 27.51365 || lng < 68.7402 || lng > 68.74495) {
         return true;
       }
       if (verifiedOsmBoundary && verifiedOsmBoundary.length >= 3) {
@@ -1418,6 +1456,7 @@
       if (id.startsWith('hostel_')) return '<svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>';
       if (id === 'gate_main') return '<svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V9a7 7 0 0 1 14 0v12"/><path d="M9 21v-6a3 3 0 0 1 6 0v6"/></svg>';
       if (id === 'new_g_medical') return '<svg viewBox="0 0 24 24"><path d="M12 6v12"/><path d="M6 12h12"/><rect x="3" y="3" width="18" height="18" rx="4"/></svg>';
+      if (id === 'new_audi' || id === 'audi_old') return '<svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="12" rx="2"/><path d="M7 20h10"/><path d="M12 16v4"/><path d="M8 10h8"/></svg>';
       if (id.startsWith('ws_') || id === 'campus_workshops') return '<svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>';
       switch (pin.category) {
         case 'ADMIN': return '<svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V8l7-4 7 4v13"/><path d="M9 21v-5h6v5"/><path d="M9 11h.01"/><path d="M15 11h.01"/></svg>';

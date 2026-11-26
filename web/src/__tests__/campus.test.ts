@@ -24,8 +24,8 @@ import {
 } from '../utils/spiderfy';
 
 describe('BBSUTSD Web Data & Geospatial Logic', () => {
-  it('contains only the 10 manually added BBSUTSD landmark pins', () => {
-    expect(CAMPUS_PINS.length).toBe(10);
+  it('contains all 16 manually added BBSUTSD landmark pins', () => {
+    expect(CAMPUS_PINS.length).toBe(16);
     const ids = new Set(CAMPUS_PINS.map((p) => p.id));
     expect(ids.has('old_g_vc')).toBe(false);
     expect(ids.has('hod_english')).toBe(false);
@@ -39,6 +39,12 @@ describe('BBSUTSD Web Data & Geospatial Logic', () => {
     expect(ids.has('electronics_lab')).toBe(true);
     expect(ids.has('computer_lab_1')).toBe(true);
     expect(ids.has('campus_atm')).toBe(true);
+    expect(ids.has('new_audi')).toBe(true);
+    expect(ids.has('post_grad_office')).toBe(true);
+    expect(ids.has('audi_old')).toBe(true);
+    expect(ids.has('vc_secretariat_office')).toBe(true);
+    expect(ids.has('swo_office')).toBe(true);
+    expect(ids.has('nizam_uddin_memon_office')).toBe(true);
   });
 
   it('includes Old Complex, New Complex, and Dividing Road overlays', () => {
@@ -91,6 +97,12 @@ describe('BBSUTSD Web Data & Geospatial Logic', () => {
     expect(searchPins(CAMPUS_PINS, 'electronics lab').some((p) => p.id === 'electronics_lab')).toBe(true);
     expect(searchPins(CAMPUS_PINS, 'computer lab 1').some((p) => p.id === 'computer_lab_1')).toBe(true);
     expect(searchPins(CAMPUS_PINS, 'atm').some((p) => p.id === 'campus_atm')).toBe(true);
+    expect(searchPins(CAMPUS_PINS, 'new audi').some((p) => p.id === 'new_audi')).toBe(true);
+    expect(searchPins(CAMPUS_PINS, 'post grad').some((p) => p.id === 'post_grad_office')).toBe(true);
+    expect(searchPins(CAMPUS_PINS, 'audi old').some((p) => p.id === 'audi_old')).toBe(true);
+    expect(searchPins(CAMPUS_PINS, 'vc secrete').some((p) => p.id === 'vc_secretariat_office')).toBe(true);
+    expect(searchPins(CAMPUS_PINS, 'swo').some((p) => p.id === 'swo_office')).toBe(true);
+    expect(searchPins(CAMPUS_PINS, 'nizam uddin memon').some((p) => p.id === 'nizam_uddin_memon_office')).toBe(true);
   });
 
   it('computes walking distance and valid non-empty schedule/faculty pin references', () => {
@@ -214,21 +226,31 @@ describe('BBSUTSD Web Data & Geospatial Logic', () => {
     expect(route.totalDistanceMeters).toBeLessThanOrEqual(Math.ceil(directMeters) + 2);
   });
 
-  it('clusters overlapping building pins (electronics_lab & computer_lab_1) while keeping hod_prof_saleem standalone', () => {
+  it('clusters overlapping building pins while keeping standalone offices separate', () => {
     const clusters = groupOverlappingPins(CAMPUS_PINS, 6);
-    expect(clusters.length).toBe(9);
+    expect(clusters.length).toBe(13);
 
-    const sharedCluster = clusters.find((c) => c.pins.length > 1);
-    expect(sharedCluster).toBeDefined();
-    expect(sharedCluster!.pins.map((p) => p.id).sort()).toEqual([
-      'computer_lab_1',
-      'electronics_lab',
-    ]);
+    const multiClusters = clusters
+      .filter((c) => c.pins.length > 1)
+      .map((c) => c.pins.map((p) => p.id).sort());
+    expect(multiClusters.length).toBe(3);
+    expect(multiClusters).toContainEqual(['computer_lab_1', 'electronics_lab']);
+    expect(multiClusters).toContainEqual(['audi_old', 'post_grad_office']);
+    expect(multiClusters).toContainEqual(['swo_office', 'vc_secretariat_office']);
 
-    const key = findClusterKeyForPin(clusters, 'computer_lab_1');
-    expect(key).toBe(sharedCluster!.key);
-    expect(findClusterKeyForPin(clusters, 'electronics_lab')).toBe(sharedCluster!.key);
+    expect(findClusterKeyForPin(clusters, 'computer_lab_1')).not.toBeNull();
+    expect(findClusterKeyForPin(clusters, 'electronics_lab')).toBe(
+      findClusterKeyForPin(clusters, 'computer_lab_1')
+    );
+    expect(findClusterKeyForPin(clusters, 'post_grad_office')).toBe(
+      findClusterKeyForPin(clusters, 'audi_old')
+    );
+    expect(findClusterKeyForPin(clusters, 'vc_secretariat_office')).toBe(
+      findClusterKeyForPin(clusters, 'swo_office')
+    );
     expect(findClusterKeyForPin(clusters, 'hod_prof_saleem')).toBeNull();
+    expect(findClusterKeyForPin(clusters, 'nizam_uddin_memon_office')).toBeNull();
+    expect(findClusterKeyForPin(clusters, 'new_audi')).toBeNull();
     expect(findClusterKeyForPin(clusters, 'campus_atm')).toBeNull();
 
     const twoOffsets = computeCircleOffsets(2);
@@ -304,27 +326,32 @@ describe('BBSUTSD Web Data & Geospatial Logic', () => {
     expect(PRESET_USER_LOCATIONS[0].latitude).toBeCloseTo(27.510977, 5);
     expect(PRESET_USER_LOCATIONS[0].longitude).toBeCloseTo(68.74388, 5);
 
-    // Every single one of the 10 manual pins must be inside campus bounds
+    // Every single one of the 16 manual pins must be inside campus bounds
     for (const pin of CAMPUS_PINS) {
       expect(isOutsideCampusCoord({ lat: pin.latitude, lng: pin.longitude })).toBe(false);
     }
 
-    // Outside approach roads (South approach & East back perimeter road) must be flagged outside
-    expect(isOutsideCampusCoord({ lat: 27.5085, lng: 68.742 })).toBe(true);
+    // Outside approach roads (South approach beyond New Audi & East back perimeter road) must be flagged outside
+    expect(isOutsideCampusCoord({ lat: 27.5068, lng: 68.742 })).toBe(true);
     expect(isOutsideCampusCoord({ lat: 27.510959, lng: 68.745268 })).toBe(true);
 
     const pointsStop = CAMPUS_PINS.find((p) => p.id === 'campus_transport')!;
     const mainGates = CAMPUS_PINS.find((p) => p.id === 'gate_main')!;
     const electronicsLab = CAMPUS_PINS.find((p) => p.id === 'electronics_lab')!;
     const mosque = CAMPUS_PINS.find((p) => p.id === 'new_building_mosque')!;
+    const newAudi = CAMPUS_PINS.find((p) => p.id === 'new_audi')!;
+    const postGrad = CAMPUS_PINS.find((p) => p.id === 'post_grad_office')!;
+    const vcSec = CAMPUS_PINS.find((p) => p.id === 'vc_secretariat_office')!;
+    const nizamOffice = CAMPUS_PINS.find((p) => p.id === 'nizam_uddin_memon_office')!;
 
-    // Routes to Electronics Lab & Mosque must never pass through the East small gate (lng > 68.74485)
-    for (const dest of [electronicsLab, mosque]) {
+    // Routes to Electronics Lab, Mosque, and all new pins must stay strictly inside without using the East small gate (lng > 68.74485)
+    for (const dest of [electronicsLab, mosque, newAudi, postGrad, vcSec, nizamOffice]) {
       const fromGate = computeCampusRoute(
         { lat: mainGates.latitude, lng: mainGates.longitude },
         'Main Gates',
         dest
       );
+      expect(fromGate.polyline.length).toBeGreaterThan(2);
       expect(fromGate.polyline.every((pt) => pt.lng <= 68.74485)).toBe(true);
 
       const fromPoints = computeCampusRoute(
@@ -332,11 +359,12 @@ describe('BBSUTSD Web Data & Geospatial Logic', () => {
         'Points Stop',
         dest
       );
+      expect(fromPoints.polyline.length).toBeGreaterThan(2);
       expect(fromPoints.polyline.every((pt) => pt.lng <= 68.74485)).toBe(true);
     }
 
     // Outside approach fallback routes strictly via Main Gates first
-    const outsideOrigin = { lat: 27.5085, lng: 68.742 };
+    const outsideOrigin = { lat: 27.5068, lng: 68.742 };
     const outsideRoute = computeCampusRoute(outsideOrigin, 'Approach', electronicsLab);
     expect(
       outsideRoute.polyline.some(

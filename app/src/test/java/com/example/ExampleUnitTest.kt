@@ -21,7 +21,7 @@ class ExampleUnitTest {
     @Test
     fun testCampusPinsCompleteness() {
         val pins = repository.allPins.value
-        assertEquals("Should contain only the 10 manually added campus pins", 10, pins.size)
+        assertEquals("Should contain all 16 manually added campus pins", 16, pins.size)
 
         val ids = pins.map { it.id }.toSet()
         assertTrue(!ids.contains("old_g_vc"))
@@ -36,6 +36,12 @@ class ExampleUnitTest {
         assertTrue(ids.contains("electronics_lab"))
         assertTrue(ids.contains("computer_lab_1"))
         assertTrue(ids.contains("campus_atm"))
+        assertTrue(ids.contains("new_audi"))
+        assertTrue(ids.contains("post_grad_office"))
+        assertTrue(ids.contains("audi_old"))
+        assertTrue(ids.contains("vc_secretariat_office"))
+        assertTrue(ids.contains("swo_office"))
+        assertTrue(ids.contains("nizam_uddin_memon_office"))
 
         val pointsStop = repository.getPinById("campus_transport")!!
         assertEquals(27.511694, pointsStop.latitude, 0.0001)
@@ -69,6 +75,30 @@ class ExampleUnitTest {
         val atm = repository.getPinById("campus_atm")!!
         assertEquals(27.513132, atm.latitude, 0.0001)
         assertEquals(68.741812, atm.longitude, 0.0001)
+
+        val newAudi = repository.getPinById("new_audi")!!
+        assertEquals(27.508600, newAudi.latitude, 0.0001)
+        assertEquals(68.741800, newAudi.longitude, 0.0001)
+
+        val postGrad = repository.getPinById("post_grad_office")!!
+        assertEquals(27.513400, postGrad.latitude, 0.0001)
+        assertEquals(68.742100, postGrad.longitude, 0.0001)
+
+        val audiOld = repository.getPinById("audi_old")!!
+        assertEquals(27.513400, audiOld.latitude, 0.0001)
+        assertEquals(68.742100, audiOld.longitude, 0.0001)
+
+        val vcSec = repository.getPinById("vc_secretariat_office")!!
+        assertEquals(27.513200, vcSec.latitude, 0.0001)
+        assertEquals(68.742700, vcSec.longitude, 0.0001)
+
+        val swo = repository.getPinById("swo_office")!!
+        assertEquals(27.513200, swo.latitude, 0.0001)
+        assertEquals(68.742700, swo.longitude, 0.0001)
+
+        val memon = repository.getPinById("nizam_uddin_memon_office")!!
+        assertEquals(27.512400, memon.latitude, 0.0001)
+        assertEquals(68.742700, memon.longitude, 0.0001)
     }
 
     @Test
@@ -111,6 +141,13 @@ class ExampleUnitTest {
 
         val searchAtm = repository.searchPins("atm")
         assertTrue("Searching for atm should find Campus ATM", searchAtm.any { it.id == "campus_atm" })
+
+        assertTrue(repository.searchPins("new audi").any { it.id == "new_audi" })
+        assertTrue(repository.searchPins("post grad").any { it.id == "post_grad_office" })
+        assertTrue(repository.searchPins("audi old").any { it.id == "audi_old" })
+        assertTrue(repository.searchPins("vc secrete").any { it.id == "vc_secretariat_office" })
+        assertTrue(repository.searchPins("swo").any { it.id == "swo_office" })
+        assertTrue(repository.searchPins("nizam uddin memon").any { it.id == "nizam_uddin_memon_office" })
     }
 
     @Test
@@ -151,7 +188,13 @@ class ExampleUnitTest {
             "Main Gates",
             "Electronics Lab",
             "Computer Lab 1 (2F)",
-            "ATM"
+            "ATM",
+            "New Audi",
+            "Post Grad Office",
+            "Audi Old",
+            "VC Secretary Office",
+            "SWO Office",
+            "Nizam Uddin Memon Office"
         )
         expectedLabels.forEach { expected ->
             assertTrue("Missing expected BBSUTSD landmark label: $expected", labels.contains(expected))
