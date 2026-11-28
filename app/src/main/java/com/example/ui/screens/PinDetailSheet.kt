@@ -21,6 +21,8 @@ import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DirectionsBus
 import androidx.compose.material.icons.filled.DirectionsWalk
+import androidx.compose.material.icons.filled.Explore
+import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.NearMe
 import androidx.compose.material.icons.filled.Person
@@ -95,6 +97,14 @@ fun PinDetailSheet(
         pin.latitude,
         pin.longitude
     ).toInt()
+    val bearingDeg = repository.calculateBearing(
+        originLat,
+        originLng,
+        pin.latitude,
+        pin.longitude
+    )
+    val directionLabel = repository.formatCompassDirection(bearingDeg)
+    val areaSummary = repository.getCampusAreaSummary(pin)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -199,46 +209,88 @@ fun PinDetailSheet(
                 shape = RoundedCornerShape(20.dp),
                 border = BorderStroke(1.dp, CampusEmeraldBorder)
             ) {
-                Row(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 14.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Surface(
-                        color = PureWhite,
-                        shape = CircleShape,
-                        modifier = Modifier.size(34.dp)
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                imageVector = Icons.Default.NearMe,
-                                contentDescription = null,
-                                tint = CampusEmeraldDark,
-                                modifier = Modifier.size(18.dp)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Surface(
+                            color = PureWhite,
+                            shape = CircleShape,
+                            modifier = Modifier.size(34.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.NearMe,
+                                    contentDescription = null,
+                                    tint = CampusEmeraldDark,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            val distText = if (distanceMeters < 1000) "$distanceMeters m away" else String.format("%.1f km away", distanceMeters / 1000f)
+                            val walkTime = "${maxOf(1, (distanceMeters / 75.0).toInt())} min walk"
+                            Text(
+                                text = "$distText • $walkTime",
+                                fontFamily = DisplayFontFamily,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.5.sp,
+                                color = CampusEmeraldDark
+                            )
+                            Text(
+                                text = if (userLocation != null && !userLocation.isSimulated) {
+                                    "From your live GPS location"
+                                } else {
+                                    "From ${userLocation?.label ?: "Main Gates (Old & New Buildings)"}"
+                                },
+                                fontFamily = BodyFontFamily,
+                                fontSize = 11.5.sp,
+                                color = InkBlack.copy(alpha = 0.78f)
                             )
                         }
                     }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column {
-                        val distText = if (distanceMeters < 1000) "$distanceMeters m away" else String.format("%.1f km away", distanceMeters / 1000f)
-                        val walkTime = "${maxOf(1, (distanceMeters / 75.0).toInt())} min walk"
-                        Text(
-                            text = "$distText • $walkTime",
-                            fontFamily = DisplayFontFamily,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 13.5.sp,
-                            color = CampusEmeraldDark
+
+                    HorizontalDivider(color = CampusEmeraldBorder.copy(alpha = 0.65f))
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Explore,
+                            contentDescription = null,
+                            tint = CampusEmeraldDark,
+                            modifier = Modifier.size(15.dp)
                         )
                         Text(
-                            text = if (userLocation != null && !userLocation.isSimulated) {
-                                "From your live GPS location"
-                            } else {
-                                "From ${userLocation?.label ?: "Main Gates (Old & New Buildings)"}"
-                            },
+                            text = "Direction: $directionLabel",
                             fontFamily = BodyFontFamily,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 12.sp,
+                            color = CampusEmeraldDark
+                        )
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Layers,
+                            contentDescription = null,
+                            tint = CampusEmeraldDark,
+                            modifier = Modifier.size(15.dp)
+                        )
+                        Text(
+                            text = "Area: $areaSummary",
+                            fontFamily = BodyFontFamily,
+                            fontWeight = FontWeight.Medium,
                             fontSize = 11.5.sp,
-                            color = InkBlack.copy(alpha = 0.78f)
+                            color = InkBlack.copy(alpha = 0.85f)
                         )
                     }
                 }

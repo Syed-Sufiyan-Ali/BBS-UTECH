@@ -45,6 +45,7 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DirectionsBus
 import androidx.compose.material.icons.filled.DirectionsWalk
+import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.GpsFixed
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Layers
@@ -888,6 +889,14 @@ fun OutdoorMapScreen(
                 ) {
                     LazyColumn {
                         items(searchSuggestions, key = { it.id }) { pin ->
+                            val oLat = userLocation?.latitude ?: 27.510977
+                            val oLng = userLocation?.longitude ?: 68.743880
+                            val dMeters = viewModel.repository.calculateDistanceMeters(oLat, oLng, pin.latitude, pin.longitude).roundToInt()
+                            val dStr = if (dMeters >= 1000) String.format("%.2f km", dMeters / 1000.0) else "$dMeters m"
+                            val dirShort = viewModel.repository.formatShortCompass(
+                                viewModel.repository.calculateBearing(oLat, oLng, pin.latitude, pin.longitude)
+                            )
+                            val zoneName = viewModel.repository.getCampusZoneName(pin)
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -920,10 +929,11 @@ fun OutdoorMapScreen(
                                         fontWeight = FontWeight.Bold
                                     )
                                     Text(
-                                        text = "${pin.name} • ${pin.building.shortName}",
+                                        text = "$zoneName • $dStr • $dirShort",
                                         fontFamily = BodyFontFamily,
-                                        color = SlateGray,
+                                        color = CampusEmeraldDark,
                                         fontSize = 11.5.sp,
+                                        fontWeight = FontWeight.Medium,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
@@ -946,6 +956,14 @@ fun OutdoorMapScreen(
                 ) {
                     LazyColumn {
                         items(allPins, key = { it.id }) { pin ->
+                            val oLat = userLocation?.latitude ?: 27.510977
+                            val oLng = userLocation?.longitude ?: 68.743880
+                            val dMeters = viewModel.repository.calculateDistanceMeters(oLat, oLng, pin.latitude, pin.longitude).roundToInt()
+                            val dStr = if (dMeters >= 1000) String.format("%.2f km", dMeters / 1000.0) else "$dMeters m"
+                            val dirShort = viewModel.repository.formatShortCompass(
+                                viewModel.repository.calculateBearing(oLat, oLng, pin.latitude, pin.longitude)
+                            )
+                            val zoneName = viewModel.repository.getCampusZoneName(pin)
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -977,10 +995,11 @@ fun OutdoorMapScreen(
                                         fontWeight = FontWeight.Bold
                                     )
                                     Text(
-                                        text = "${pin.name} • ${pin.roomNumber}",
+                                        text = "$zoneName • $dStr • $dirShort",
                                         fontFamily = BodyFontFamily,
-                                        color = SlateGray,
+                                        color = CampusEmeraldDark,
                                         fontSize = 11.5.sp,
+                                        fontWeight = FontWeight.Medium,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
@@ -1141,12 +1160,21 @@ fun OutdoorMapScreen(
                 activePin.longitude
             ).roundToInt()
             val distMeters = calculatedRoute?.totalDistanceMeters ?: straightDistMeters
+            val bearingDeg = viewModel.repository.calculateBearing(
+                originLat,
+                originLng,
+                activePin.latitude,
+                activePin.longitude
+            )
+            val directionLabel = viewModel.repository.formatCompassDirection(bearingDeg)
+            val shortDir = viewModel.repository.formatShortCompass(bearingDeg)
+            val areaSummary = viewModel.repository.getCampusAreaSummary(activePin)
 
             Surface(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
-                    .heightIn(max = 300.dp)
+                    .heightIn(max = 320.dp)
                     .padding(horizontal = 12.dp, vertical = 12.dp)
                     .warmShadow(14.dp, RoundedCornerShape(28.dp))
                     .testTag("selected_landmark_card"),
@@ -1180,30 +1208,28 @@ fun OutdoorMapScreen(
                                         modifier = Modifier.padding(horizontal = 9.dp, vertical = 3.dp)
                                     )
                                 }
-                                if (distMeters != null) {
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    val distStr = if (distMeters >= 1000) {
-                                        String.format("%.2f km", distMeters / 1000.0)
-                                    } else {
-                                        "$distMeters m"
-                                    }
-                                    val walkMins = max(1, (distMeters / 75.0).roundToInt())
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Icon(
-                                            imageVector = Icons.Default.DirectionsWalk,
-                                            contentDescription = null,
-                                            tint = CampusEmeraldDark,
-                                            modifier = Modifier.size(14.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(3.dp))
-                                        Text(
-                                            text = "$distStr ($walkMins min)",
-                                            fontFamily = BodyFontFamily,
-                                            color = CampusEmeraldDark,
-                                            fontSize = 11.5.sp,
-                                            fontWeight = FontWeight.SemiBold
-                                        )
-                                    }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                val distStr = if (distMeters >= 1000) {
+                                    String.format("%.2f km", distMeters / 1000.0)
+                                } else {
+                                    "$distMeters m"
+                                }
+                                val walkMins = max(1, (distMeters / 75.0).roundToInt())
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Default.DirectionsWalk,
+                                        contentDescription = null,
+                                        tint = CampusEmeraldDark,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(3.dp))
+                                    Text(
+                                        text = "$distStr ($walkMins min) • $shortDir",
+                                        fontFamily = BodyFontFamily,
+                                        color = CampusEmeraldDark,
+                                        fontSize = 11.5.sp,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
                                 }
                             }
                             Spacer(modifier = Modifier.height(7.dp))
@@ -1239,6 +1265,61 @@ fun OutdoorMapScreen(
                                 contentDescription = "Close Landmark Card",
                                 tint = SlateGray
                             )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Surface(
+                        color = CampusEmeraldTint,
+                        shape = RoundedCornerShape(14.dp),
+                        border = BorderStroke(1.dp, CampusEmeraldBorder),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Explore,
+                                    contentDescription = null,
+                                    tint = CampusEmeraldDark,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Text(
+                                    text = "Direction: $directionLabel ${if (userLocation != null) "from your GPS" else "from Main Gates"}",
+                                    fontFamily = BodyFontFamily,
+                                    color = CampusEmeraldDark,
+                                    fontSize = 11.5.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Layers,
+                                    contentDescription = null,
+                                    tint = CampusEmeraldDark,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Text(
+                                    text = "Area: $areaSummary",
+                                    fontFamily = BodyFontFamily,
+                                    color = InkBlack.copy(alpha = 0.85f),
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
                         }
                     }
 

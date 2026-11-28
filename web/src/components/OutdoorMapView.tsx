@@ -48,6 +48,7 @@ import type { GpsMode } from '../hooks/useGeolocation';
 import type { CampusPin, LatLng, UserLocation } from '../types/campus';
 import {
   calculateDistanceMeters,
+  computePinSpatialInfo,
   evaluateCampusContainment,
   formatDistance,
   searchPins,
@@ -290,6 +291,15 @@ export function OutdoorMapView({
     if (!focusedPin || !effectiveOrigin) return null;
     return computeCampusRoute(effectiveOrigin.coord, effectiveOrigin.label, focusedPin, osmRoads);
   }, [focusedPin, effectiveOrigin, osmRoads]);
+
+  const focusedPinSpatial = useMemo(() => {
+    if (!focusedPin || !effectiveOrigin) return null;
+    return computePinSpatialInfo(
+      effectiveOrigin.coord.lat,
+      effectiveOrigin.coord.lng,
+      focusedPin
+    );
+  }, [focusedPin, effectiveOrigin]);
 
   useEffect(() => {
     setActiveStepIndex(0);
@@ -1156,7 +1166,9 @@ export function OutdoorMapView({
             >
               <option value="AUTO_GPS">
                 {gpsMode === 'LIVE' && userLocation
-                  ? 'Live Browser GPS (Via Main Gates)'
+                  ? boundaryStatus?.isInside === false
+                    ? 'Live Browser GPS (Via Main Gates)'
+                    : 'Live Browser GPS (Current Location)'
                   : `Main Gates: ${presets[presetIndex]?.label ?? 'Main Gates (Old & New Buildings)'}`}
               </option>
               <optgroup label="── Manual Campus Landmarks ──">
@@ -1301,6 +1313,25 @@ export function OutdoorMapView({
                     <X className="h-4 w-4" />
                   </button>
                 </div>
+
+                {/* Live Distance, Compass Direction & Campus Area Strip */}
+                {focusedPinSpatial && (
+                  <div className="rounded-2xl border border-[#CBE6D3] bg-[#E6F4EA] px-3 py-2.5 text-[11px] space-y-1">
+                    <div className="flex items-center justify-between gap-2 font-bold text-[#137333]">
+                      <span className="flex items-center gap-1.5">
+                        <Compass className="h-3.5 w-3.5 shrink-0" />
+                        <span>Direction: {focusedPinSpatial.directionLabel}</span>
+                      </span>
+                      <span className="font-mono">
+                        {focusedPinSpatial.distanceLabel} ({focusedPinSpatial.walkMinutes}m)
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 font-semibold text-[#1E4620]">
+                      <Layers className="h-3 w-3 shrink-0" />
+                      <span className="truncate">Area: {focusedPinSpatial.area.fullAreaLabel}</span>
+                    </div>
+                  </div>
+                )}
 
                 {/* Essential Info Rows */}
                 <div className="grid grid-cols-1 gap-1.5 border-t border-[#E2E8F0] pt-2.5 text-xs">
@@ -1526,6 +1557,11 @@ export function OutdoorMapView({
               </div>
               {filteredDirectoryPins.map((pin) => {
                 const color = CATEGORY_COLORS[pin.category] ?? '#0B57D0';
+                const spatial = computePinSpatialInfo(
+                  effectiveOrigin.coord.lat,
+                  effectiveOrigin.coord.lng,
+                  pin
+                );
                 return (
                   <button
                     key={pin.id}
@@ -1542,7 +1578,12 @@ export function OutdoorMapView({
                         {pin.name}
                       </div>
                       <div className="truncate font-mono text-[10.5px] text-[#7D7166]">
-                        {BUILDINGS[pin.building].shortName} • {pin.roomNumber}
+                        {spatial.area.zoneName} • {pin.roomNumber}
+                      </div>
+                      <div className="mt-0.5 flex items-center gap-2 font-mono text-[10.5px] font-semibold text-[#137333]">
+                        <span>{spatial.distanceLabel}</span>
+                        <span>•</span>
+                        <span>{spatial.shortDirection}</span>
                       </div>
                     </div>
                     <ChevronRight className="h-4 w-4 shrink-0 text-[#7C4D2B]" />
@@ -1629,7 +1670,9 @@ export function OutdoorMapView({
               >
                 <option value="AUTO_GPS">
                   {gpsMode === 'LIVE' && userLocation
-                    ? 'Live GPS Signal (Via Main Gates)'
+                    ? boundaryStatus?.isInside === false
+                      ? 'Live GPS Signal (Via Main Gates)'
+                      : 'Live GPS Signal (Current Location)'
                     : 'Main Gates (Old & New Buildings)'}
                 </option>
                 {CAMPUS_PINS.map((pin) => (
@@ -1706,6 +1749,11 @@ export function OutdoorMapView({
               ) : (
                 filteredDirectoryPins.map((pin) => {
                   const color = CATEGORY_COLORS[pin.category] ?? '#0B57D0';
+                  const spatial = computePinSpatialInfo(
+                    effectiveOrigin.coord.lat,
+                    effectiveOrigin.coord.lng,
+                    pin
+                  );
                   return (
                     <button
                       key={pin.id}
@@ -1722,7 +1770,7 @@ export function OutdoorMapView({
                           {pin.name}
                         </div>
                         <div className="truncate text-[10.5px] text-[#5F6368]">
-                          {BUILDINGS[pin.building].shortName} • {pin.roomNumber}
+                          {spatial.area.zoneName} • {spatial.distanceLabel} • {spatial.shortDirection}
                         </div>
                       </div>
                       <ChevronRight className="h-4 w-4 shrink-0 text-[#747775]" />
@@ -1799,7 +1847,8 @@ export function OutdoorMapView({
               <span>{focusedPin.mapLabel || focusedPin.name}</span>
               <span className="ml-2 font-mono text-[11px] text-[#0B57D0]">
                 ({formatDistance(activeRoute.totalDistanceMeters)} •{' '}
-                {activeRoute.estimatedMinutes} min)
+                {activeRoute.estimatedMinutes} min
+                {focusedPinSpatial ? ` • ${focusedPinSpatial.shortDirection}` : ''})
               </span>
             </div>
           </div>
@@ -1835,12 +1884,13 @@ export function OutdoorMapView({
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-1.5 text-[10.5px] font-semibold">
                   <span className="rounded-full bg-[#E8F0FE] px-2.5 py-0.5 text-[#0B57D0]">
-                    {BUILDINGS[focusedPin.building].shortName} • {focusedPin.roomNumber}
+                    {focusedPinSpatial?.area.zoneName ?? BUILDINGS[focusedPin.building].shortName} • {focusedPin.roomNumber}
                   </span>
                   {activeRoute && (
                     <span className="text-[#137333] font-mono">
                       {formatDistance(activeRoute.totalDistanceMeters)} •{' '}
                       {activeRoute.estimatedMinutes} min
+                      {focusedPinSpatial ? ` • ${focusedPinSpatial.shortDirection}` : ''}
                     </span>
                   )}
                 </div>
@@ -1997,6 +2047,16 @@ export function OutdoorMapView({
                   </div>
                 ) : (
                   <div className="space-y-2 text-xs">
+                    {focusedPinSpatial && (
+                      <div className="rounded-2xl border border-[#CBE6D3] bg-[#E6F4EA] p-2.5 space-y-1 text-[#137333]">
+                        <div className="font-bold">
+                          Direction: {focusedPinSpatial.directionLabel} • {focusedPinSpatial.distanceLabel} ({focusedPinSpatial.walkMinutes} min)
+                        </div>
+                        <div className="text-[11px] font-semibold text-[#1E4620]">
+                          Area: {focusedPinSpatial.area.fullAreaLabel}
+                        </div>
+                      </div>
+                    )}
                     <p className="text-[#444746]">
                       <strong className="text-[#111827]">In-Charge:</strong> {focusedPin.inCharge} •{' '}
                       {focusedPin.timings}

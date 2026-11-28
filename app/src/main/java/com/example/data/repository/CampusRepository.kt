@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlin.math.atan2
 import kotlin.math.cos
+import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.math.sqrt
 
@@ -109,6 +110,49 @@ class CampusRepository {
         val x = cos(phi1) * sin(phi2) - sin(phi1) * cos(phi2) * cos(deltaLambda)
         val bearing = Math.toDegrees(atan2(y, x))
         return ((bearing + 360) % 360).toFloat()
+    }
+
+    fun formatCompassDirection(bearingDeg: Float): String {
+        val normalized = ((bearingDeg % 360f) + 360f) % 360f
+        val dirs = arrayOf(
+            "North",
+            "North-East",
+            "East",
+            "South-East",
+            "South",
+            "South-West",
+            "West",
+            "North-West"
+        )
+        val idx = (normalized / 45f).roundToInt() % 8
+        return "${dirs[idx]} (${normalized.roundToInt()}°)"
+    }
+
+    fun formatShortCompass(bearingDeg: Float): String {
+        val normalized = ((bearingDeg % 360f) + 360f) % 360f
+        val codes = arrayOf("N", "NE", "E", "SE", "S", "SW", "W", "NW")
+        val idx = (normalized / 45f).roundToInt() % 8
+        return "${codes[idx]} ${normalized.roundToInt()}°"
+    }
+
+    fun getCampusZoneName(pin: CampusPin): String {
+        return when {
+            pin.building == Building.OLD_BUILDING -> "Old Building Complex (West)"
+            pin.building == Building.NEW_BUILDING -> "New Building Complex (East)"
+            pin.latitude >= 27.5125 -> "North Campus Grounds"
+            pin.latitude <= 27.5095 -> "South Campus Grounds"
+            pin.longitude >= 68.7438 -> "East Gate & Academic Wing"
+            else -> "Central Campus Spine"
+        }
+    }
+
+    fun getCampusAreaSummary(pin: CampusPin): String {
+        val floorText = if (pin.floor == FloorLevel.OUTDOOR) {
+            "Campus Grounds"
+        } else {
+            pin.floor.displayName
+        }
+        return "${getCampusZoneName(pin)} • $floorText"
     }
 
     private fun generateCampusPins(): List<CampusPin> {

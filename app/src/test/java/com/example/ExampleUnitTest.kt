@@ -159,6 +159,22 @@ class ExampleUnitTest {
 
         val bearing = repository.calculateBearing(27.52475, 68.75510, 27.52585, 68.75570)
         assertTrue("Bearing should be between 0 and 360", bearing in 0f..360f)
+
+        assertEquals("North (0°)", repository.formatCompassDirection(0f))
+        assertEquals("North-East (45°)", repository.formatCompassDirection(45f))
+        assertEquals("South-West (225°)", repository.formatCompassDirection(225f))
+        assertEquals("E 90°", repository.formatShortCompass(90f))
+
+        val currentGpsLat = 27.510977
+        val currentGpsLng = 68.743880
+        repository.allPins.value.forEach { pin ->
+            val zone = repository.getCampusZoneName(pin)
+            val area = repository.getCampusAreaSummary(pin)
+            assertTrue("Zone name should not be blank for ${pin.id}", zone.isNotBlank())
+            assertTrue("Area summary should not be blank for ${pin.id}", area.isNotBlank())
+            val b = repository.calculateBearing(currentGpsLat, currentGpsLng, pin.latitude, pin.longitude)
+            assertTrue("Bearing out of range for ${pin.id}", b in 0f..360f)
+        }
     }
 
     @Test

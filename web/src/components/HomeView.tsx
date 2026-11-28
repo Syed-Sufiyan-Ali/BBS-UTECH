@@ -4,6 +4,7 @@ import {
   ArrowRight,
   Bus,
   CalendarDays,
+  Code2,
   Compass,
   GraduationCap,
   Map as MapIcon,
@@ -12,6 +13,7 @@ import {
   Route,
   Search,
   Sparkles,
+  Users,
   X,
 } from 'lucide-react';
 import {
@@ -161,10 +163,19 @@ export function HomeView({
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45, ease: EASE_OUT }}
-              className="inline-flex items-center gap-2 rounded-full border border-[#DFCBB4] bg-[#FFFFFF]/95 px-3.5 py-1.5 text-xs font-semibold text-[#7C4D2B] shadow-[0_3px_10px_-2px_rgba(74,44,21,0.1)]"
+              className="flex flex-wrap items-center gap-3"
             >
-              <Sparkles className="h-3.5 w-3.5 text-[#A66B3F]" />
-              <span>BBS-UTECH Khairpur Mirs • Official Smart Campus Companion</span>
+              <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full border-2 border-[#7C4D2B] bg-[#4A2C15] shadow-[0_6px_16px_-4px_rgba(74,44,21,0.3)]">
+                <img
+                  src="/bbsutsd-logo.png"
+                  alt="BBSUTSD Signature Emblem"
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#DFCBB4] bg-[#FFFFFF]/95 px-3.5 py-1.5 text-xs font-semibold text-[#7C4D2B] shadow-[0_3px_10px_-2px_rgba(74,44,21,0.1)]">
+                <Sparkles className="h-3.5 w-3.5 text-[#A66B3F]" />
+                <span>BBS-UTECH Khairpur Mirs • Official Smart Campus Companion</span>
+              </div>
             </motion.div>
 
             <motion.h1
@@ -653,6 +664,69 @@ export function HomeView({
             <MapPin className="h-3.5 w-3.5" />
             <span>Start Navigation</span>
           </button>
+        </div>
+      </motion.section>
+
+      {/* =================================================================== */}
+      {/* 5. DEV TEAM CREDITS — TEAM TERMINATOR                               */}
+      {/* =================================================================== */}
+      <motion.section
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.25 }}
+        transition={{ duration: 0.5, ease: EASE_OUT }}
+        className="nutty-card rounded-[28px] border border-[#DFCBB4] bg-[#FFFFFF] p-6 sm:p-8 space-y-5"
+      >
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-[#F3EDE4] pb-4">
+          <div className="flex items-center gap-3.5">
+            <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full border-2 border-[#7C4D2B] bg-[#4A2C15] shadow-[0_4px_12px_-2px_rgba(74,44,21,0.28)]">
+              <img
+                src="/bbsutsd-logo.png"
+                alt="BBSUTSD Signature Logo"
+                className="h-full w-full object-cover"
+              />
+            </div>
+            <div>
+              <div className="inline-flex items-center gap-1.5 font-mono text-[10.5px] font-bold uppercase tracking-wider text-[#7C4D2B]">
+                <Code2 className="h-3.5 w-3.5" />
+                <span>Developed By</span>
+              </div>
+              <h2 className="font-display text-xl sm:text-2xl font-extrabold text-[#1F1812]">
+                Team Terminator
+              </h2>
+            </div>
+          </div>
+
+          <span className="inline-flex items-center gap-1.5 self-start sm:self-auto rounded-full border border-[#DFCBB4] bg-[#F6ECE0] px-3.5 py-1.5 font-mono text-[11px] font-bold text-[#7C4D2B]">
+            <Users className="h-3.5 w-3.5" />
+            <span>4 Core Developers • BBSUTSD</span>
+          </span>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { name: 'Syed Sufiyan Ali', initials: 'SS' },
+            { name: 'Atif Ubed Soomro', initials: 'AU' },
+            { name: 'Bilal Abbasi', initials: 'BA' },
+            { name: 'Arham Qureshi', initials: 'AQ' },
+          ].map((member) => (
+            <div
+              key={member.name}
+              className="nutty-card flex items-center gap-3 rounded-2xl border border-[#E6DDD0] bg-[#FAF7F2] px-4 py-3 transition hover:-translate-y-0.5 hover:border-[#A66B3F] hover:bg-[#FFFFFF]"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#DFCBB4] bg-[#4A2C15] font-display text-xs font-bold text-[#FAF7F2] shadow-xs">
+                {member.initials}
+              </div>
+              <div className="min-w-0">
+                <div className="truncate font-display text-sm font-bold text-[#1F1812]">
+                  {member.name}
+                </div>
+                <div className="font-mono text-[10.5px] font-semibold text-[#7C4D2B]">
+                  Team Terminator
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </motion.section>
     </div>

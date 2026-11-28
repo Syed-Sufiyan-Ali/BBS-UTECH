@@ -12,8 +12,12 @@ import {
 } from '../data/campusData';
 import {
   calculateDistanceMeters,
+  computePinSpatialInfo,
   estimateWalkMinutes,
   evaluateCampusContainment,
+  formatCompassDirection,
+  getPinCampusArea,
+  getShortCompassCode,
   searchPins,
 } from '../utils/geo';
 import { classifyTurnDelta, computeCampusRoute, isOutsideCampusCoord } from '../utils/routing';
@@ -374,6 +378,36 @@ describe('BBSUTSD Web Data & Geospatial Logic', () => {
       )
     ).toBe(true);
     expect(outsideRoute.polyline.every((pt) => pt.lng <= 68.74485)).toBe(true);
+  });
+
+  it('computes accurate compass direction, distance, and campus area from current location for all pins', () => {
+    expect(formatCompassDirection(0)).toBe('North (0°)');
+    expect(formatCompassDirection(45)).toBe('North-East (45°)');
+    expect(formatCompassDirection(225)).toBe('South-West (225°)');
+    expect(getShortCompassCode(90)).toBe('E 90°');
+
+    const currentGps = { lat: 27.510977, lng: 68.74388 }; // Main Gates
+    const library = CAMPUS_PINS.find((p) => p.id === 'central_library')!;
+    const newAudi = CAMPUS_PINS.find((p) => p.id === 'new_audi')!;
+
+    const libSpatial = computePinSpatialInfo(currentGps.lat, currentGps.lng, library);
+    expect(libSpatial.distanceMeters).toBeGreaterThan(200);
+    expect(libSpatial.directionLabel).toContain('North-West');
+    expect(libSpatial.area.zoneName).toBe('New Building Complex (East)');
+    expect(libSpatial.area.floorLabel).toBe('1st Floor');
+
+    const audiSpatial = computePinSpatialInfo(currentGps.lat, currentGps.lng, newAudi);
+    expect(audiSpatial.directionLabel).toContain('South-West');
+    expect(audiSpatial.distanceMeters).toBeGreaterThan(250);
+
+    for (const pin of CAMPUS_PINS) {
+      const area = getPinCampusArea(pin);
+      expect(area.zoneName.length).toBeGreaterThan(0);
+      expect(area.fullAreaLabel.length).toBeGreaterThan(0);
+      const spatial = computePinSpatialInfo(currentGps.lat, currentGps.lng, pin);
+      expect(spatial.bearingDegrees).toBeGreaterThanOrEqual(0);
+      expect(spatial.bearingDegrees).toBeLessThan(360);
+    }
   });
 });
 

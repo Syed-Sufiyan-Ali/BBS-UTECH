@@ -13,7 +13,9 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,8 +38,10 @@ import androidx.compose.material.icons.filled.Apartment
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.DirectionsBus
 import androidx.compose.material.icons.filled.Explore
+import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.NearMe
 import androidx.compose.material.icons.filled.Route
@@ -47,6 +51,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
@@ -76,11 +81,14 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.R
 import com.example.data.model.Building
 import com.example.data.model.CampusPin
 import com.example.ui.MainViewModel
@@ -160,29 +168,43 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
-                        Surface(
-                            color = ToastedCreamTint,
-                            shape = RoundedCornerShape(50),
-                            border = BorderStroke(1.dp, HazelnutBorder)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                            Image(
+                                painter = painterResource(id = R.drawable.bbsutsd_signature_logo_1795881011709),
+                                contentDescription = "BBSUTSD Signature Emblem",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .size(44.dp)
+                                    .clip(CircleShape)
+                                    .border(1.5.dp, RoastedWalnut, CircleShape)
+                            )
+                            Surface(
+                                color = ToastedCreamTint,
+                                shape = RoundedCornerShape(50),
+                                border = BorderStroke(1.dp, HazelnutBorder)
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.AutoAwesome,
-                                    contentDescription = null,
-                                    tint = RoastedWalnut,
-                                    modifier = Modifier.size(14.dp)
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = "BBS-UTECH • Smart Campus Companion",
-                                    fontFamily = BodyFontFamily,
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = RoastedWalnut
-                                )
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.AutoAwesome,
+                                        contentDescription = null,
+                                        tint = RoastedWalnut,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = "BBS-UTECH • Smart Campus Companion",
+                                        fontFamily = BodyFontFamily,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = RoastedWalnut
+                                    )
+                                }
                             }
                         }
 
@@ -659,6 +681,13 @@ fun HomeScreen(
                 }
             }
         }
+
+        // =====================================================================
+        // 6. DEV TEAM CREDITS — TEAM TERMINATOR
+        // =====================================================================
+        item {
+            TeamTerminatorCreditsCard()
+        }
     }
 }
 
@@ -1106,6 +1135,167 @@ private fun CampusZoneOverviewCard(
                         tint = RoastedWalnut,
                         modifier = Modifier.size(13.dp)
                     )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TeamTerminatorCreditsCard() {
+    val developers = listOf(
+        "Syed Sufiyan Ali" to "SS",
+        "Atif Ubed Soomro" to "AU",
+        "Bilal Abbasi" to "BA",
+        "Arham Qureshi" to "AQ"
+    )
+
+    Card(
+        colors = CardDefaults.cardColors(containerColor = PureSurface),
+        shape = RoundedCornerShape(24.dp),
+        border = BorderStroke(1.dp, HazelnutBorder),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 4.dp,
+            hoveredElevation = 7.dp
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("team_terminator_credits_card")
+    ) {
+        Column(modifier = Modifier.padding(18.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.bbsutsd_signature_logo_1795881011709),
+                        contentDescription = "BBSUTSD Logo",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(CircleShape)
+                            .border(1.5.dp, RoastedWalnut, CircleShape)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Code,
+                                contentDescription = null,
+                                tint = RoastedWalnut,
+                                modifier = Modifier.size(13.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "DEVELOPED BY",
+                                fontFamily = MonoFontFamily,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = RoastedWalnut
+                            )
+                        }
+                        Text(
+                            text = "Team Terminator",
+                            fontFamily = DisplayFontFamily,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = InkBlack
+                        )
+                    }
+                }
+
+                Surface(
+                    color = ToastedCreamTint,
+                    shape = RoundedCornerShape(50),
+                    border = BorderStroke(1.dp, HazelnutBorder)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Groups,
+                            contentDescription = null,
+                            tint = RoastedWalnut,
+                            modifier = Modifier.size(13.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "4 Devs",
+                            fontFamily = MonoFontFamily,
+                            fontSize = 10.5.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = RoastedWalnut
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+            HorizontalDivider(color = MistOutline)
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                developers.chunked(2).forEach { pair ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        pair.forEach { (name, initials) ->
+                            Surface(
+                                color = PorcelainCanvas,
+                                shape = RoundedCornerShape(16.dp),
+                                border = BorderStroke(1.dp, MistOutline),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .warmShadow(2.dp, RoundedCornerShape(16.dp))
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 9.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Surface(
+                                        color = Color(0xFF4A2C15),
+                                        shape = CircleShape,
+                                        modifier = Modifier.size(30.dp)
+                                    ) {
+                                        Box(contentAlignment = Alignment.Center) {
+                                            Text(
+                                                text = initials,
+                                                fontFamily = DisplayFontFamily,
+                                                fontSize = 10.5.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = PureWhite
+                                            )
+                                        }
+                                    }
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = name,
+                                            fontFamily = DisplayFontFamily,
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = InkBlack,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                        Text(
+                                            text = "Team Terminator",
+                                            fontFamily = MonoFontFamily,
+                                            fontSize = 9.5.sp,
+                                            color = RoastedWalnut
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

@@ -3,6 +3,6 @@
     <item
         android:width="66dp"
         android:height="66dp"
-        android:drawable="@drawable/bbsutsd_logo_1794059910389"
+        android:drawable="@drawable/bbsutsd_signature_logo_1795881011709"
         android:gravity="center" />
 </layer-list>

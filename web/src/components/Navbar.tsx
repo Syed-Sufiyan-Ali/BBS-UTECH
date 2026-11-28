@@ -1,7 +1,6 @@
 import {
   Bus,
   CalendarDays,
-  Compass,
   Home,
   Map as MapIcon,
   Radio,
@@ -33,8 +32,12 @@ export function Navbar({ activeTab, onSelectTab, userLocation }: NavbarProps) {
             onClick={() => onSelectTab('HOME')}
             className="flex items-center gap-3 text-left group cursor-pointer"
           >
-            <div className="nutty-btn flex h-10 w-10 items-center justify-center rounded-2xl border border-[#DFCBB4] bg-[#F6ECE0] text-[#7C4D2B] group-hover:bg-[#7C4D2B] group-hover:text-[#FAF7F2]">
-              <Compass className="h-5 w-5 transition-transform duration-300 group-hover:rotate-12" />
+            <div className="nutty-btn flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-[#7C4D2B] bg-[#4A2C15] shadow-[0_4px_12px_-2px_rgba(74,44,21,0.28)] transition-transform duration-300 group-hover:scale-105">
+              <img
+                src="/bbsutsd-logo.png"
+                alt="BBSUTSD Signature Logo"
+                className="h-full w-full object-cover"
+              />
             </div>
             <div>
               <div className="flex items-center gap-2">

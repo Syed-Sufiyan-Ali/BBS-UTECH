@@ -2,7 +2,9 @@ import { useEffect } from 'react';
 import {
   Bus,
   Clock,
+  Compass,
   Footprints,
+  Layers,
   MapPin,
   Navigation,
   Phone,
@@ -11,7 +13,7 @@ import {
 } from 'lucide-react';
 import { BUILDINGS, FLOORS } from '../data/campusData';
 import type { CampusPin, UserLocation } from '../types/campus';
-import { calculateDistanceMeters, estimateWalkMinutes, formatDistance } from '../utils/geo';
+import { computePinSpatialInfo } from '../utils/geo';
 
 interface PinDetailModalProps {
   pin: CampusPin | null;
@@ -42,12 +44,7 @@ export function PinDetailModal({
   const originLat = userLocation?.latitude ?? 27.510977;
   const originLng = userLocation?.longitude ?? 68.74388;
   const originLabel = userLocation?.label || 'Main Gates (Old & New Buildings)';
-  const distMeters = calculateDistanceMeters(
-    originLat,
-    originLng,
-    pin.latitude,
-    pin.longitude
-  );
+  const spatial = computePinSpatialInfo(originLat, originLng, pin);
 
   const isTransportPin =
     pin.id === 'campus_transport_office' || pin.id === 'campus_transport';
@@ -96,19 +93,35 @@ export function PinDetailModal({
         </h2>
         <p className="mt-1 text-sm text-[#5F6368]">{pin.subTitle}</p>
 
-        {/* Distance Strip */}
-        <div className="mt-4 flex items-center gap-3 rounded-2xl border border-[#CBE6D3] bg-[#E6F4EA] px-4 py-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#0F9D58] text-white">
-            <Navigation className="h-4 w-4" />
-          </div>
-          <div>
-            <div className="text-xs font-bold text-[#137333]">
-              {formatDistance(distMeters)} away • {estimateWalkMinutes(distMeters)} min walk
+        {/* Live Distance, Compass Direction & Campus Area Strip */}
+        <div className="mt-4 space-y-2 rounded-2xl border border-[#CBE6D3] bg-[#E6F4EA] px-4 py-3.5">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#0F9D58] text-white">
+              <Navigation
+                className="h-4 w-4 transition-transform"
+                style={{ transform: `rotate(${Math.round(spatial.bearingDegrees)}deg)` }}
+              />
             </div>
-            <div className="text-xs text-[#1E4620]">
-              {userLocation && !userLocation.isSimulated
-                ? `From live GPS (${originLabel})`
-                : `From ${originLabel}`}
+            <div className="min-w-0 flex-1">
+              <div className="text-xs font-bold text-[#137333]">
+                {spatial.distanceLabel} away • {spatial.walkMinutes} min walk
+              </div>
+              <div className="text-xs text-[#1E4620]">
+                {userLocation && !userLocation.isSimulated
+                  ? `From live GPS (${originLabel})`
+                  : `From ${originLabel}`}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-[#CBE6D3]/80 text-[11.5px]">
+            <div className="flex items-center gap-1.5 font-semibold text-[#137333]">
+              <Compass className="h-3.5 w-3.5 shrink-0" />
+              <span>Direction: {spatial.directionLabel}</span>
+            </div>
+            <div className="flex items-center gap-1.5 font-semibold text-[#1E4620]">
+              <Layers className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">Area: {spatial.area.fullAreaLabel}</span>
             </div>
           </div>
         </div>

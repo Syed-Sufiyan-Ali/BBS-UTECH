@@ -40,6 +40,105 @@ export function calculateBearing(
   return (bearing + 360) % 360;
 }
 
+export function formatCompassDirection(bearingDeg: number): string {
+  const normalized = ((bearingDeg % 360) + 360) % 360;
+  const dirs = [
+    'North',
+    'North-East',
+    'East',
+    'South-East',
+    'South',
+    'South-West',
+    'West',
+    'North-West',
+  ];
+  const idx = Math.round(normalized / 45) % 8;
+  return `${dirs[idx]} (${Math.round(normalized)}°)`;
+}
+
+export function getShortCompassCode(bearingDeg: number): string {
+  const normalized = ((bearingDeg % 360) + 360) % 360;
+  const codes = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+  const idx = Math.round(normalized / 45) % 8;
+  return `${codes[idx]} ${Math.round(normalized)}°`;
+}
+
+export interface PinAreaSummary {
+  zoneName: string;
+  floorLabel: string;
+  fullAreaLabel: string;
+}
+
+export function getPinCampusArea(pin: CampusPin): PinAreaSummary {
+  const floorLabel =
+    pin.floor === 'OUTDOOR'
+      ? 'Campus Grounds'
+      : pin.floor === 'FIRST'
+      ? '1st Floor'
+      : pin.floor === 'SECOND'
+      ? '2nd Floor'
+      : 'Ground Floor';
+
+  let zoneName: string;
+  if (pin.building === 'OLD_BUILDING') {
+    zoneName = 'Old Building Complex (West)';
+  } else if (pin.building === 'NEW_BUILDING') {
+    zoneName = 'New Building Complex (East)';
+  } else if (pin.latitude >= 27.5125) {
+    zoneName = 'North Campus Grounds';
+  } else if (pin.latitude <= 27.5095) {
+    zoneName = 'South Campus Grounds';
+  } else if (pin.longitude >= 68.7438) {
+    zoneName = 'East Gate & Academic Wing';
+  } else {
+    zoneName = 'Central Campus Spine';
+  }
+
+  return {
+    zoneName,
+    floorLabel,
+    fullAreaLabel: `${zoneName} • ${floorLabel}`,
+  };
+}
+
+export interface PinSpatialInfo {
+  distanceMeters: number;
+  distanceLabel: string;
+  walkMinutes: number;
+  bearingDegrees: number;
+  directionLabel: string;
+  shortDirection: string;
+  area: PinAreaSummary;
+}
+
+export function computePinSpatialInfo(
+  originLat: number,
+  originLng: number,
+  pin: CampusPin
+): PinSpatialInfo {
+  const distanceMeters = calculateDistanceMeters(
+    originLat,
+    originLng,
+    pin.latitude,
+    pin.longitude
+  );
+  const bearingDegrees = calculateBearing(
+    originLat,
+    originLng,
+    pin.latitude,
+    pin.longitude
+  );
+  return {
+    distanceMeters,
+    distanceLabel: formatDistance(distanceMeters),
+    walkMinutes: estimateWalkMinutes(distanceMeters),
+    bearingDegrees,
+    directionLabel: formatCompassDirection(bearingDegrees),
+    shortDirection: getShortCompassCode(bearingDegrees),
+    area: getPinCampusArea(pin),
+  };
+}
+
 export function isPointInPolygon(lat: number, lng: number, poly: LatLng[]): boolean {
   let inside = false;
   for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
